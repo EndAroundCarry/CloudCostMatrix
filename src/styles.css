@@ -1,3 +1,73 @@
-/* You can add global styles to this file, and also import other style files */
-
+/* Global Theme & Material 3 Styling */
+@import '@angular/material/prebuilt-themes/azure-blue.css';
 @import "tailwindcss";
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Brand Palettes */
+  --aws-primary: #FF9900;
+  --aws-surface: #FFF9F2;
+  --aws-dark: #EC7211;
+  --aws-border: #FFD8A8;
+
+  --azure-primary: #0078D4;
+  --azure-surface: #F0F6FC;
+  --azure-dark: #106EBE;
+  --azure-border: #BAE3FF;
+
+  --gcp-primary: #4285F4;
+  --gcp-surface: #F4F8FF;
+  --gcp-dark: #3367D6;
+  --gcp-border: #C2E0FF;
+
+  /* Neutrals */
+  --bg-app: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-surface-elevated: #293548;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --border-color: #334155;
+  --accent-success: #10B981;
+  --accent-warning: #F59E0B;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Material component overrides for sleek dark modern UI */
+.mat-mdc-card {
+  border-radius: 16px !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+.mat-mdc-button-base {
+  border-radius: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

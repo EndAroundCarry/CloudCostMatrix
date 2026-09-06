@@ -1,0 +1,29 @@
+name: Sync Cloud Pricing (Free Firebase Spark Tier)
+
+on:
+  schedule:
+    # Runs twice daily at 04:00 and 16:00 UTC (100% Free inside GitHub Actions allowance)
+    - cron: '0 4,16 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  sync-pricing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install sync dependencies
+        run: npm ci || npm install
+
+      - name: Run cloud pricing scrapers & write to Firestore
+        env:
+          # In GitHub repo settings -> Secrets, add your Firebase Service Account JSON
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          node scripts/sync-prices.mjs

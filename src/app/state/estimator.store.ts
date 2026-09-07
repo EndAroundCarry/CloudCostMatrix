@@ -1,5 +1,16 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { ArchitectureEstimateConfig, ComparisonMatrixResult, CommitmentType, StorageTier, DbEngine, OperatingSystem } from '../core/models/pricing.model';
+import { 
+  ArchitectureEstimateConfig, 
+  ComparisonMatrixResult, 
+  CommitmentType, 
+  StorageTier, 
+  DbEngine, 
+  OperatingSystem,
+  CurrencyCode,
+  CURRENCY_DEFINITIONS,
+  RegionId,
+  REGION_DEFINITIONS
+} from '../core/models/pricing.model';
 import { ServiceCategory } from '../core/models/service-category.enum';
 import { CloudProvider } from '../core/models/cloud-provider.enum';
 import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../core/models/blueprints.model';
@@ -16,11 +27,28 @@ export class EstimatorStore {
 
   // State signals
   public readonly activeBlueprint = signal<ArchitectureBlueprint | null>(ARCHITECTURE_BLUEPRINTS[0]);
-  public readonly config = signal<ArchitectureEstimateConfig>(JSON.parse(JSON.stringify(ARCHITECTURE_BLUEPRINTS[0].config)));
+  public readonly config = signal<ArchitectureEstimateConfig>({
+    ...JSON.parse(JSON.stringify(ARCHITECTURE_BLUEPRINTS[0].config)),
+    scaleFactor: 1,
+    region: 'us-east-1'
+  });
   public readonly activeCategory = signal<ServiceCategory>(ServiceCategory.COMPUTE);
+  public readonly selectedCurrency = signal<CurrencyCode>('USD');
   public readonly isShareModalOpen = signal<boolean>(false);
   public readonly isSavedEstimatesOpen = signal<boolean>(false);
   public readonly toastMessage = signal<string | null>(null);
+
+  // Currency meta helper
+  public readonly currencyDef = computed(() => {
+    return CURRENCY_DEFINITIONS[this.selectedCurrency()] || CURRENCY_DEFINITIONS.USD;
+  });
+
+  // Helper to format any USD amount into active currency
+  public formatMoney(usdAmount: number = 0): string {
+    const cur = this.currencyDef();
+    const converted = Math.round(usdAmount * cur.rateAgainstUsd);
+    return `${cur.symbol}${converted.toLocaleString()}`;
+  }
 
   // Computed comparison matrix
   public readonly matrix = computed<ComparisonMatrixResult>(() => {
@@ -179,6 +207,23 @@ export class EstimatorStore {
       ...c,
       kubernetes: { ...c.kubernetes, workerNodesPerCluster: Math.max(1, workerNodesPerCluster) }
     }));
+  }
+
+  // Currency & Region updates
+  public setCurrency(currency: CurrencyCode): void {
+    this.selectedCurrency.set(currency);
+    this.showToast(`Switched currency to ${CURRENCY_DEFINITIONS[currency].name} (${CURRENCY_DEFINITIONS[currency].symbol})`);
+  }
+
+  public setRegion(regionId: RegionId): void {
+    this.config.update(c => ({ ...c, region: regionId }));
+    const regionName = REGION_DEFINITIONS[regionId]?.name || regionId;
+    this.showToast(`Switched cloud deployment region to ${regionName}`);
+  }
+
+  public setScaleFactor(scaleFactor: number): void {
+    const factor = Math.max(1, Math.min(10, scaleFactor));
+    this.config.update(c => ({ ...c, scaleFactor: factor }));
   }
 
   // Share and save actions

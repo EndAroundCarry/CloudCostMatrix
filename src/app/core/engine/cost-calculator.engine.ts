@@ -8,6 +8,8 @@ import {
   KubernetesSpec,
   NetworkingSpec,
   ProviderTotalCost,
+  RegionId,
+  REGION_DEFINITIONS,
   ServiceCostBreakdown,
   StorageSpec
 } from '../models/pricing.model';
@@ -238,6 +240,12 @@ export class CostCalculatorEngine {
     const breakdowns: ServiceCostBreakdown[] = [];
     const providerTotals: Partial<Record<CloudProvider, ProviderTotalCost>> = {};
 
+    // Determine regional pricing multiplier
+    const regionId = (config.region as any) || 'us-east-1';
+    const regionDef = REGION_DEFINITIONS[regionId as RegionId] || REGION_DEFINITIONS['us-east-1'];
+    const regionalMultiplier = regionDef.pricingMultiplier;
+    const scaleFactor = Math.max(1, config.scaleFactor || 1);
+
     for (const provider of providers) {
       const categoryTotals: Record<ServiceCategory, number> = {
         [ServiceCategory.COMPUTE]: 0,
@@ -248,31 +256,64 @@ export class CostCalculatorEngine {
       };
 
       if (config.activeCategories[ServiceCategory.COMPUTE]) {
-        const bd = this.calculateCompute(config.compute, provider);
+        // Adjust for scaleFactor and region
+        const scaledCompute: ComputeSpec = {
+          ...config.compute,
+          count: config.compute.count * scaleFactor
+        };
+        const bd = this.calculateCompute(scaledCompute, provider);
+        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
+        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
         breakdowns.push(bd);
         categoryTotals[ServiceCategory.COMPUTE] = bd.monthlyCost;
       }
 
       if (config.activeCategories[ServiceCategory.STORAGE]) {
-        const bd = this.calculateStorage(config.storage, provider);
+        const scaledStorage: StorageSpec = {
+          ...config.storage,
+          capacityGb: config.storage.capacityGb * scaleFactor,
+          readOpsThousands: config.storage.readOpsThousands * scaleFactor,
+          writeOpsThousands: config.storage.writeOpsThousands * scaleFactor
+        };
+        const bd = this.calculateStorage(scaledStorage, provider);
+        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
+        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
         breakdowns.push(bd);
         categoryTotals[ServiceCategory.STORAGE] = bd.monthlyCost;
       }
 
       if (config.activeCategories[ServiceCategory.DATABASE]) {
-        const bd = this.calculateDatabase(config.database, provider);
+        const scaledDb: DatabaseSpec = {
+          ...config.database,
+          storageGb: config.database.storageGb * scaleFactor
+        };
+        const bd = this.calculateDatabase(scaledDb, provider);
+        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
+        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
         breakdowns.push(bd);
         categoryTotals[ServiceCategory.DATABASE] = bd.monthlyCost;
       }
 
       if (config.activeCategories[ServiceCategory.NETWORKING]) {
-        const bd = this.calculateNetworking(config.networking, provider);
+        const scaledNet: NetworkingSpec = {
+          ...config.networking,
+          egressGbPerMonth: config.networking.egressGbPerMonth * scaleFactor
+        };
+        const bd = this.calculateNetworking(scaledNet, provider);
+        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
+        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
         breakdowns.push(bd);
         categoryTotals[ServiceCategory.NETWORKING] = bd.monthlyCost;
       }
 
       if (config.activeCategories[ServiceCategory.KUBERNETES]) {
-        const bd = this.calculateKubernetes(config.kubernetes, provider);
+        const scaledK8s: KubernetesSpec = {
+          ...config.kubernetes,
+          workerNodesPerCluster: config.kubernetes.workerNodesPerCluster * scaleFactor
+        };
+        const bd = this.calculateKubernetes(scaledK8s, provider);
+        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
+        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
         breakdowns.push(bd);
         categoryTotals[ServiceCategory.KUBERNETES] = bd.monthlyCost;
       }

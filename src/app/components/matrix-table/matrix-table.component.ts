@@ -36,7 +36,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
             <div>
               <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Max Potential Savings</div>
               <div class="text-lg font-black text-white">
-                \${{ store.matrix().monthlyMaxSavings.toLocaleString() }}/mo 
+                {{ store.formatMoney(store.matrix().monthlyMaxSavings) }}/mo 
                 <span class="text-xs font-semibold text-emerald-400">({{ store.matrix().monthlyMaxSavingsPercent }}% delta)</span>
               </div>
             </div>
@@ -83,12 +83,12 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
             <!-- Price Figures -->
             <div class="mt-4 mb-4">
               <div class="flex items-baseline gap-1">
-                <span class="text-3xl font-extrabold text-white tracking-tight">\${{ total.monthlyTotal.toLocaleString() }}</span>
+                <span class="text-3xl font-extrabold text-white tracking-tight">{{ store.formatMoney(total.monthlyTotal) }}</span>
                 <span class="text-xs font-semibold text-slate-400">/ month</span>
               </div>
               <div class="text-xs text-slate-400 mt-1 flex items-center justify-between">
-                <span>Annual: <strong class="text-slate-200">\${{ total.annualTotal.toLocaleString() }}</strong></span>
-                <span>3-Yr: <strong class="text-slate-200">\${{ total.threeYearTotal.toLocaleString() }}</strong></span>
+                <span>Annual: <strong class="text-slate-200">{{ store.formatMoney(total.annualTotal) }}</strong></span>
+                <span>3-Yr: <strong class="text-slate-200">{{ store.formatMoney(total.threeYearTotal) }}</strong></span>
               </div>
             </div>
 
@@ -101,7 +101,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
                       <mat-icon class="!text-xs text-slate-500">{{ categoryMetas[cat].icon }}</mat-icon>
                       {{ categoryMetas[cat].name.split('/')[0] }}
                     </span>
-                    <span class="font-semibold text-white">\${{ total.categoryBreakdown[cat].toLocaleString() }}</span>
+                    <span class="font-semibold text-white">{{ store.formatMoney(total.categoryBreakdown[cat]) }}</span>
                   </div>
                 }
               }
@@ -154,7 +154,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
                   <!-- AWS Column -->
                   <td class="py-4 px-4 align-top">
                     <div class="font-extrabold text-white text-base" [class.text-emerald-400]="awsBd?.monthlyCost === minCatCost">
-                      \${{ awsBd?.monthlyCost?.toLocaleString() ?? '0' }}<span class="text-xs text-slate-400 font-normal">/mo</span>
+                      {{ store.formatMoney(awsBd?.monthlyCost) }}<span class="text-xs text-slate-400 font-normal">/mo</span>
                     </div>
                     <div class="text-xs font-semibold text-slate-300 mt-1">{{ awsBd?.instanceTypeOrTier }}</div>
                     @for (detail of awsBd?.details; track detail) {
@@ -165,7 +165,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
                   <!-- Azure Column -->
                   <td class="py-4 px-4 align-top">
                     <div class="font-extrabold text-white text-base" [class.text-emerald-400]="azureBd?.monthlyCost === minCatCost">
-                      \${{ azureBd?.monthlyCost?.toLocaleString() ?? '0' }}<span class="text-xs text-slate-400 font-normal">/mo</span>
+                      {{ store.formatMoney(azureBd?.monthlyCost) }}<span class="text-xs text-slate-400 font-normal">/mo</span>
                     </div>
                     <div class="text-xs font-semibold text-slate-300 mt-1">{{ azureBd?.instanceTypeOrTier }}</div>
                     @for (detail of azureBd?.details; track detail) {
@@ -176,7 +176,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
                   <!-- GCP Column -->
                   <td class="py-4 px-4 align-top">
                     <div class="font-extrabold text-white text-base" [class.text-emerald-400]="gcpBd?.monthlyCost === minCatCost">
-                      \${{ gcpBd?.monthlyCost?.toLocaleString() ?? '0' }}<span class="text-xs text-slate-400 font-normal">/mo</span>
+                      {{ store.formatMoney(gcpBd?.monthlyCost) }}<span class="text-xs text-slate-400 font-normal">/mo</span>
                     </div>
                     <div class="text-xs font-semibold text-slate-300 mt-1">{{ gcpBd?.instanceTypeOrTier }}</div>
                     @for (detail of gcpBd?.details; track detail) {

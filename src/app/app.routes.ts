@@ -10,6 +10,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/programmatic/provider-comparison.component').then(m => m.ProviderComparisonComponent)
   },
   {
+    path: 'blueprints/:slug',
+    loadComponent: () => import('./pages/blueprints/blueprint-detail.component').then(m => m.BlueprintDetailComponent)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

@@ -332,6 +332,88 @@ import { CommitmentType, DbEngine, OperatingSystem, StorageTier } from '../../co
           </div>
         }
 
+        <!-- Scale Simulator & FinOps Commitment Advisor Section -->
+        <div class="mt-8 pt-6 border-t border-slate-800 space-y-6">
+          
+          <!-- 1. Workload Scale Simulator -->
+          <div class="rounded-xl bg-gradient-to-r from-blue-950/40 via-slate-900 to-indigo-950/40 border border-blue-500/20 p-4 sm:p-5">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                  <mat-icon class="!text-sm">trending_up</mat-icon>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-white m-0">Workload Growth & Traffic Scale Simulator</h4>
+                  <p class="text-xs text-slate-400 m-0">Project non-linear cost curves at 2x, 5x, or 10x production capacity.</p>
+                </div>
+              </div>
+              <div class="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-black">
+                {{ store.config().scaleFactor || 1 }}x Multiplier
+              </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 pt-2">
+              @for (scale of [1, 2, 5, 10]; track scale) {
+                <button
+                  type="button"
+                  (click)="store.setScaleFactor(scale)"
+                  [class.bg-blue-600]="(store.config().scaleFactor || 1) === scale"
+                  [class.text-white]="(store.config().scaleFactor || 1) === scale"
+                  [class.bg-slate-800]="(store.config().scaleFactor || 1) !== scale"
+                  [class.text-slate-300]="(store.config().scaleFactor || 1) !== scale"
+                  class="py-2 px-3 rounded-lg text-xs font-bold border border-slate-700/80 hover:border-slate-500 transition-all cursor-pointer">
+                  {{ scale === 1 ? '1x (Current Baseline)' : scale + 'x Scale' }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- 2. FinOps 3-Year Commitment Advisor -->
+          <div class="rounded-xl bg-slate-800/40 border border-slate-700/60 p-4 sm:p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <mat-icon class="text-emerald-400 !text-base">savings</mat-icon>
+              <h4 class="text-sm font-bold text-white m-0">FinOps Commitment & Cash-Flow Advisor</h4>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div class="rounded-lg bg-slate-900/80 border border-slate-800 p-3">
+                <div class="text-slate-400 font-medium">On-Demand (Zero Commit)</div>
+                <div class="text-base font-extrabold text-slate-200 mt-1">
+                  {{ store.formatMoney(store.matrix().providers[store.matrix().cheapestMonthlyProvider].monthlyTotal) }}<span class="text-[10px] font-normal text-slate-400">/mo</span>
+                </div>
+                <div class="text-[11px] text-slate-500 mt-1">100% flexibility, zero commitment discount</div>
+              </div>
+
+              <div class="rounded-lg bg-slate-900/80 border border-blue-500/30 p-3">
+                <div class="text-blue-400 font-semibold flex items-center justify-between">
+                  <span>1-Year Reserved / Savings Plan</span>
+                  <span class="text-[10px] bg-blue-500/20 px-1.5 py-0.5 rounded font-bold">~35% OFF</span>
+                </div>
+                <div class="text-base font-extrabold text-white mt-1">
+                  {{ store.formatMoney(store.matrix().providers[store.matrix().cheapestMonthlyProvider].monthlyTotal * 0.65) }}<span class="text-[10px] font-normal text-slate-400">/mo</span>
+                </div>
+                <div class="text-[11px] text-emerald-400 font-medium mt-1">
+                  Saves ~{{ store.formatMoney(store.matrix().providers[store.matrix().cheapestMonthlyProvider].monthlyTotal * 0.35 * 12) }}/yr
+                </div>
+              </div>
+
+              <div class="rounded-lg bg-slate-900/80 border border-emerald-500/30 p-3">
+                <div class="text-emerald-400 font-semibold flex items-center justify-between">
+                  <span>3-Year Reserved / Savings Plan</span>
+                  <span class="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold">~60% OFF</span>
+                </div>
+                <div class="text-base font-extrabold text-white mt-1">
+                  {{ store.formatMoney(store.matrix().providers[store.matrix().cheapestMonthlyProvider].monthlyTotal * 0.40) }}<span class="text-[10px] font-normal text-slate-400">/mo</span>
+                </div>
+                <div class="text-[11px] text-emerald-400 font-bold mt-1">
+                  Saves ~{{ store.formatMoney(store.matrix().providers[store.matrix().cheapestMonthlyProvider].monthlyTotal * 0.60 * 36) }} over 3 yrs
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </div>
   `

@@ -1,32 +1,66 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { Subscription } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { SchemaGenerator } from '../../core/seo/schema-generator';
 import { EstimatorStore } from '../../state/estimator.store';
+import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
+import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/service-category.enum';
 import { MatrixTableComponent } from '../../components/matrix-table/matrix-table.component';
 import { ConfiguratorComponent } from '../../components/configurator/configurator.component';
 import { TcoChartComponent } from '../../components/charts/tco-chart.component';
 import { RecommendationsComponent } from '../../components/recommendations/recommendations.component';
 
+interface FeatureComparisonRow {
+  feature: string;
+  category: string;
+  providerAVal: string;
+  providerBVal: string;
+  winner: 'A' | 'B' | 'TIE';
+}
+
 interface ComparisonPageData {
+  slug: string;
   slugTitle: string;
   headline: string;
   summary: string;
   metaDescription: string;
   keywords: string[];
+  providerA?: CloudProvider;
+  providerB?: CloudProvider;
+  features?: FeatureComparisonRow[];
   faqs: { question: string; answer: string }[];
 }
 
+const COMPARISON_TABS = [
+  { slug: 'aws-vs-azure', label: 'AWS vs Azure' },
+  { slug: 'aws-vs-gcp', label: 'AWS vs GCP' },
+  { slug: 'azure-vs-gcp', label: 'Azure vs GCP' },
+  { slug: 'ec2-vs-azure-vm-vs-compute-engine', label: 'EC2 vs VMs vs Compute Engine' },
+  { slug: 's3-vs-azure-blob-vs-google-cloud-storage', label: 'S3 vs Blob vs Cloud Storage' }
+];
+
 const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
   'aws-vs-azure': {
+    slug: 'aws-vs-azure',
     slugTitle: 'AWS vs Azure',
     headline: 'AWS vs Azure: Detailed Cloud Infrastructure Pricing & TCO Comparison (2026)',
     summary: 'A comprehensive, line-by-line comparison of Amazon Web Services (AWS) and Microsoft Azure across Compute (EC2 vs Azure Virtual Machines), Object Storage (S3 vs Azure Blob), Managed Databases (RDS/Aurora vs Azure SQL Database), Networking egress fees, and managed Kubernetes (EKS vs AKS).',
     metaDescription: 'Compare AWS vs Azure pricing in 2026. Side-by-side cost analysis of EC2 vs Azure VMs, S3 vs Blob Storage, RDS vs Azure SQL, EKS vs AKS, and data egress. Free TCO calculator.',
     keywords: ['AWS vs Azure', 'AWS vs Azure pricing', 'EC2 vs Azure VM', 'S3 vs Azure Blob', 'RDS vs Azure SQL', 'EKS vs AKS', 'cloud cost comparison 2026'],
+    providerA: CloudProvider.AWS,
+    providerB: CloudProvider.AZURE,
+    features: [
+      { feature: 'ARM Processor Option', category: 'Compute', providerAVal: 'AWS Graviton3 / Graviton4 (Up to 20% price-perf)', providerBVal: 'Azure Cobalt 100 & Ampere Altra', winner: 'A' },
+      { feature: 'Spot / Preemptible Eviction Notice', category: 'Compute', providerAVal: '2-minute warning via EventBridge', providerBVal: '30-second warning via Azure Scheduled Events', winner: 'A' },
+      { feature: 'Managed Kubernetes Control Plane Fee', category: 'Kubernetes', providerAVal: '$0.10/hour ($73/month per cluster)', providerBVal: '$0.00/month (Free standard AKS cluster management)', winner: 'B' },
+      { feature: 'Enterprise License Portability', category: 'Licensing', providerAVal: 'BYOL with dedicated hosts or license manager', providerBVal: 'Azure Hybrid Benefit (Save up to 40-55% with Windows/SQL)', winner: 'B' },
+      { feature: '1st Tier Internet Egress', category: 'Networking', providerAVal: '$0.090 / GB (first 10 TB in us-east-1)', providerBVal: '$0.087 / GB (first 10 TB in East US)', winner: 'B' },
+      { feature: 'Hot Object Storage Base Rate', category: 'Storage', providerAVal: '$0.023 / GB-month (S3 Standard)', providerBVal: '$0.018 / GB-month (Azure Blob Hot)', winner: 'B' }
+    ],
     faqs: [
       {
         question: 'Which is cheaper overall: AWS or Azure?',
@@ -47,11 +81,22 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     ]
   },
   'aws-vs-gcp': {
+    slug: 'aws-vs-gcp',
     slugTitle: 'AWS vs GCP',
     headline: 'AWS vs Google Cloud (GCP): Complete Cost & Performance Analysis (2026)',
     summary: 'Compare Amazon Web Services and Google Cloud Platform across Compute (EC2 vs Google Compute Engine), Storage (S3 vs Google Cloud Storage), Databases (RDS vs Cloud SQL), Kubernetes (EKS vs GKE), and data egress pricing with real-time TCO modeling.',
     metaDescription: 'AWS vs GCP pricing comparison 2026. Compare EC2 vs Compute Engine, S3 vs Cloud Storage, RDS vs Cloud SQL, EKS vs GKE costs. Free real-time TCO calculator.',
     keywords: ['AWS vs GCP', 'AWS vs Google Cloud', 'EC2 vs Compute Engine', 'S3 vs Cloud Storage', 'RDS vs Cloud SQL', 'EKS vs GKE', 'cloud pricing comparison'],
+    providerA: CloudProvider.AWS,
+    providerB: CloudProvider.GCP,
+    features: [
+      { feature: 'Automatic Sustained Use Discounts (SUD)', category: 'Compute', providerAVal: 'Requires upfront Savings Plan commitment', providerBVal: 'Automatic up to 30% discount on always-on VMs', winner: 'B' },
+      { feature: 'Custom Machine Sizing', category: 'Compute', providerAVal: 'Fixed predefined instance types only', providerBVal: 'Custom vCPU and RAM ratios without waste', winner: 'B' },
+      { feature: 'Managed Kubernetes (K8s)', category: 'Kubernetes', providerAVal: '$73/month management fee on all clusters', providerBVal: 'First zonal cluster is 100% free ($0/mo)', winner: 'B' },
+      { feature: 'Internet Egress Pricing', category: 'Networking', providerAVal: '$0.090 / GB (first 10 TB)', providerBVal: '$0.085 / GB (first 10 TB)', winner: 'B' },
+      { feature: 'Breadth of Specialized Instances', category: 'Compute', providerAVal: 'Largest catalog (P5, Inf2, Trn1, X2gd, Mac)', providerBVal: 'Strong AI/TPU catalog but fewer niche general types', winner: 'A' },
+      { feature: 'Global Network Ingress/Egress', category: 'Networking', providerAVal: 'Standard AWS global backbone', providerBVal: 'Google Premium Tier network (direct Google fiber)', winner: 'B' }
+    ],
     faqs: [
       {
         question: 'Is Google Cloud cheaper than AWS?',
@@ -72,11 +117,21 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     ]
   },
   'azure-vs-gcp': {
+    slug: 'azure-vs-gcp',
     slugTitle: 'Azure vs GCP',
     headline: 'Azure vs Google Cloud (GCP): Head-to-Head Pricing & TCO Analysis (2026)',
     summary: 'Detailed cost comparison of Microsoft Azure and Google Cloud Platform across Virtual Machines (Azure VMs vs Compute Engine), Object Storage (Azure Blob vs Cloud Storage), Managed Databases (Azure SQL vs Cloud SQL), Kubernetes (AKS vs GKE), and internet data egress.',
     metaDescription: 'Azure vs GCP pricing comparison 2026. Compare Azure VMs vs Compute Engine, Blob vs Cloud Storage, Azure SQL vs Cloud SQL, AKS vs GKE costs. Free TCO calculator.',
     keywords: ['Azure vs GCP', 'Azure vs Google Cloud', 'Azure VM vs Compute Engine', 'Azure Blob vs Cloud Storage', 'Azure SQL vs Cloud SQL', 'AKS vs GKE'],
+    providerA: CloudProvider.AZURE,
+    providerB: CloudProvider.GCP,
+    features: [
+      { feature: 'Windows Licensing Advantages', category: 'Licensing', providerAVal: 'Azure Hybrid Benefit cuts up to 55% with existing EA', providerBVal: 'Standard Windows Server hourly license surcharge', winner: 'A' },
+      { feature: 'Automatic Volume Discounts', category: 'Compute', providerAVal: 'Reserved Instances required', providerBVal: 'Automatic Sustained Use Discounts (up to 30%)', winner: 'B' },
+      { feature: 'Managed K8s Management Fee', category: 'Kubernetes', providerAVal: '$0 standard tier (all clusters free management)', providerBVal: 'First zonal cluster free, subsequent $73/mo', winner: 'A' },
+      { feature: 'Hot Object Storage Base Rate', category: 'Storage', providerAVal: '$0.018 / GB-month (Blob Hot)', providerBVal: '$0.020 / GB-month (GCS Standard)', winner: 'A' },
+      { feature: 'Custom VM Configurations', category: 'Compute', providerAVal: 'Pre-packaged VM sizes only', providerBVal: 'Custom Machine Types (exact vCPU & RAM)', winner: 'B' }
+    ],
     faqs: [
       {
         question: 'Is Azure or GCP cheaper for virtual machines?',
@@ -97,6 +152,7 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     ]
   },
   'ec2-vs-azure-vm-vs-compute-engine': {
+    slug: 'ec2-vs-azure-vm-vs-compute-engine',
     slugTitle: 'EC2 vs Azure VM vs Compute Engine',
     headline: 'EC2 vs Azure VM vs Google Compute Engine: Virtual Machine Pricing Comparison (2026)',
     summary: 'Direct compute pricing comparison of Amazon EC2, Azure Virtual Machines, and Google Compute Engine across general-purpose, compute-optimized, and memory-optimized instance families with On-Demand, Reserved, and Spot pricing models.',
@@ -114,6 +170,7 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     ]
   },
   's3-vs-azure-blob-vs-google-cloud-storage': {
+    slug: 's3-vs-azure-blob-vs-google-cloud-storage',
     slugTitle: 'S3 vs Azure Blob vs Cloud Storage',
     headline: 'S3 vs Azure Blob Storage vs Google Cloud Storage: Object Storage Pricing (2026)',
     summary: 'Comprehensive object storage pricing comparison across Amazon S3, Azure Blob Storage, and Google Cloud Storage — covering Standard/Hot, Cool/Infrequent Access, Cold/Archive tiers, read/write operation costs, and data retrieval fees.',
@@ -148,7 +205,25 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
   template: `
     <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       
-      <!-- Breadcrumbs (semantic nav with aria) -->
+      <!-- Sticky Comparison Switcher Bar -->
+      <nav aria-label="Comparison Selection Tabs" class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 scrollbar-none">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap mr-2">Compare:</span>
+        @for (tab of comparisonTabs; track tab.slug) {
+          <a 
+            [routerLink]="['/compare', tab.slug]" 
+            [class.bg-blue-600]="activeSlug === tab.slug"
+            [class.text-white]="activeSlug === tab.slug"
+            [class.border-blue-500]="activeSlug === tab.slug"
+            [class.bg-slate-800/80]="activeSlug !== tab.slug"
+            [class.text-slate-300]="activeSlug !== tab.slug"
+            [class.border-slate-700]="activeSlug !== tab.slug"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap border hover:border-slate-500 hover:text-white transition-all no-underline">
+            {{ tab.label }}
+          </a>
+        }
+      </nav>
+
+      <!-- Breadcrumbs -->
       <nav class="flex items-center gap-2 text-xs text-slate-400 font-semibold" aria-label="Breadcrumb">
         <a routerLink="/" class="hover:text-white transition-colors">Home</a>
         <span aria-hidden="true">/</span>
@@ -158,20 +233,190 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
       </nav>
 
       <!-- Editorial Intro Card -->
-      <header class="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800/80 border border-slate-700/80 p-6 sm:p-8 shadow-2xl">
+      <header class="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800/90 to-slate-900 border border-slate-700/80 p-6 sm:p-8 shadow-2xl">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold mb-3">
           <mat-icon class="!text-sm">analytics</mat-icon>
-          <span>Direct Head-to-Head Analysis</span>
+          <span>Direct Head-to-Head Benchmark (2026 Edition)</span>
         </div>
         
         <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight m-0">
           {{ pageData.headline }}
         </h1>
 
-        <p class="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed max-w-3xl">
+        <p class="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed max-w-3xl m-0">
           {{ pageData.summary }}
         </p>
       </header>
+
+      <!-- Dedicated Head-to-Head Duel Card (for 2-provider comparisons) -->
+      @if (pageData.providerA && pageData.providerB) {
+        @let provA = pageData.providerA;
+        @let provB = pageData.providerB;
+        @let totalA = store.matrix().providers[provA];
+        @let totalB = store.matrix().providers[provB];
+        @let diff = Math.abs(totalA.monthlyTotal - totalB.monthlyTotal);
+        @let winner = totalA.monthlyTotal <= totalB.monthlyTotal ? provA : provB;
+        @let percent = Math.max(totalA.monthlyTotal, totalB.monthlyTotal) > 0 
+          ? Math.round((diff / Math.max(totalA.monthlyTotal, totalB.monthlyTotal)) * 100) 
+          : 0;
+
+        <section class="rounded-2xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-2xl space-y-6">
+          
+          <!-- Winner Verdict Banner -->
+          <div class="p-5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-800/80 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                <mat-icon class="!text-2xl">emoji_events</mat-icon>
+              </div>
+              <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Current Workload Verdict</div>
+                <div class="text-lg sm:text-xl font-black text-white">
+                  {{ providerMetas[winner].name }} is cheaper by {{ store.formatMoney(diff) }}/mo
+                  <span class="text-xs font-bold text-emerald-400">({{ percent }}% savings)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-xs text-slate-400 bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-700/60">
+              Region: <strong class="text-white">{{ store.config().region }}</strong> &bull; Currency: <strong class="text-white">{{ store.selectedCurrency() }}</strong>
+            </div>
+          </div>
+
+          <!-- Side-by-Side 2 Provider Scorecard -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Provider A Card -->
+            <div 
+              [class.ring-2]="winner === provA"
+              [class.ring-emerald-400]="winner === provA"
+              class="rounded-2xl bg-slate-800/60 border border-slate-700 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold"
+                       [style.background-color]="providerMetas[provA].badgeBg"
+                       [style.color]="providerMetas[provA].primaryColor">
+                    <mat-icon class="!text-base">{{ providerMetas[provA].icon }}</mat-icon>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-white m-0">{{ providerMetas[provA].name }}</h3>
+                    <span class="text-xs text-slate-400">{{ providerMetas[provA].shortName }} Benchmark</span>
+                  </div>
+                </div>
+                @if (winner === provA) {
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-xs uppercase">Winner</span>
+                }
+              </div>
+
+              <div class="text-3xl font-black text-white tracking-tight my-3">
+                {{ store.formatMoney(totalA.monthlyTotal) }}<span class="text-xs text-slate-400 font-normal"> / month</span>
+              </div>
+              <div class="text-xs text-slate-400 mb-4">
+                Annual TCO: <strong class="text-slate-200">{{ store.formatMoney(totalA.annualTotal) }}</strong>
+              </div>
+
+              <div class="space-y-2 border-t border-slate-700/60 pt-3 text-xs">
+                @for (cat of activeCategoryKeys; track cat) {
+                  @if (store.config().activeCategories[cat]) {
+                    <div class="flex items-center justify-between text-slate-300">
+                      <span class="text-slate-400">{{ categoryMetas[cat].name.split('/')[0] }}</span>
+                      <span class="font-bold text-white">{{ store.formatMoney(totalA.categoryBreakdown[cat]) }}</span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- Provider B Card -->
+            <div 
+              [class.ring-2]="winner === provB"
+              [class.ring-emerald-400]="winner === provB"
+              class="rounded-2xl bg-slate-800/60 border border-slate-700 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold"
+                       [style.background-color]="providerMetas[provB].badgeBg"
+                       [style.color]="providerMetas[provB].primaryColor">
+                    <mat-icon class="!text-base">{{ providerMetas[provB].icon }}</mat-icon>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-white m-0">{{ providerMetas[provB].name }}</h3>
+                    <span class="text-xs text-slate-400">{{ providerMetas[provB].shortName }} Benchmark</span>
+                  </div>
+                </div>
+                @if (winner === provB) {
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-xs uppercase">Winner</span>
+                }
+              </div>
+
+              <div class="text-3xl font-black text-white tracking-tight my-3">
+                {{ store.formatMoney(totalB.monthlyTotal) }}<span class="text-xs text-slate-400 font-normal"> / month</span>
+              </div>
+              <div class="text-xs text-slate-400 mb-4">
+                Annual TCO: <strong class="text-slate-200">{{ store.formatMoney(totalB.annualTotal) }}</strong>
+              </div>
+
+              <div class="space-y-2 border-t border-slate-700/60 pt-3 text-xs">
+                @for (cat of activeCategoryKeys; track cat) {
+                  @if (store.config().activeCategories[cat]) {
+                    <div class="flex items-center justify-between text-slate-300">
+                      <span class="text-slate-400">{{ categoryMetas[cat].name.split('/')[0] }}</span>
+                      <span class="font-bold text-white">{{ store.formatMoney(totalB.categoryBreakdown[cat]) }}</span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature & Architectural Capabilities Duel Table -->
+          @if (pageData.features && pageData.features.length > 0) {
+            <div class="mt-8 pt-6 border-t border-slate-800">
+              <h3 class="text-lg font-bold text-white tracking-tight mb-4 flex items-center gap-2 m-0">
+                <mat-icon class="text-blue-400">compare_arrows</mat-icon>
+                <span>{{ providerMetas[provA].shortName }} vs {{ providerMetas[provB].shortName }} Feature & Capability Matrix</span>
+              </h3>
+
+              <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-800 bg-slate-800/60 font-bold text-slate-300 uppercase tracking-wider">
+                      <th class="py-3 px-4">Feature / Capability</th>
+                      <th class="py-3 px-4">{{ providerMetas[provA].name }}</th>
+                      <th class="py-3 px-4">{{ providerMetas[provB].name }}</th>
+                      <th class="py-3 px-4 text-center">Advantage</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    @for (row of pageData.features; track row.feature) {
+                      <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 px-4 font-semibold text-white">
+                          <div>{{ row.feature }}</div>
+                          <span class="text-[10px] text-slate-500 font-normal uppercase">{{ row.category }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-300">{{ row.providerAVal }}</td>
+                        <td class="py-3 px-4 text-slate-300">{{ row.providerBVal }}</td>
+                        <td class="py-3 px-4 text-center">
+                          @if (row.winner === 'A') {
+                            <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30">
+                              {{ providerMetas[provA].shortName }}
+                            </span>
+                          } @else if (row.winner === 'B') {
+                            <span class="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 font-bold border border-sky-500/30">
+                              {{ providerMetas[provB].shortName }}
+                            </span>
+                          } @else {
+                            <span class="text-slate-500 font-bold">Tie</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+        </section>
+      }
 
       <!-- Live Interactive Cost Matrix -->
       <section aria-labelledby="matrix-heading">
@@ -208,17 +453,38 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     </article>
   `
 })
-export class ProviderComparisonComponent implements OnInit {
+export class ProviderComparisonComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly seoService = inject(SeoService);
   protected readonly store = inject(EstimatorStore);
 
-  pageData!: ComparisonPageData;
+  readonly Math = Math;
+  readonly comparisonTabs = COMPARISON_TABS;
+  readonly providerMetas = PROVIDER_METAS;
+  readonly categoryMetas = SERVICE_CATEGORY_METAS;
+  readonly activeCategoryKeys = [
+    ServiceCategory.COMPUTE,
+    ServiceCategory.STORAGE,
+    ServiceCategory.DATABASE,
+    ServiceCategory.NETWORKING,
+    ServiceCategory.KUBERNETES
+  ];
+
+  activeSlug: string = 'aws-vs-azure';
+  pageData: ComparisonPageData = COMPARISON_PAGES['aws-vs-azure'];
+  private routeSub?: Subscription;
 
   ngOnInit(): void {
-    const slug = this.route.snapshot.paramMap.get('slug') || 'aws-vs-azure';
-    this.pageData = COMPARISON_PAGES[slug] || COMPARISON_PAGES['aws-vs-azure'];
-    this.setupSeo(slug);
+    this.routeSub = this.route.paramMap.subscribe(params => {
+      const slug = params.get('slug') || 'aws-vs-azure';
+      this.activeSlug = slug;
+      this.pageData = COMPARISON_PAGES[slug] || COMPARISON_PAGES['aws-vs-azure'];
+      this.setupSeo(slug);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
   }
 
   private setupSeo(slug: string): void {

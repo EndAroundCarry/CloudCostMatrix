@@ -34,9 +34,15 @@ import { EstimatorStore } from './state/estimator.store';
             <span>Independent multi-cloud cost calculator</span>
           </div>
           <nav aria-label="Footer Navigation" class="flex flex-wrap items-center gap-4 text-slate-400">
+            <span class="text-slate-500 font-bold">Compare:</span>
             <a routerLink="/compare/aws-vs-azure" class="hover:text-white transition-colors">AWS vs Azure</a>
             <a routerLink="/compare/aws-vs-gcp" class="hover:text-white transition-colors">AWS vs GCP</a>
             <a routerLink="/compare/azure-vs-gcp" class="hover:text-white transition-colors">Azure vs GCP</a>
+            <span class="text-slate-500 font-bold">Blueprints:</span>
+            <a routerLink="/blueprints/saas-starter-mvp" class="hover:text-white transition-colors">SaaS MVP</a>
+            <a routerLink="/blueprints/ecommerce-high-traffic" class="hover:text-white transition-colors">E-Commerce</a>
+            <a routerLink="/blueprints/enterprise-microservices-k8s" class="hover:text-white transition-colors">K8s Cluster</a>
+            <a routerLink="/blueprints/ai-ml-inference-cluster" class="hover:text-white transition-colors">AI/ML Inference</a>
             <a href="/sitemap.xml" class="hover:text-white transition-colors" target="_blank" rel="noopener">Sitemap</a>
           </nav>
         </div>

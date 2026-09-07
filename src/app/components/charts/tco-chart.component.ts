@@ -33,7 +33,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
               <span class="w-2.5 h-2.5 rounded-full bg-[#FF9900]"></span>
               AWS (Amazon Web Services)
             </span>
-            <span class="text-white font-bold">\${{ awsTotal.toLocaleString() }}/mo</span>
+            <span class="text-white font-bold">{{ store.formatMoney(awsTotal) }}/mo</span>
           </div>
           <div class="w-full bg-slate-800 rounded-full h-3.5 overflow-hidden">
             <div 
@@ -51,7 +51,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
               <span class="w-2.5 h-2.5 rounded-full bg-[#0078D4]"></span>
               Microsoft Azure
             </span>
-            <span class="text-white font-bold">\${{ azureTotal.toLocaleString() }}/mo</span>
+            <span class="text-white font-bold">{{ store.formatMoney(azureTotal) }}/mo</span>
           </div>
           <div class="w-full bg-slate-800 rounded-full h-3.5 overflow-hidden">
             <div 
@@ -69,7 +69,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
               <span class="w-2.5 h-2.5 rounded-full bg-[#4285F4]"></span>
               Google Cloud Platform
             </span>
-            <span class="text-white font-bold">\${{ gcpTotal.toLocaleString() }}/mo</span>
+            <span class="text-white font-bold">{{ store.formatMoney(gcpTotal) }}/mo</span>
           </div>
           <div class="w-full bg-slate-800 rounded-full h-3.5 overflow-hidden">
             <div 
@@ -85,19 +85,19 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
         <div class="rounded-xl bg-slate-800/40 p-3 border border-slate-700/50">
           <div class="text-[11px] font-bold text-slate-400">AWS 3-Yr TCO</div>
           <div class="text-sm sm:text-base font-extrabold text-amber-400 mt-0.5">
-            \${{ store.matrix().providers[CloudProvider.AWS].threeYearTotal.toLocaleString() }}
+            {{ store.formatMoney(store.matrix().providers[CloudProvider.AWS].threeYearTotal) }}
           </div>
         </div>
         <div class="rounded-xl bg-slate-800/40 p-3 border border-slate-700/50">
           <div class="text-[11px] font-bold text-slate-400">Azure 3-Yr TCO</div>
           <div class="text-sm sm:text-base font-extrabold text-blue-400 mt-0.5">
-            \${{ store.matrix().providers[CloudProvider.AZURE].threeYearTotal.toLocaleString() }}
+            {{ store.formatMoney(store.matrix().providers[CloudProvider.AZURE].threeYearTotal) }}
           </div>
         </div>
         <div class="rounded-xl bg-slate-800/40 p-3 border border-slate-700/50">
           <div class="text-[11px] font-bold text-slate-400">GCP 3-Yr TCO</div>
           <div class="text-sm sm:text-base font-extrabold text-sky-400 mt-0.5">
-            \${{ store.matrix().providers[CloudProvider.GCP].threeYearTotal.toLocaleString() }}
+            {{ store.formatMoney(store.matrix().providers[CloudProvider.GCP].threeYearTotal) }}
           </div>
         </div>
       </div>

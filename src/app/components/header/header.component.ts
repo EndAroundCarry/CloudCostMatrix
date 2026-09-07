@@ -1,16 +1,22 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EstimatorStore } from '../../state/estimator.store';
 import { AUTH_SERVICE_TOKEN } from '../../core/repositories/auth.service.interface';
+import { 
+  CurrencyCode, 
+  CURRENCY_DEFINITIONS, 
+  RegionId, 
+  REGION_DEFINITIONS 
+} from '../../core/models/pricing.model';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [RouterLink, RouterLinkActive, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule],
   template: `
     <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/90 border-b border-slate-800">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -30,26 +36,52 @@ import { AUTH_SERVICE_TOKEN } from '../../core/repositories/auth.service.interfa
         </a>
 
         <!-- Quick Provider Badges & Nav -->
-        <div class="hidden md:flex items-center gap-3">
-          <a routerLink="/compare/aws-vs-azure" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+        <div class="hidden lg:flex items-center gap-2">
+          <a routerLink="/compare/aws-vs-azure" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
             AWS vs Azure
           </a>
-          <a routerLink="/compare/aws-vs-gcp" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+          <a routerLink="/compare/aws-vs-gcp" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
             AWS vs GCP
           </a>
-          <a routerLink="/compare/azure-vs-gcp" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+          <a routerLink="/compare/azure-vs-gcp" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
             Azure vs GCP
           </a>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Region & Currency Selector Controls + Action Buttons -->
         <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Region Dropdown -->
+          <div class="relative hidden sm:block">
+            <select 
+              [value]="store.config().region" 
+              (change)="onRegionChange($event)"
+              class="appearance-none bg-slate-800/90 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold pr-7 focus:outline-none focus:border-blue-500 cursor-pointer">
+              @for (reg of regionList; track reg.id) {
+                <option [value]="reg.id">{{ reg.flag }} {{ reg.shortLocation }} ({{ reg.pricingMultiplier }}x)</option>
+              }
+            </select>
+            <mat-icon class="!text-xs absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</mat-icon>
+          </div>
+
+          <!-- Currency Dropdown -->
+          <div class="relative">
+            <select 
+              [value]="store.selectedCurrency()" 
+              (change)="onCurrencyChange($event)"
+              class="appearance-none bg-slate-800/90 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold pr-6 focus:outline-none focus:border-blue-500 cursor-pointer">
+              @for (cur of currencyList; track cur.code) {
+                <option [value]="cur.code">{{ cur.symbol }} {{ cur.code }}</option>
+              }
+            </select>
+            <mat-icon class="!text-xs absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</mat-icon>
+          </div>
+
           <button 
             mat-stroked-button 
             class="!border-slate-700 !text-slate-200 !bg-slate-800/50 hover:!bg-slate-700"
             (click)="openShareModal()">
             <mat-icon class="!mr-1 text-sky-400">share</mat-icon>
-            <span>Share</span>
+            <span class="hidden sm:inline">Share</span>
           </button>
 
           <button 
@@ -59,12 +91,12 @@ import { AUTH_SERVICE_TOKEN } from '../../core/repositories/auth.service.interfa
             @if (authService.isAuthenticated() && !authService.isAnonymous()) {
               <span class="flex items-center gap-1">
                 <mat-icon class="!mr-1">account_circle</mat-icon>
-                <span>Dashboard</span>
+                <span class="hidden sm:inline">Dashboard</span>
               </span>
             } @else {
               <span class="flex items-center gap-1">
                 <mat-icon class="!mr-1">cloud_sync</mat-icon>
-                <span>Sign In</span>
+                <span class="hidden sm:inline">Sign In</span>
               </span>
             }
           </button>
@@ -77,6 +109,19 @@ import { AUTH_SERVICE_TOKEN } from '../../core/repositories/auth.service.interfa
 export class HeaderComponent {
   protected readonly store = inject(EstimatorStore);
   protected readonly authService = inject(AUTH_SERVICE_TOKEN);
+
+  readonly regionList = Object.values(REGION_DEFINITIONS);
+  readonly currencyList = Object.values(CURRENCY_DEFINITIONS);
+
+  onRegionChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value as RegionId;
+    this.store.setRegion(val);
+  }
+
+  onCurrencyChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value as CurrencyCode;
+    this.store.setCurrency(val);
+  }
 
   openShareModal(): void {
     this.store.isShareModalOpen.set(true);

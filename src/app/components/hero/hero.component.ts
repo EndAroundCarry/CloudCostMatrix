@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EstimatorStore } from '../../state/estimator.store';
@@ -8,7 +9,7 @@ import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../../core/model
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule],
   template: `
     <section class="relative pt-10 pb-8 px-4 sm:px-6 lg:px-8 border-b border-slate-800/80 bg-gradient-to-b from-slate-900 via-slate-900/60 to-slate-950 overflow-hidden">
       
@@ -45,19 +46,24 @@ import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../../core/model
 
           <div class="flex flex-wrap justify-center gap-2.5 max-w-4xl">
             @for (bp of blueprints; track bp.id) {
-              <button
-                type="button"
-                (click)="store.applyBlueprint(bp)"
-                [class.ring-2]="store.activeBlueprint()?.id === bp.id"
-                [class.ring-blue-500]="store.activeBlueprint()?.id === bp.id"
-                [class.bg-blue-600]="store.activeBlueprint()?.id === bp.id"
-                [class.text-white]="store.activeBlueprint()?.id === bp.id"
-                [class.bg-slate-800]="store.activeBlueprint()?.id !== bp.id"
-                [class.text-slate-200]="store.activeBlueprint()?.id !== bp.id"
-                class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border border-slate-700/80 hover:border-slate-500 transition-all hover:scale-[1.02] shadow-sm cursor-pointer">
-                <mat-icon class="!text-lg">{{ bp.icon }}</mat-icon>
-                <span>{{ bp.name }}</span>
-              </button>
+              <div class="flex items-center rounded-xl bg-slate-800 border border-slate-700/80 shadow-sm overflow-hidden">
+                <button
+                  type="button"
+                  (click)="store.applyBlueprint(bp)"
+                  [class.bg-blue-600]="store.activeBlueprint()?.id === bp.id"
+                  [class.text-white]="store.activeBlueprint()?.id === bp.id"
+                  [class.text-slate-200]="store.activeBlueprint()?.id !== bp.id"
+                  class="px-3.5 py-2 text-xs sm:text-sm font-semibold flex items-center gap-2 hover:bg-slate-700 transition-colors border-none bg-transparent cursor-pointer">
+                  <mat-icon class="!text-lg">{{ bp.icon }}</mat-icon>
+                  <span>{{ bp.name }}</span>
+                </button>
+                <a 
+                  [routerLink]="['/blueprints', bp.slug]"
+                  [title]="'View detailed ' + bp.name + ' architecture and TCO breakdown'"
+                  class="px-2 py-2 text-slate-400 hover:text-white hover:bg-slate-700 border-l border-slate-700/80 transition-colors flex items-center justify-center no-underline">
+                  <mat-icon class="!text-sm">open_in_new</mat-icon>
+                </a>
+              </div>
             }
           </div>
         </div>

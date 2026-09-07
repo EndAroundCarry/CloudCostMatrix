@@ -119,13 +119,14 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
 
       <!-- Line-by-Line Service Detail Table -->
       <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl">
-        <table class="w-full text-left text-sm border-collapse">
+        <table class="w-full text-left text-sm border-collapse" aria-label="Cloud Cost Comparison Table across AWS, Azure, and Google Cloud">
+          <caption class="sr-only">Detailed breakdown of cloud costs by service category across AWS, Azure, and GCP</caption>
           <thead>
             <tr class="border-b border-slate-800 bg-slate-800/50 text-xs font-bold text-slate-400 uppercase tracking-wider">
-              <th class="py-3.5 px-4 sm:px-6">Service Category</th>
-              <th class="py-3.5 px-4 text-amber-400">AWS (Amazon)</th>
-              <th class="py-3.5 px-4 text-blue-400">Azure (Microsoft)</th>
-              <th class="py-3.5 px-4 text-sky-400">GCP (Google Cloud)</th>
+              <th scope="col" class="py-3.5 px-4 sm:px-6">Service Category</th>
+              <th scope="col" class="py-3.5 px-4 text-amber-400">AWS (Amazon)</th>
+              <th scope="col" class="py-3.5 px-4 text-blue-400">Azure (Microsoft)</th>
+              <th scope="col" class="py-3.5 px-4 text-sky-400">GCP (Google Cloud)</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/60">

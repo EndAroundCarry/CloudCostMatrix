@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, RouterLink } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 import { EstimatorStore } from './state/estimator.store';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent],
+  imports: [RouterOutlet, RouterLink, HeaderComponent],
   template: `
     <div class="min-h-screen flex flex-col bg-[#0b1120] text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
       <!-- Global Navigation Header -->
@@ -33,12 +33,12 @@ import { EstimatorStore } from './state/estimator.store';
             <span>&bull;</span>
             <span>Independent multi-cloud cost calculator</span>
           </div>
-          <div class="flex flex-wrap items-center gap-4 text-slate-400">
-            <a href="/compare/aws-vs-azure" class="hover:text-white transition-colors">AWS vs Azure</a>
-            <a href="/compare/aws-vs-gcp" class="hover:text-white transition-colors">AWS vs GCP</a>
-            <a href="/compare/azure-vs-gcp" class="hover:text-white transition-colors">Azure vs GCP</a>
-            <a href="/sitemap.xml" class="hover:text-white transition-colors" target="_blank">Sitemap</a>
-          </div>
+          <nav aria-label="Footer Navigation" class="flex flex-wrap items-center gap-4 text-slate-400">
+            <a routerLink="/compare/aws-vs-azure" class="hover:text-white transition-colors">AWS vs Azure</a>
+            <a routerLink="/compare/aws-vs-gcp" class="hover:text-white transition-colors">AWS vs GCP</a>
+            <a routerLink="/compare/azure-vs-gcp" class="hover:text-white transition-colors">Azure vs GCP</a>
+            <a href="/sitemap.xml" class="hover:text-white transition-colors" target="_blank" rel="noopener">Sitemap</a>
+          </nav>
         </div>
       </footer>
     </div>

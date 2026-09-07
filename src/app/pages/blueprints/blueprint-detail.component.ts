@@ -11,11 +11,12 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
 import { CostCalculatorEngine } from '../../core/engine/cost-calculator.engine';
 import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
 import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/service-category.enum';
+import { CostTopologyComponent } from '../../components/cost-topology/cost-topology.component';
 
 @Component({
   selector: 'app-blueprint-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, CostTopologyComponent],
   template: `
     <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       
@@ -121,102 +122,16 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
         </div>
       </section>
 
-      <!-- Visual Architecture Topology Flow -->
+      <!-- Interactive Visual Cost Topology & Budget Hotspots (Feature 4) -->
       <section class="rounded-2xl bg-slate-900/80 border border-slate-800 p-6 sm:p-8 shadow-xl">
-        <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight mb-6 flex items-center gap-2 m-0">
+        <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight mb-2 flex items-center gap-2 m-0">
           <mat-icon class="text-blue-400">hub</mat-icon>
-          <span>Architecture Topology & Data Flow</span>
+          <span>Cost Topology & Budget Hotspot Map</span>
         </h2>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
-          
-          <!-- Step 1: Ingress / Networking -->
-          <div class="rounded-xl bg-slate-800/60 border border-slate-700 p-4 relative flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Layer 1</span>
-                <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-              </div>
-              <div class="font-bold text-white text-sm flex items-center gap-1.5 mb-2">
-                <mat-icon class="text-sky-400 !text-base">alt_route</mat-icon>
-                <span>Edge & Ingress</span>
-              </div>
-              <p class="text-xs text-slate-300 leading-relaxed m-0">
-                {{ blueprint.config.networking.loadBalancersCount }}x High-Availability Load Balancers handling incoming traffic.
-              </p>
-            </div>
-            <div class="mt-4 pt-3 border-t border-slate-700/60 text-[11px] text-slate-400">
-              Egress: <strong class="text-white">{{ blueprint.config.networking.egressGbPerMonth.toLocaleString() }} GB/mo</strong>
-            </div>
-          </div>
-
-          <!-- Step 2: Compute / K8s -->
-          <div class="rounded-xl bg-slate-800/60 border border-slate-700 p-4 relative flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Layer 2</span>
-                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-              </div>
-              <div class="font-bold text-white text-sm flex items-center gap-1.5 mb-2">
-                <mat-icon class="text-amber-400 !text-base">dns</mat-icon>
-                <span>Compute Tier</span>
-              </div>
-              @if (blueprint.config.activeCategories['KUBERNETES']) {
-                <p class="text-xs text-slate-300 leading-relaxed m-0">
-                  {{ blueprint.config.kubernetes.clustersCount }}x Managed K8s Cluster with {{ blueprint.config.kubernetes.workerNodesPerCluster }}x Nodes ({{ blueprint.config.kubernetes.workerVcpu }} vCPU, {{ blueprint.config.kubernetes.workerRamGb }} GB RAM each).
-                </p>
-              } @else {
-                <p class="text-xs text-slate-300 leading-relaxed m-0">
-                  {{ blueprint.config.compute.count }}x Virtual Machines ({{ blueprint.config.compute.vCpu }} vCPU, {{ blueprint.config.compute.ramGb }} GB RAM) running {{ blueprint.config.compute.os }}.
-                </p>
-              }
-            </div>
-            <div class="mt-4 pt-3 border-t border-slate-700/60 text-[11px] text-slate-400">
-              Commitment: <strong class="text-white">{{ blueprint.config.compute.commitment.replace(/_/g, ' ') }}</strong>
-            </div>
-          </div>
-
-          <!-- Step 3: Database -->
-          <div class="rounded-xl bg-slate-800/60 border border-slate-700 p-4 relative flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Layer 3</span>
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              </div>
-              <div class="font-bold text-white text-sm flex items-center gap-1.5 mb-2">
-                <mat-icon class="text-emerald-400 !text-base">storage</mat-icon>
-                <span>Managed Database</span>
-              </div>
-              <p class="text-xs text-slate-300 leading-relaxed m-0">
-                Managed {{ blueprint.config.database.engine }} ({{ blueprint.config.database.vCpu }} vCPU, {{ blueprint.config.database.ramGb }} GB RAM). Multi-AZ: {{ blueprint.config.database.multiAz ? 'Enabled' : 'Single AZ' }}.
-              </p>
-            </div>
-            <div class="mt-4 pt-3 border-t border-slate-700/60 text-[11px] text-slate-400">
-              Storage: <strong class="text-white">{{ blueprint.config.database.storageGb }} GB SSD</strong>
-            </div>
-          </div>
-
-          <!-- Step 4: Storage -->
-          <div class="rounded-xl bg-slate-800/60 border border-slate-700 p-4 relative flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Layer 4</span>
-                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
-              </div>
-              <div class="font-bold text-white text-sm flex items-center gap-1.5 mb-2">
-                <mat-icon class="text-purple-400 !text-base">cloud_queue</mat-icon>
-                <span>Object Storage</span>
-              </div>
-              <p class="text-xs text-slate-300 leading-relaxed m-0">
-                {{ blueprint.config.storage.capacityGb.toLocaleString() }} GB {{ blueprint.config.storage.tier }} Object Storage for application media, assets, and backups.
-              </p>
-            </div>
-            <div class="mt-4 pt-3 border-t border-slate-700/60 text-[11px] text-slate-400">
-              I/O: <strong class="text-white">{{ blueprint.config.storage.readOpsThousands }}k Reads/mo</strong>
-            </div>
-          </div>
-
-        </div>
+        <p class="text-xs text-slate-400 mb-6 m-0">
+          Visual data flow with live budget allocation for this blueprint — the red-hot node is the largest cost driver.
+        </p>
+        <app-cost-topology [config]="blueprint.config"></app-cost-topology>
       </section>
 
       <!-- Other Workload Blueprints -->

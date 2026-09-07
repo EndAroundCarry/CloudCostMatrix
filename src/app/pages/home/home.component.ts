@@ -1,12 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { HeroComponent } from '../../components/hero/hero.component';
 import { MatrixTableComponent } from '../../components/matrix-table/matrix-table.component';
 import { ConfiguratorComponent } from '../../components/configurator/configurator.component';
 import { TcoChartComponent } from '../../components/charts/tco-chart.component';
 import { RecommendationsComponent } from '../../components/recommendations/recommendations.component';
 import { ExportShareModalComponent } from '../../components/export-share-modal/export-share-modal.component';
+import { CostTopologyComponent } from '../../components/cost-topology/cost-topology.component';
 import { EstimatorStore } from '../../state/estimator.store';
 import { SeoService } from '../../core/services/seo.service';
 import { SchemaGenerator } from '../../core/seo/schema-generator';
@@ -17,12 +19,14 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
   imports: [
     CommonModule,
     MatIconModule,
+    MatButtonModule,
     HeroComponent,
     MatrixTableComponent,
     ConfiguratorComponent,
     TcoChartComponent,
     RecommendationsComponent,
-    ExportShareModalComponent
+    ExportShareModalComponent,
+    CostTopologyComponent
   ],
   template: `
     <div class="space-y-8 pb-16">
@@ -31,6 +35,39 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
 
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
+        <!-- Architecture Management Action Bar -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 px-5 py-4">
+          <div>
+            <div class="text-sm font-bold text-white flex items-center gap-2 m-0">
+              <mat-icon class="text-amber-400 !text-base">folder_special</mat-icon>
+              Architecture Library
+            </div>
+            <p class="text-xs text-slate-400 m-0 mt-0.5">
+              Save, branch, and compare scenarios against your current matrix — guest-first with zero signup.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button mat-stroked-button class="!border-slate-600 !text-slate-200 !bg-slate-800/40" (click)="store.isSavedEstimatesOpen.set(true)">
+              <mat-icon class="!mr-1 text-amber-400 !text-sm">bookmarks</mat-icon>
+              Saved Architectures
+              @if (store.savedEstimateCount() > 0) {
+                <span class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">{{ store.savedEstimateCount() }}</span>
+              }
+            </button>
+            <button mat-stroked-button class="!border-slate-600 !text-slate-200 !bg-slate-800/40" (click)="store.openDiffModal()">
+              <mat-icon class="!mr-1 text-sky-400 !text-sm">compare_arrows</mat-icon>
+              A vs B Diff
+            </button>
+            <button mat-flat-button class="!bg-gradient-to-r !from-amber-500 !to-orange-500 !text-slate-950 !font-bold shadow-lg shadow-amber-500/20" (click)="store.openSaveDialog()">
+              <mat-icon class="!mr-1 !text-sm">bookmark_add</mat-icon>
+              Save
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Visual Cost Topology (Feature 4) -->
+        <app-cost-topology></app-cost-topology>
+
         <!-- Live Side-by-Side Matrix Table -->
         <app-matrix-table></app-matrix-table>
 
@@ -88,7 +125,7 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
 
       </main>
 
-      <!-- Modals -->
+      <!-- Share modal (kept page-local) -->
       <app-export-share-modal></app-export-share-modal>
     </div>
   `
@@ -121,13 +158,21 @@ export class HomeComponent implements OnInit {
     {
       question: 'How accurate are the pricing estimates?',
       answer: 'CloudCostMatrix uses benchmark pricing data sourced from official AWS, Azure, and GCP public pricing feeds, updated regularly via automated synchronization. Actual costs may vary based on specific instance availability, negotiated enterprise agreements, and regional pricing differences. The estimates provide directional accuracy for architecture planning and cloud provider selection.'
+    },
+    {
+      question: 'Can I save and compare multiple cloud architectures?',
+      answer: 'Yes. You can save unlimited architecture estimates — guest-first and 100% private in your browser with no signup required. The Saved Architectures library lets you reload, rename, duplicate, and branch any scenario, then run an Architecture A vs B diff that highlights specification changes, per-provider monthly cost deltas, 3-year TCO projections, and migration ROI. Sign in with Google to sync your library across devices.'
+    },
+    {
+      question: 'How fresh is the cloud pricing data?',
+      answer: 'CloudCostMatrix bundles an automated price-sync pipeline that ingests the official Azure Retail Prices API, the AWS Price List bulk feeds (S3 tiers), and the GCP Cloud Billing Catalog. A freshness badge in the header shows exactly when pricing was last verified — no stale month-old guesswork, and zero runtime API cost since the catalog is compiled into the app.'
     }
   ];
 
   ngOnInit(): void {
     this.seoService.updateTags({
       title: 'CloudCostMatrix — Free AWS vs Azure vs GCP Cloud Cost Estimator (2026)',
-      description: 'Free cloud cost calculator comparing AWS, Microsoft Azure, and Google Cloud Platform pricing side-by-side. Estimate Compute (EC2, Azure VM, GCE), Storage (S3, Blob, GCS), Database (RDS, Azure SQL, Cloud SQL), Kubernetes (EKS, AKS, GKE), and Egress TCO in real-time.',
+      description: 'Free cloud cost calculator comparing AWS, Microsoft Azure, and Google Cloud Platform pricing side-by-side. Estimate Compute (EC2, Azure VM, GCE), Storage (S3, Blob, GCS), Database (RDS, Azure SQL, Cloud SQL), Kubernetes (EKS, AKS, GKE), and Egress TCO in real-time. Save unlimited architecture scenarios, run A vs B migration diffs, and export Slack-ready summaries — no signup required.',
       keywords: [
         'cloud cost calculator',
         'AWS vs Azure',
@@ -142,7 +187,12 @@ export class HomeComponent implements OnInit {
         'multi-cloud cost comparison 2026',
         'cloud migration cost',
         'EKS vs AKS vs GKE',
-        'S3 vs Blob vs GCS'
+        'S3 vs Blob vs GCS',
+        'saved architecture comparison',
+        'cloud architecture A vs B diff',
+        'cloud cost topology',
+        'live cloud pricing feed',
+        'cloud FinOps calculator'
       ],
       canonicalUrl: 'https://cloudcostmatrix.com/',
       structuredDataJson: [

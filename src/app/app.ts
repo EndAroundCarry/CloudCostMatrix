@@ -1,12 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
+import { SavedEstimatesModalComponent } from './components/saved-estimates-modal/saved-estimates-modal.component';
+import { ArchitectureDiffModalComponent } from './components/architecture-diff-modal/architecture-diff-modal.component';
 import { EstimatorStore } from './state/estimator.store';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, HeaderComponent],
+  imports: [RouterOutlet, RouterLink, HeaderComponent, SavedEstimatesModalComponent, ArchitectureDiffModalComponent],
   template: `
     <div class="min-h-screen flex flex-col bg-[#0b1120] text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
       <!-- Global Navigation Header -->
@@ -16,6 +18,10 @@ import { EstimatorStore } from './state/estimator.store';
       <div class="flex-1">
         <router-outlet></router-outlet>
       </div>
+
+      <!-- Global modals (accessible from any route) -->
+      <app-saved-estimates-modal></app-saved-estimates-modal>
+      <app-architecture-diff-modal></app-architecture-diff-modal>
 
       <!-- Toast Notification Bar -->
       @if (store.toastMessage()) {

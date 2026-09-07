@@ -13,7 +13,7 @@ export class SchemaGenerator {
       'applicationCategory': 'BusinessApplication',
       'operatingSystem': 'All',
       'browserRequirements': 'Requires JavaScript',
-      'description': 'Free, real-time multi-cloud infrastructure cost estimator comparing AWS, Microsoft Azure, and Google Cloud Platform pricing side-by-side for Compute, Storage, Database, Kubernetes, and Egress.',
+      'description': 'Free, real-time multi-cloud infrastructure cost estimator comparing AWS, Microsoft Azure, and Google Cloud Platform pricing side-by-side for Compute, Storage, Database, Kubernetes, and Egress. Save unlimited architectures, diff migration scenarios, and export team-ready reports.',
       'offers': {
         '@type': 'Offer',
         'price': '0',
@@ -25,7 +25,12 @@ export class SchemaGenerator {
         'On-demand, 1-year reserved, 3-year reserved, and Spot instance pricing models',
         'Managed Kubernetes (EKS vs AKS vs GKE) cluster cost comparison',
         'Preconfigured architecture blueprints for SaaS, E-Commerce, Kubernetes, and AI workloads',
+        'Guest-first saved architecture library with rename, duplicate & branch — no signup required',
+        'Architecture A vs B scenario diffing with monthly / 3-year TCO deltas and migration ROI',
+        'Visual cost topology heatmap that highlights budget hotspots in real time',
+        'Automated live price sync from official Azure Retail, AWS Price List, and GCP Catalog feeds',
         'Instant zero-database URL sharing with LZ-String compression',
+        'Team exports: Slack/Teams summary, Markdown RFC table, and executive PDF print brief',
         'Exportable CSV and printable PDF comparison reports'
       ],
       'screenshot': 'https://cloudcostmatrix.com/og-preview.png',
@@ -139,7 +144,7 @@ export class SchemaGenerator {
           '@type': 'HowToStep',
           'position': 3,
           'name': 'Compare and Share Results',
-          'text': 'View the side-by-side cost matrix showing monthly and annual TCO across AWS, Azure, and GCP. Export as CSV, print as PDF, or share via instant compressed URL link — no sign-up required.'
+          'text': 'View the side-by-side cost matrix showing monthly and annual TCO across AWS, Azure, and GCP. Save architectures to your library, run an A vs B migration diff, export as CSV, copy a Slack or Markdown summary, print an executive PDF, or share via instant compressed URL link — no sign-up required.'
         }
       ],
       'totalTime': 'PT2M'

@@ -29,7 +29,22 @@ import {
           <div>
             <div class="flex items-center gap-2">
               <span class="font-extrabold text-lg text-white tracking-tight">CloudCostMatrix</span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-medium">2026 Live</span>
+              <!-- Live Pricing Freshness Badge -->
+              <span
+                [matTooltip]="pricingTooltip()"
+                matTooltipPosition="below"
+                class="text-[10px] px-2 py-0.5 rounded-full font-bold cursor-help border flex items-center gap-1"
+                [class.bg-emerald-500/15]="store.pricingMode() === 'live'"
+                [class.text-emerald-400]="store.pricingMode() === 'live'"
+                [class.border-emerald-500/30]="store.pricingMode() === 'live'"
+                [class.bg-blue-500/15]="store.pricingMode() === 'seed'"
+                [class.text-blue-400]="store.pricingMode() === 'seed'"
+                [class.border-blue-500/30]="store.pricingMode() === 'seed'">
+                <span class="w-1.5 h-1.5 rounded-full animate-pulse"
+                      [class.bg-emerald-400]="store.pricingMode() === 'live'"
+                      [class.bg-blue-400]="store.pricingMode() === 'seed'"></span>
+                {{ store.pricingLabel() }}
+              </span>
             </div>
             <p class="text-xs text-slate-400 hidden sm:block m-0">AWS vs. Azure vs. GCP TCO Estimator</p>
           </div>
@@ -78,6 +93,19 @@ import {
 
           <button 
             mat-stroked-button 
+            class="!border-slate-700 !text-slate-200 !bg-slate-800/50 hover:!bg-slate-700 relative"
+            (click)="openSavedEstimates()">
+            <mat-icon class="!mr-1 text-amber-400">bookmarks</mat-icon>
+            <span class="hidden sm:inline">Saved Architectures</span>
+            @if (store.savedEstimateCount() > 0) {
+              <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center shadow">
+                {{ store.savedEstimateCount() }}
+              </span>
+            }
+          </button>
+
+          <button 
+            mat-stroked-button 
             class="!border-slate-700 !text-slate-200 !bg-slate-800/50 hover:!bg-slate-700"
             (click)="openShareModal()">
             <mat-icon class="!mr-1 text-sky-400">share</mat-icon>
@@ -123,8 +151,22 @@ export class HeaderComponent {
     this.store.setCurrency(val);
   }
 
+  pricingTooltip(): string {
+    const mode = this.store.pricingMode();
+    if (mode === 'live') {
+      const stamp = this.store.pricingLastSyncedAt();
+      const date = stamp ? new Date(stamp).toUTCString() : 'unknown';
+      return `Live pricing feed synced ${date}\nSources: AWS S3 · Azure Retail · GCP Catalog\nApp bundled at build-time — zero runtime cost.`;
+    }
+    return 'Benchmark 2026 catalog (seed). Run scripts/sync-prices.mjs to fetch live cloud price feeds.';
+  }
+
   openShareModal(): void {
     this.store.isShareModalOpen.set(true);
+  }
+
+  openSavedEstimates(): void {
+    this.store.isSavedEstimatesOpen.set(true);
   }
 
   async handleAuthClick(): Promise<void> {

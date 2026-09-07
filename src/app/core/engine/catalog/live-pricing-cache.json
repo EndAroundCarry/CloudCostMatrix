@@ -1,0 +1,142 @@
+{
+  "meta": {
+    "mode": "live",
+    "lastSyncedAt": "2026-09-07T21:08:52.061Z",
+    "syncedBy": "scripts/sync-prices.mjs",
+    "sources": {
+      "AWS": "live@2026-09-07T21:08:52.061Z",
+      "AZURE": "live@2026-09-07T21:08:52.061Z",
+      "GCP": "seed"
+    }
+  },
+  "catalogs": {
+    "AWS": {
+      "provider": "AWS",
+      "region": "us-east-1 (N. Virginia)",
+      "compute": [],
+      "storage": {
+        "HOT": {
+          "tier": "HOT",
+          "costPerGbMonth": 0.023,
+          "costPer10kReads": 0.0004,
+          "costPer10kWrites": 0.005
+        },
+        "COOL": {
+          "tier": "COOL",
+          "costPerGbMonth": 0.0125,
+          "costPer10kReads": 0.001,
+          "costPer10kWrites": 0.01
+        },
+        "COLD": {
+          "tier": "COLD",
+          "costPerGbMonth": 0.004,
+          "costPer10kReads": 0.005,
+          "costPer10kWrites": 0.013
+        },
+        "ARCHIVE": {
+          "tier": "ARCHIVE",
+          "costPerGbMonth": 0.001,
+          "costPer10kReads": 0.05,
+          "costPer10kWrites": 0.03
+        }
+      },
+      "networking": {
+        "first10TbPerGb": 0.09,
+        "next40TbPerGb": 0.085,
+        "loadBalancerHourly": 0.0225,
+        "staticIpHourly": 0.005
+      },
+      "kubernetes": {
+        "managementHourlyFeePerCluster": 0.1,
+        "freeFirstCluster": false
+      }
+    },
+    "AZURE": {
+      "provider": "AZURE",
+      "region": "East US",
+      "compute": [
+        {
+          "family": "General Purpose (B/D-series)",
+          "name": "Standard_D8as_v5",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.344,
+          "hourly1YrReservedLinux": 0.2064,
+          "hourly3YrReservedLinux": 0.1376,
+          "hourlySpotLinux": 0.0688,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose (B/D-series)",
+          "name": "Standard_D2as_v5",
+          "vCpu": 2,
+          "ramGb": 8,
+          "hourlyOnDemandLinux": 0.086,
+          "hourly1YrReservedLinux": 0.0516,
+          "hourly3YrReservedLinux": 0.0344,
+          "hourlySpotLinux": 0.0172,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose (B/D-series)",
+          "name": "Standard_D4as_v5",
+          "vCpu": 4,
+          "ramGb": 16,
+          "hourlyOnDemandLinux": 0.172,
+          "hourly1YrReservedLinux": 0.1032,
+          "hourly3YrReservedLinux": 0.0688,
+          "hourlySpotLinux": 0.0344,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose (B/D-series)",
+          "name": "Standard_D16as_v5",
+          "vCpu": 16,
+          "ramGb": 64,
+          "hourlyOnDemandLinux": 0.688,
+          "hourly1YrReservedLinux": 0.4128,
+          "hourly3YrReservedLinux": 0.2752,
+          "hourlySpotLinux": 0.1376,
+          "windowsHourlySurcharge": 0
+        }
+      ],
+      "storage": {
+        "HOT": {
+          "tier": "HOT",
+          "costPerGbMonth": 0.018,
+          "costPer10kReads": 0.0004,
+          "costPer10kWrites": 0.005
+        },
+        "COOL": {
+          "tier": "COOL",
+          "costPerGbMonth": 0.01,
+          "costPer10kReads": 0.001,
+          "costPer10kWrites": 0.01
+        },
+        "COLD": {
+          "tier": "COLD",
+          "costPerGbMonth": 0.0036,
+          "costPer10kReads": 0.005,
+          "costPer10kWrites": 0.013
+        },
+        "ARCHIVE": {
+          "tier": "ARCHIVE",
+          "costPerGbMonth": 0.00099,
+          "costPer10kReads": 0.05,
+          "costPer10kWrites": 0.03
+        }
+      },
+      "networking": {
+        "first10TbPerGb": 0.087,
+        "next40TbPerGb": 0.0783,
+        "loadBalancerHourly": 0.025,
+        "staticIpHourly": 0.004
+      },
+      "kubernetes": {
+        "managementHourlyFeePerCluster": 0,
+        "freeFirstCluster": true
+      }
+    },
+    "GCP": null
+  }
+}

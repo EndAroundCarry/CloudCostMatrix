@@ -12,11 +12,12 @@ import {
   REGION_DEFINITIONS
 } from '../core/models/pricing.model';
 import { ServiceCategory } from '../core/models/service-category.enum';
-import { CloudProvider } from '../core/models/cloud-provider.enum';
 import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../core/models/blueprints.model';
 import { CostCalculatorEngine } from '../core/engine/cost-calculator.engine';
 import { UrlStateService } from '../core/services/url-state.service';
-import { ESTIMATE_REPOSITORY_TOKEN } from '../core/repositories/estimate.repository.interface';
+import { ESTIMATE_REPOSITORY_TOKEN, SavedEstimateRecord } from '../core/repositories/estimate.repository.interface';
+import { AUTH_SERVICE_TOKEN } from '../core/repositories/auth.service.interface';
+import { LIVE_PRICING_CACHE, PRICING_LAST_SYNCED_AT, PRICING_MODE } from '../core/engine/catalog/pricing-catalog.resolver';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,7 @@ import { ESTIMATE_REPOSITORY_TOKEN } from '../core/repositories/estimate.reposit
 export class EstimatorStore {
   private readonly urlState = inject(UrlStateService);
   private readonly estimateRepo = inject(ESTIMATE_REPOSITORY_TOKEN);
+  private readonly authService = inject(AUTH_SERVICE_TOKEN);
 
   // State signals
   public readonly activeBlueprint = signal<ArchitectureBlueprint | null>(ARCHITECTURE_BLUEPRINTS[0]);
@@ -38,9 +40,36 @@ export class EstimatorStore {
   public readonly isSavedEstimatesOpen = signal<boolean>(false);
   public readonly toastMessage = signal<string | null>(null);
 
+  // Saved-estimates state
+  public readonly savedEstimates = signal<SavedEstimateRecord[]>([]);
+  public readonly savedEstimateCount = computed(() => this.savedEstimates().length);
+  public readonly isSaveNameDialogOpen = signal<boolean>(false);
+  public readonly isDiffModalOpen = signal<boolean>(false);
+  // Which estimate is being named (for rename), or null → saving current
+  public readonly estimateBeingNamed = signal<SavedEstimateRecord | null>(null);
+
+  // Which estimate ids are loaded into "Architecture A" / "B" in the diff modal
+  public readonly diffEstimateAId = signal<string | null>(null);
+  public readonly diffEstimateBId = signal<string | null>(null);
+
   // Currency meta helper
   public readonly currencyDef = computed(() => {
     return CURRENCY_DEFINITIONS[this.selectedCurrency()] || CURRENCY_DEFINITIONS.USD;
+  });
+
+  // Live pricing freshness metadata (from committed live-pricing-cache.json)
+  public readonly pricingMode = computed<'live' | 'seed'>(() => PRICING_MODE);
+  public readonly pricingLastSyncedAt = computed<string | null>(() => PRICING_LAST_SYNCED_AT);
+  public readonly pricingSources = computed<Record<string, string>>(() => LIVE_PRICING_CACHE.meta?.sources ?? {});
+
+  public readonly pricingLabel = computed<string>(() => {
+    const stamp = PRICING_LAST_SYNCED_AT;
+    if (PRICING_MODE === 'live' && stamp) {
+      const d = new Date(stamp);
+      const month = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      return `Pricing Verified: ${month}`;
+    }
+    return 'Benchmark Pricing 2026';
   });
 
   // Helper to format any USD amount into active currency
@@ -62,6 +91,108 @@ export class EstimatorStore {
 
   constructor() {
     this.checkInitialUrlParams();
+    this.restoreSavedEstimates();
+  }
+
+  private async restoreSavedEstimates(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user && typeof window !== 'undefined') {
+      // Establish a guest session immediately so saves work before sign-in.
+      const guest = await this.authService.signInAnonymously();
+      const list = await this.estimateRepo.getGuestEstimates(guest.uid);
+      this.savedEstimates.set(list);
+      return;
+    }
+    if (user) {
+      const list = await this.estimateRepo.getGuestEstimates(user.uid);
+      this.savedEstimates.set(list);
+    }
+  }
+
+  // ---- Saved-estimates actions --------------------------------------
+
+  public openSaveDialog(): void {
+    this.estimateBeingNamed.set(null);
+    this.isSaveNameDialogOpen.set(true);
+  }
+
+  public openRenameDialog(record: SavedEstimateRecord): void {
+    this.estimateBeingNamed.set(record);
+    this.isSaveNameDialogOpen.set(true);
+  }
+
+  public async saveCurrentEstimate(name: string): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    const trimmed = name.trim() || `Architecture ${new Date().toLocaleDateString()}`;
+    const snapshot: ArchitectureEstimateConfig = JSON.parse(JSON.stringify(this.config()));
+    const id = await this.estimateRepo.saveGuestEstimate(user.uid, { ...snapshot, name: trimmed });
+    this.isSaveNameDialogOpen.set(false);
+    this.showToast(`Saved "${trimmed}" to your architecture library.`);
+    await this.refreshSavedEstimates(id);
+  }
+
+  public async renameEstimate(record: SavedEstimateRecord, newName: string): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    await this.estimateRepo.renameEstimate(user.uid, record.id, newName.trim() || record.name);
+    this.isSaveNameDialogOpen.set(false);
+    await this.refreshSavedEstimates();
+    this.showToast('Estimate renamed.');
+  }
+
+  public async loadEstimate(id: string): Promise<void> {
+    const rec = this.savedEstimates().find((r) => r.id === id);
+    if (!rec) return;
+    this.config.set(JSON.parse(JSON.stringify(rec.config)));
+    this.activeBlueprint.set(null);
+    this.isSavedEstimatesOpen.set(false);
+    this.showToast(`Loaded "${rec.name}" into the matrix.`);
+  }
+
+  public async duplicateEstimate(id: string): Promise<void> {
+    const user = this.authService.currentUser();
+    const rec = this.savedEstimates().find((r) => r.id === id);
+    if (!user || !rec) return;
+    const copy: ArchitectureEstimateConfig = {
+      ...JSON.parse(JSON.stringify(rec.config)),
+      name: `${rec.name} (copy)`
+    };
+    await this.estimateRepo.saveGuestEstimate(user.uid, copy);
+    await this.refreshSavedEstimates();
+    this.showToast(`Duplicated "${rec.name}" as a new branch.`);
+  }
+
+  public async deleteEstimate(id: string): Promise<void> {
+    const user = this.authService.currentUser();
+    const rec = this.savedEstimates().find((r) => r.id === id);
+    if (!user || !rec) return;
+    await this.estimateRepo.deleteGuestEstimate(user.uid, id);
+    await this.refreshSavedEstimates();
+    this.showToast(`Deleted "${rec.name}".`);
+  }
+
+  public async refreshSavedEstimates(highlightId?: string): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    const list = await this.estimateRepo.getGuestEstimates(user.uid);
+    this.savedEstimates.set(list);
+  }
+
+  /** Opens the Architecture A vs B diff modal, defaulting A to current matrix. */
+  public openDiffModal(): void {
+    this.isDiffModalOpen.set(true);
+  }
+
+  public closeDiffModal(): void {
+    this.isDiffModalOpen.set(false);
+    this.diffEstimateAId.set(null);
+    this.diffEstimateBId.set(null);
+  }
+
+  public selectDiffEstimate(slot: 'A' | 'B', id: string | null): void {
+    if (slot === 'A') this.diffEstimateAId.set(id);
+    else this.diffEstimateBId.set(id);
   }
 
   private checkInitialUrlParams(): void {

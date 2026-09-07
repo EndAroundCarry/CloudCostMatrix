@@ -13,14 +13,15 @@ import {
   ServiceCostBreakdown,
   StorageSpec
 } from '../models/pricing.model';
-import { BENCHMARK_CATALOGS, ComputeBenchmark, DatabaseBenchmark } from './catalog/seeded-pricing-catalog';
+import { EFFECTIVE_CATALOGS } from './catalog/pricing-catalog.resolver';
+import { ComputeBenchmark, DatabaseBenchmark } from './catalog/seeded-pricing-catalog';
 
 export class CostCalculatorEngine {
   /**
    * Calculates compute instance cost for a given provider
    */
   public static calculateCompute(spec: ComputeSpec, provider: CloudProvider): ServiceCostBreakdown {
-    const catalog = BENCHMARK_CATALOGS[provider];
+    const catalog = EFFECTIVE_CATALOGS[provider];
     
     // Find closest match by vCPU and RAM
     const sorted = [...catalog.compute].sort((a, b) => {
@@ -73,7 +74,7 @@ export class CostCalculatorEngine {
    * Calculates storage cost (capacity + I/O operations)
    */
   public static calculateStorage(spec: StorageSpec, provider: CloudProvider): ServiceCostBreakdown {
-    const catalog = BENCHMARK_CATALOGS[provider];
+    const catalog = EFFECTIVE_CATALOGS[provider];
     const tierPricing = catalog.storage[spec.tier];
 
     const capacityCost = spec.capacityGb * tierPricing.costPerGbMonth;
@@ -106,7 +107,7 @@ export class CostCalculatorEngine {
    * Calculates managed database cost (Instance + Storage + Multi-AZ)
    */
   public static calculateDatabase(spec: DatabaseSpec, provider: CloudProvider): ServiceCostBreakdown {
-    const catalog = BENCHMARK_CATALOGS[provider];
+    const catalog = EFFECTIVE_CATALOGS[provider];
 
     // Match closest database instance
     const sorted = [...catalog.database].sort((a, b) => {
@@ -152,7 +153,7 @@ export class CostCalculatorEngine {
    * Calculates networking & data egress cost
    */
   public static calculateNetworking(spec: NetworkingSpec, provider: CloudProvider): ServiceCostBreakdown {
-    const catalog = BENCHMARK_CATALOGS[provider];
+    const catalog = EFFECTIVE_CATALOGS[provider];
     const egressGb = spec.egressGbPerMonth;
 
     let egressCost = 0;
@@ -189,7 +190,7 @@ export class CostCalculatorEngine {
    * Calculates Kubernetes cluster management and control plane cost
    */
   public static calculateKubernetes(spec: KubernetesSpec, provider: CloudProvider): ServiceCostBreakdown {
-    const catalog = BENCHMARK_CATALOGS[provider];
+    const catalog = EFFECTIVE_CATALOGS[provider];
     
     // Control plane management fee
     let billableClusters = spec.clustersCount;

@@ -124,8 +124,8 @@ import {
             <span class="hidden sm:inline">Share</span>
           </button>
 
-          <button 
-            mat-flat-button 
+          <button
+            mat-flat-button
             class="!bg-gradient-to-r !from-blue-600 !to-indigo-600 !text-white shadow-md shadow-blue-500/20"
             (click)="handleAuthClick()">
             @if (authService.isAuthenticated() && !authService.isAnonymous()) {
@@ -184,10 +184,11 @@ export class HeaderComponent {
 
   async handleAuthClick(): Promise<void> {
     if (this.authService.isAuthenticated() && !this.authService.isAnonymous()) {
-      this.store.showToast('Logged in to your cloud estimate dashboard.');
+      this.openSavedEstimates();
     } else {
       await this.authService.signInWithGoogle();
       this.store.showToast('Signed in successfully with Google!');
+      this.openSavedEstimates();
     }
   }
 }

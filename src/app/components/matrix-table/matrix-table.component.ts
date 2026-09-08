@@ -59,7 +59,7 @@ import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/servi
             
             <!-- Cheapest Winner Ribbon -->
             @if (isCheapest) {
-              <div class="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-md">
+              <div class="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-emerald-500 on-vivid font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-md">
                 <mat-icon class="!text-xs leading-none">star</mat-icon>
                 <span>Lowest TCO</span>
               </div>

@@ -10,6 +10,18 @@
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="author" content="CloudCostMatrix">
   <meta name="theme-color" content="#0b1120">
+  <script>
+    // Apply the saved/applied theme before first paint to avoid a color flash.
+    (function () {
+      try {
+        var t = localStorage.getItem('ccm_theme');
+        var light = t === 'light' || (t !== 'dark' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+        document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
 
   <!-- Canonical URL (overridden dynamically per route) -->
   <link rel="canonical" href="https://cloudcostmatrix.com/">

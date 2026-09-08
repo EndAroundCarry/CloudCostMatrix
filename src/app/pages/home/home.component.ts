@@ -51,14 +51,14 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
               <mat-icon class="!mr-1 text-amber-400 !text-sm">bookmarks</mat-icon>
               Saved Architectures
               @if (store.savedEstimateCount() > 0) {
-                <span class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">{{ store.savedEstimateCount() }}</span>
+                <span class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 on-vivid text-[10px] font-black">{{ store.savedEstimateCount() }}</span>
               }
             </button>
             <button mat-stroked-button class="!border-slate-600 !text-slate-200 !bg-slate-800/40" (click)="store.openDiffModal()">
               <mat-icon class="!mr-1 text-sky-400 !text-sm">compare_arrows</mat-icon>
               A vs B Diff
             </button>
-            <button mat-flat-button class="!bg-gradient-to-r !from-amber-500 !to-orange-500 !text-slate-950 !font-bold shadow-lg shadow-amber-500/20" (click)="store.openSaveDialog()">
+            <button mat-flat-button class="!bg-gradient-to-r !from-amber-500 !to-orange-500 on-vivid !font-bold shadow-lg shadow-amber-500/20" (click)="store.openSaveDialog()">
               <mat-icon class="!mr-1 !text-sm">bookmark_add</mat-icon>
               Save
             </button>

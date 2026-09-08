@@ -94,7 +94,7 @@ import { CostTopologyComponent } from '../../components/cost-topology/cost-topol
               [class.ring-emerald-400]="isCheapest"
               class="rounded-xl bg-slate-800/50 border border-slate-700 p-5 relative">
               @if (isCheapest) {
-                <span class="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-wider">
+                <span class="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-emerald-500 on-vivid font-black text-[10px] uppercase tracking-wider">
                   Lowest TCO
                 </span>
               }

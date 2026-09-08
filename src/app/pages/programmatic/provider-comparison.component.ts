@@ -302,7 +302,7 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
                   </div>
                 </div>
                 @if (winner === provA) {
-                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-xs uppercase">Winner</span>
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500 on-vivid font-black text-xs uppercase">Winner</span>
                 }
               </div>
 
@@ -343,7 +343,7 @@ const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
                   </div>
                 </div>
                 @if (winner === provB) {
-                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-xs uppercase">Winner</span>
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500 on-vivid font-black text-xs uppercase">Winner</span>
                 }
               </div>
 

@@ -130,7 +130,7 @@ import { AUTH_SERVICE_TOKEN } from '../../core/repositories/auth.service.interfa
 
         <!-- Footer: Save current + compare action -->
         <footer class="px-6 py-4 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <button mat-flat-button class="!bg-gradient-to-r !from-amber-500 !to-orange-500 !text-slate-950 font-black shadow-lg shadow-amber-500/20 flex-1"
+          <button mat-flat-button class="!bg-gradient-to-r !from-amber-500 !to-orange-500 on-vivid font-black shadow-lg shadow-amber-500/20 flex-1"
             (click)="store.openSaveDialog()">
             <mat-icon class="!mr-1">bookmark_add</mat-icon>
             Save Current Architecture

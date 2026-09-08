@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EstimatorStore } from '../../state/estimator.store';
+import { ThemeService } from '../../core/services/theme.service';
 import { AUTH_SERVICE_TOKEN } from '../../core/repositories/auth.service.interface';
 import { 
   CurrencyCode, 
@@ -24,7 +25,7 @@ import {
         <!-- Logo & Title -->
         <a routerLink="/" class="flex items-center gap-3 group no-underline">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-blue-600 to-sky-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-            <mat-icon class="text-white">dataset</mat-icon>
+            <mat-icon class="on-accent">dataset</mat-icon>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -91,6 +92,17 @@ import {
             <mat-icon class="!text-xs absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</mat-icon>
           </div>
 
+          <!-- Theme toggle -->
+          <button
+            mat-icon-button
+            type="button"
+            [attr.aria-label]="themeService.isLight() ? 'Switch to dark mode' : 'Switch to light mode'"
+            [matTooltip]="themeService.isLight() ? 'Switch to dark mode' : 'Switch to light mode'"
+            class="!text-slate-300 hover:!text-white"
+            (click)="themeService.toggle()">
+            <mat-icon>{{ themeService.isLight() ? 'dark_mode' : 'light_mode' }}</mat-icon>
+          </button>
+
           <button 
             mat-stroked-button 
             class="!border-slate-700 !text-slate-200 !bg-slate-800/50 hover:!bg-slate-700 relative"
@@ -98,7 +110,7 @@ import {
             <mat-icon class="!mr-1 text-amber-400">bookmarks</mat-icon>
             <span class="hidden sm:inline">Saved Architectures</span>
             @if (store.savedEstimateCount() > 0) {
-              <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center shadow">
+              <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 on-vivid text-[10px] font-black flex items-center justify-center shadow">
                 {{ store.savedEstimateCount() }}
               </span>
             }
@@ -137,6 +149,7 @@ import {
 export class HeaderComponent {
   protected readonly store = inject(EstimatorStore);
   protected readonly authService = inject(AUTH_SERVICE_TOKEN);
+  protected readonly themeService = inject(ThemeService);
 
   readonly regionList = Object.values(REGION_DEFINITIONS);
   readonly currencyList = Object.values(CURRENCY_DEFINITIONS);

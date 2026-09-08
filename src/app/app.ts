@@ -10,7 +10,7 @@ import { EstimatorStore } from './state/estimator.store';
   standalone: true,
   imports: [RouterOutlet, RouterLink, HeaderComponent, SavedEstimatesModalComponent, ArchitectureDiffModalComponent],
   template: `
-    <div class="min-h-screen flex flex-col bg-[#0b1120] text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
+    <div class="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
       <!-- Global Navigation Header -->
       <app-header></app-header>
 

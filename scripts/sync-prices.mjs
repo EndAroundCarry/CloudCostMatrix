@@ -29,8 +29,16 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = path.join(__dirname, '..', 'src', 'app', 'core', 'engine', 'catalog', 'live-pricing-cache.json');
 
-const PROVIDERS = ['AWS', 'AZURE', 'GCP'];
+// AWS/Azure/GCP have live fetchers below. The 6 challenger/developer clouds
+// added in 2026 (Oracle, IBM, DigitalOcean, Alibaba, Linode, OVHcloud) ship
+// seed-only for now — a public, unauthenticated Oracle price-list feed exists
+// (https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/) and is the
+// natural next live source, but wiring it up is deliberately deferred; see
+// the orchestrator loop below for how a provider with no fetcher is skipped
+// (not failed) so it never produces a spurious "sync failed" warning.
+const PROVIDERS = ['AWS', 'AZURE', 'GCP', 'ORACLE', 'IBM', 'DIGITALOCEAN', 'ALIBABA', 'LINODE', 'OVHCLOUD'];
 const FETCH_TIMEOUT_MS = 45_000;
+const USER_AGENT = 'CloudCostMatrix-PriceSync/1.0 (+https://cloudcostmatrix.com)';
 
 /* ------------------------------------------------------------------ */
 /* Small helpers                                                       */
@@ -40,7 +48,7 @@ async function fetchJson(url) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal, headers: { 'User-Agent': USER_AGENT } });
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}`);
     const text = await res.text();
     try {
@@ -389,7 +397,7 @@ function parseGcpSkus(skus) {
 /* ------------------------------------------------------------------ */
 
 async function runSync() {
-  console.log('🚀 Starting cloud pricing sync for AWS, Azure, and GCP...');
+  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP live; 6 more seed-only)...');
 
   const cacheDoc = readCache();
   const syncedAt = new Date().toISOString();
@@ -400,9 +408,19 @@ async function runSync() {
   const fetchers = { AWS: fetchAwsCatalog, AZURE: fetchAzureCatalog, GCP: fetchGcpCatalog };
 
   for (const provider of PROVIDERS) {
+    const fetcher = fetchers[provider];
+    if (!fetcher) {
+      // No public feed wired up for this provider yet — stay on whatever the
+      // cache already has (seed baseline on a fresh checkout) rather than
+      // treating "no fetcher" as a failure worth warning about every run.
+      catalogs[provider] = cacheDoc.catalogs?.[provider] ?? null;
+      sources[provider] = cacheDoc.meta?.sources?.[provider] || 'seed';
+      console.log(`  ⏭️  ${provider}: seed-only (no public feed configured).`);
+      continue;
+    }
     try {
       console.log(`  ⏳ Fetching ${provider} public pricing feed...`);
-      const fresh = await fetchers[provider]();
+      const fresh = await fetcher();
       const hasContent =
         (fresh.compute?.length ?? 0) > 0 ||
         (fresh.storage && Object.keys(fresh.storage).length > 0) ||

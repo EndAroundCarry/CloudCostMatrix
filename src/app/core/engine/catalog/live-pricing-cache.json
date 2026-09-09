@@ -6,7 +6,13 @@
     "sources": {
       "AWS": "live@2026-09-07T21:08:52.061Z",
       "AZURE": "live@2026-09-07T21:08:52.061Z",
-      "GCP": "seed"
+      "GCP": "seed",
+      "ORACLE": "seed",
+      "IBM": "seed",
+      "DIGITALOCEAN": "seed",
+      "ALIBABA": "seed",
+      "LINODE": "seed",
+      "OVHCLOUD": "seed"
     }
   },
   "catalogs": {
@@ -137,6 +143,12 @@
         "freeFirstCluster": true
       }
     },
-    "GCP": null
+    "GCP": null,
+    "ORACLE": null,
+    "IBM": null,
+    "DIGITALOCEAN": null,
+    "ALIBABA": null,
+    "LINODE": null,
+    "OVHCLOUD": null
   }
 }

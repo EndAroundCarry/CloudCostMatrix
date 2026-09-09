@@ -73,7 +73,7 @@ import { CostTopologyComponent } from '../../components/cost-topology/cost-topol
           <div>
             <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight m-0 flex items-center gap-2">
               <mat-icon class="text-emerald-400">payments</mat-icon>
-              <span>Estimated Cost Across AWS vs Azure vs GCP</span>
+              <span>Estimated Cost Across {{ providers.length }} Cloud Providers</span>
             </h2>
             <p class="text-xs text-slate-400 m-0 mt-0.5">Calculated using production baseline pricing in US-East with standard commitments.</p>
           </div>
@@ -83,7 +83,7 @@ import { CostTopologyComponent } from '../../components/cost-topology/cost-topol
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid gap-4" [style.grid-template-columns]="'repeat(auto-fit, minmax(220px, 1fr))'">
           @for (prov of providers; track prov) {
             @let total = blueprintMatrix.providers[prov];
             @let meta = providerMetas[prov];
@@ -165,7 +165,9 @@ export class BlueprintDetailComponent implements OnInit, OnDestroy {
   private readonly seoService = inject(SeoService);
   protected readonly store = inject(EstimatorStore);
 
-  readonly providers = [CloudProvider.AWS, CloudProvider.AZURE, CloudProvider.GCP];
+  get providers(): CloudProvider[] {
+    return this.blueprintMatrix.selectedProviders;
+  }
   readonly providerMetas = PROVIDER_METAS;
   readonly categoryMetas = SERVICE_CATEGORY_METAS;
 
@@ -203,9 +205,9 @@ export class BlueprintDetailComponent implements OnInit, OnDestroy {
     const canonicalUrl = `https://cloudcostmatrix.com/blueprints/${bp.slug}`;
 
     this.seoService.updateTags({
-      title: `${bp.name} — Multi-Cloud Architecture Cost Blueprint (AWS vs Azure vs GCP)`,
-      description: `${bp.tagline} Compare estimated TCO across AWS, Azure, and GCP. Detailed infrastructure sizing and cost breakdown.`,
-      keywords: [bp.name, 'cloud architecture blueprint', 'AWS vs Azure vs GCP cost', bp.recommendedFor, 'TCO estimator 2026'],
+      title: `${bp.name} — Multi-Cloud Architecture Cost Blueprint (9 Providers)`,
+      description: `${bp.tagline} Compare estimated TCO across AWS, Azure, GCP, and 6 more providers. Detailed infrastructure sizing and cost breakdown.`,
+      keywords: [bp.name, 'cloud architecture blueprint', 'AWS vs Azure vs GCP cost', 'multi-cloud cost comparison', bp.recommendedFor, 'TCO estimator 2026'],
       canonicalUrl,
       structuredDataJson: [
         SchemaGenerator.generateBreadcrumbSchema([

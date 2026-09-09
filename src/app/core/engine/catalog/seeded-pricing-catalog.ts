@@ -18,6 +18,8 @@ export interface StorageBenchmark {
   costPerGbMonth: number;
   costPer10kReads: number;
   costPer10kWrites: number;
+  /** Flat monthly floor below a usage threshold, e.g. DigitalOcean/Linode's $5-for-250GB. */
+  minimumMonthlyFee?: number;
 }
 
 export interface DatabaseBenchmark {
@@ -36,6 +38,16 @@ export interface EgressBenchmark {
   next40TbPerGb: number;
   loadBalancerHourly: number;
   staticIpHourly: number;
+  /** GB free before metering starts (policy, not a per-instance bundle). OCI: 10240. */
+  freeEgressGbPerMonth?: number;
+  /** GB bundled per compute instance, pooled account-wide (DigitalOcean, Linode). */
+  bundledEgressGbPerInstance?: number;
+  /** Flat overage rate once free + bundled allowance is exhausted. */
+  overageEgressPerGb?: number;
+  /** True when egress is unlimited/free under a fair-use policy (OVHcloud). Boolean, not Infinity — stays JSON/URL-safe. */
+  unlimitedEgress?: boolean;
+  /** Human copy describing the allowance, surfaced in the networking detail line. */
+  egressPolicyNote?: string;
 }
 
 export interface KubernetesBenchmark {
@@ -157,6 +169,243 @@ export const BENCHMARK_CATALOGS: Record<CloudProvider, ProviderPricingCatalog> =
     },
     kubernetes: {
       managementHourlyFeePerCluster: 0.10, // $73/mo, first zonal cluster free
+      freeFirstCluster: true
+    }
+  },
+
+  // ------------------------------------------------------------------
+  // Challengers & developer clouds — 2026 benchmark seed catalogs.
+  // Every compute[] spans the same 2/4 → 32/128 vCPU/RAM envelope as the
+  // big 3 so the nearest-match sizer (cost-calculator.engine.ts) always
+  // compares like-for-like instead of matching a request to an undersized
+  // shape and looking artificially cheap. Rates are relative-positioning
+  // estimates anchored to AWS list price per the sourcing notes in the
+  // implementation plan — verify against each provider's pricing page
+  // before treating these as anything more than directional benchmarks.
+  // ------------------------------------------------------------------
+
+  [CloudProvider.ORACLE]: {
+    provider: CloudProvider.ORACLE,
+    region: 'us-ashburn-1 (Ashburn)',
+    compute: [
+      { family: 'General Purpose (E5.Flex / A2.Flex Ampere)', name: 'VM.Standard.E5.Flex-2x4', vCpu: 2, ramGb: 4, hourlyOnDemandLinux: 0.0218, hourly1YrReservedLinux: 0.0164, hourly3YrReservedLinux: 0.0146, hourlySpotLinux: 0.0109, windowsHourlySurcharge: 0.0109 },
+      { family: 'General Purpose (E5.Flex / A2.Flex Ampere)', name: 'VM.Standard.E5.Flex-2x8', vCpu: 2, ramGb: 8, hourlyOnDemandLinux: 0.0312, hourly1YrReservedLinux: 0.0234, hourly3YrReservedLinux: 0.0209, hourlySpotLinux: 0.0156, windowsHourlySurcharge: 0.0156 },
+      { family: 'General Purpose (E5.Flex)', name: 'VM.Standard.E5.Flex-4x16', vCpu: 4, ramGb: 16, hourlyOnDemandLinux: 0.0874, hourly1YrReservedLinux: 0.0656, hourly3YrReservedLinux: 0.0586, hourlySpotLinux: 0.0437, windowsHourlySurcharge: 0.0437 },
+      { family: 'General Purpose (E5.Flex)', name: 'VM.Standard.E5.Flex-8x32', vCpu: 8, ramGb: 32, hourlyOnDemandLinux: 0.2496, hourly1YrReservedLinux: 0.1872, hourly3YrReservedLinux: 0.1672, hourlySpotLinux: 0.1248, windowsHourlySurcharge: 0.1248 },
+      { family: 'Compute Optimized (Optimized3.Flex)', name: 'VM.Optimized3.Flex-16x32', vCpu: 16, ramGb: 32, hourlyOnDemandLinux: 0.4420, hourly1YrReservedLinux: 0.3315, hourly3YrReservedLinux: 0.2961, hourlySpotLinux: 0.2210, windowsHourlySurcharge: 0.2210 },
+      { family: 'Memory Optimized (E5.Flex)', name: 'VM.Standard.E5.Flex-16x128', vCpu: 16, ramGb: 128, hourlyOnDemandLinux: 0.6552, hourly1YrReservedLinux: 0.4914, hourly3YrReservedLinux: 0.4390, hourlySpotLinux: 0.3276, windowsHourlySurcharge: 0.3276 },
+      { family: 'High Capacity (E5.Flex)', name: 'VM.Standard.E5.Flex-32x128', vCpu: 32, ramGb: 128, hourlyOnDemandLinux: 0.9984, hourly1YrReservedLinux: 0.7488, hourly3YrReservedLinux: 0.6689, hourlySpotLinux: 0.4992, windowsHourlySurcharge: 0.4992 }
+    ],
+    storage: {
+      HOT: { tier: 'HOT', costPerGbMonth: 0.0255, costPer10kReads: 0.004, costPer10kWrites: 0.05 },
+      COOL: { tier: 'COOL', costPerGbMonth: 0.0100, costPer10kReads: 0.01, costPer10kWrites: 0.10 },
+      COLD: { tier: 'COLD', costPerGbMonth: 0.0100, costPer10kReads: 0.05, costPer10kWrites: 0.13 }, // UNSUPPORTED — cloned from COOL; gated by PROVIDER_CAPABILITIES (OCI has no distinct Cold tier)
+      ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: 0.0026, costPer10kReads: 0.50, costPer10kWrites: 0.30 }
+    },
+    database: [
+      { name: 'db.standard.e4.2x4', vCpu: 2, ramGb: 4, hourlyPostgres: 0.0442, hourlyMySql: 0.0442, hourlySqlServer: 0.0442, storagePerGbMonth: 0.085, multiAzMultiplier: 2.0 }, // sqlServer UNSUPPORTED — cloned from MySQL, gated by PROVIDER_CAPABILITIES
+      { name: 'db.standard.e4.4x16', vCpu: 4, ramGb: 16, hourlyPostgres: 0.2054, hourlyMySql: 0.2054, hourlySqlServer: 0.2054, storagePerGbMonth: 0.085, multiAzMultiplier: 2.0 },
+      { name: 'db.standard.e4.8x32', vCpu: 8, ramGb: 32, hourlyPostgres: 0.4108, hourlyMySql: 0.4108, hourlySqlServer: 0.4108, storagePerGbMonth: 0.085, multiAzMultiplier: 2.0 },
+      { name: 'db.standard.e4.8x64', vCpu: 8, ramGb: 64, hourlyPostgres: 0.5512, hourlyMySql: 0.5512, hourlySqlServer: 0.5512, storagePerGbMonth: 0.085, multiAzMultiplier: 2.0 }
+    ],
+    networking: {
+      first10TbPerGb: 0.0085,
+      next40TbPerGb: 0.0080,
+      loadBalancerHourly: 0.0113,
+      staticIpHourly: 0.003,
+      freeEgressGbPerMonth: 10240,
+      egressPolicyNote: 'The first 10 TB of outbound data transfer is free every month on every OCI tenancy.'
+    },
+    kubernetes: {
+      managementHourlyFeePerCluster: 0.00, // OKE Basic clusters — free control plane
+      freeFirstCluster: true
+    }
+  },
+
+  [CloudProvider.IBM]: {
+    provider: CloudProvider.IBM,
+    region: 'us-east (Washington DC)',
+    compute: [
+      { family: 'Balanced (bx2)', name: 'bx2-2x4', vCpu: 2, ramGb: 4, hourlyOnDemandLinux: 0.0353, hourly1YrReservedLinux: 0.0265, hourly3YrReservedLinux: 0.0212, hourlySpotLinux: 0.0212, windowsHourlySurcharge: 0.0177 },
+      { family: 'Balanced (bx2)', name: 'bx2-2x8', vCpu: 2, ramGb: 8, hourlyOnDemandLinux: 0.0504, hourly1YrReservedLinux: 0.0378, hourly3YrReservedLinux: 0.0302, hourlySpotLinux: 0.0302, windowsHourlySurcharge: 0.0252 },
+      { family: 'Balanced (bx2)', name: 'bx2-4x16', vCpu: 4, ramGb: 16, hourlyOnDemandLinux: 0.1411, hourly1YrReservedLinux: 0.1058, hourly3YrReservedLinux: 0.0847, hourlySpotLinux: 0.0847, windowsHourlySurcharge: 0.0706 },
+      { family: 'Balanced (bx2)', name: 'bx2-8x32', vCpu: 8, ramGb: 32, hourlyOnDemandLinux: 0.4032, hourly1YrReservedLinux: 0.3024, hourly3YrReservedLinux: 0.2419, hourlySpotLinux: 0.2419, windowsHourlySurcharge: 0.2016 },
+      { family: 'Compute (cx2)', name: 'cx2-16x32', vCpu: 16, ramGb: 32, hourlyOnDemandLinux: 0.7140, hourly1YrReservedLinux: 0.5355, hourly3YrReservedLinux: 0.4284, hourlySpotLinux: 0.4284, windowsHourlySurcharge: 0.3570 },
+      { family: 'Memory (mx2)', name: 'mx2-16x128', vCpu: 16, ramGb: 128, hourlyOnDemandLinux: 1.0584, hourly1YrReservedLinux: 0.7938, hourly3YrReservedLinux: 0.6350, hourlySpotLinux: 0.6350, windowsHourlySurcharge: 0.5292 },
+      { family: 'Memory (mx2)', name: 'mx2-32x128', vCpu: 32, ramGb: 128, hourlyOnDemandLinux: 1.6128, hourly1YrReservedLinux: 1.2096, hourly3YrReservedLinux: 0.9677, hourlySpotLinux: 0.9677, windowsHourlySurcharge: 0.8064 } // no spot — hourlySpotLinux cloned from 3-yr, gated by PROVIDER_CAPABILITIES
+    ],
+    storage: {
+      HOT: { tier: 'HOT', costPerGbMonth: 0.0220, costPer10kReads: 0.004, costPer10kWrites: 0.05 },
+      COOL: { tier: 'COOL', costPerGbMonth: 0.0129, costPer10kReads: 0.01, costPer10kWrites: 0.10 },
+      COLD: { tier: 'COLD', costPerGbMonth: 0.0071, costPer10kReads: 0.05, costPer10kWrites: 0.13 },
+      ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: 0.0026, costPer10kReads: 0.50, costPer10kWrites: 0.30 }
+    },
+    database: [
+      { name: 'bx2-db-2x4', vCpu: 2, ramGb: 4, hourlyPostgres: 0.0714, hourlyMySql: 0.0714, hourlySqlServer: 0.0714, storagePerGbMonth: 0.12, multiAzMultiplier: 2.0 }, // sqlServer UNSUPPORTED — cloned, gated by PROVIDER_CAPABILITIES
+      { name: 'bx2-db-4x16', vCpu: 4, ramGb: 16, hourlyPostgres: 0.3318, hourlyMySql: 0.3318, hourlySqlServer: 0.3318, storagePerGbMonth: 0.12, multiAzMultiplier: 2.0 },
+      { name: 'bx2-db-8x32', vCpu: 8, ramGb: 32, hourlyPostgres: 0.6636, hourlyMySql: 0.6636, hourlySqlServer: 0.6636, storagePerGbMonth: 0.12, multiAzMultiplier: 2.0 },
+      { name: 'bx2-db-8x64', vCpu: 8, ramGb: 64, hourlyPostgres: 0.8904, hourlyMySql: 0.8904, hourlySqlServer: 0.8904, storagePerGbMonth: 0.12, multiAzMultiplier: 2.0 }
+    ],
+    networking: {
+      first10TbPerGb: 0.09,
+      next40TbPerGb: 0.085,
+      loadBalancerHourly: 0.025,
+      staticIpHourly: 0.004
+    },
+    kubernetes: {
+      managementHourlyFeePerCluster: 0.00, // IKS never charges for the control plane
+      freeFirstCluster: true
+    }
+  },
+
+  [CloudProvider.DIGITALOCEAN]: {
+    provider: CloudProvider.DIGITALOCEAN,
+    region: 'NYC3 (New York)',
+    compute: [
+      { family: 'Basic Droplet', name: 's-2vcpu-4gb', vCpu: 2, ramGb: 4, hourlyOnDemandLinux: 0.0252, hourly1YrReservedLinux: 0.0252, hourly3YrReservedLinux: 0.0252, hourlySpotLinux: 0.0252, windowsHourlySurcharge: 0.0126 }, // flat rate — no reserved/spot pricing, gated by PROVIDER_CAPABILITIES
+      { family: 'Basic Droplet', name: 's-2vcpu-8gb', vCpu: 2, ramGb: 8, hourlyOnDemandLinux: 0.0408, hourly1YrReservedLinux: 0.0408, hourly3YrReservedLinux: 0.0408, hourlySpotLinux: 0.0408, windowsHourlySurcharge: 0.0204 },
+      { family: 'General Purpose Droplet', name: 'g-4vcpu-16gb', vCpu: 4, ramGb: 16, hourlyOnDemandLinux: 0.1720, hourly1YrReservedLinux: 0.1720, hourly3YrReservedLinux: 0.1720, hourlySpotLinux: 0.1720, windowsHourlySurcharge: 0.0860 },
+      { family: 'General Purpose Droplet', name: 'g-8vcpu-32gb', vCpu: 8, ramGb: 32, hourlyOnDemandLinux: 0.4915, hourly1YrReservedLinux: 0.4915, hourly3YrReservedLinux: 0.4915, hourlySpotLinux: 0.4915, windowsHourlySurcharge: 0.2458 },
+      { family: 'CPU-Optimized Droplet', name: 'c-16vcpu-32gb', vCpu: 16, ramGb: 32, hourlyOnDemandLinux: 0.4760, hourly1YrReservedLinux: 0.4760, hourly3YrReservedLinux: 0.4760, hourlySpotLinux: 0.4760, windowsHourlySurcharge: 0.2380 },
+      { family: 'Memory-Optimized Droplet', name: 'm-16vcpu-128gb', vCpu: 16, ramGb: 128, hourlyOnDemandLinux: 1.2902, hourly1YrReservedLinux: 1.2902, hourly3YrReservedLinux: 1.2902, hourlySpotLinux: 1.2902, windowsHourlySurcharge: 0.6451 },
+      { family: 'Memory-Optimized Droplet', name: 'm-32vcpu-128gb', vCpu: 32, ramGb: 128, hourlyOnDemandLinux: 1.7664, hourly1YrReservedLinux: 1.7664, hourly3YrReservedLinux: 1.7664, hourlySpotLinux: 1.7664, windowsHourlySurcharge: 0.8832 }
+    ],
+    storage: {
+      HOT: { tier: 'HOT', costPerGbMonth: 0.0200, costPer10kReads: 0.004, costPer10kWrites: 0.05, minimumMonthlyFee: 5 },
+      COOL: { tier: 'COOL', costPerGbMonth: 0.0200, costPer10kReads: 0.01, costPer10kWrites: 0.10, minimumMonthlyFee: 5 }, // UNSUPPORTED — Spaces has one storage class, cloned from HOT, gated by PROVIDER_CAPABILITIES
+      COLD: { tier: 'COLD', costPerGbMonth: 0.0200, costPer10kReads: 0.05, costPer10kWrites: 0.13, minimumMonthlyFee: 5 }, // UNSUPPORTED — cloned from HOT
+      ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: 0.0200, costPer10kReads: 0.50, costPer10kWrites: 0.30, minimumMonthlyFee: 5 } // UNSUPPORTED — cloned from HOT
+    },
+    database: [
+      { name: 'db-s-2vcpu-4gb', vCpu: 2, ramGb: 4, hourlyPostgres: 0.0748, hourlyMySql: 0.0748, hourlySqlServer: 0.0748, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 }, // sqlServer UNSUPPORTED — cloned, gated by PROVIDER_CAPABILITIES
+      { name: 'db-s-4vcpu-16gb', vCpu: 4, ramGb: 16, hourlyPostgres: 0.3476, hourlyMySql: 0.3476, hourlySqlServer: 0.3476, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'db-s-8vcpu-32gb', vCpu: 8, ramGb: 32, hourlyPostgres: 0.6952, hourlyMySql: 0.6952, hourlySqlServer: 0.6952, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'db-s-8vcpu-64gb', vCpu: 8, ramGb: 64, hourlyPostgres: 0.9328, hourlyMySql: 0.9328, hourlySqlServer: 0.9328, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 }
+    ],
+    networking: {
+      first10TbPerGb: 0.01,
+      next40TbPerGb: 0.01,
+      loadBalancerHourly: 0.0164, // $12/mo
+      staticIpHourly: 0,
+      bundledEgressGbPerInstance: 1024,
+      overageEgressPerGb: 0.01,
+      egressPolicyNote: 'Bandwidth is pooled account-wide and bundled per Droplet; overage is billed at a flat $0.01/GB once the allowance is exhausted.'
+    },
+    kubernetes: {
+      managementHourlyFeePerCluster: 0.00, // DOKS control plane is always free
+      freeFirstCluster: true
+    }
+  },
+
+  [CloudProvider.ALIBABA]: {
+    provider: CloudProvider.ALIBABA,
+    region: 'us-west-1 (Silicon Valley)',
+    compute: [
+      { family: 'Burstable (t6)', name: 'ecs.t6-c1m2.large', vCpu: 2, ramGb: 4, hourlyOnDemandLinux: 0.0286, hourly1YrReservedLinux: 0.0172, hourly3YrReservedLinux: 0.0114, hourlySpotLinux: 0.0057, windowsHourlySurcharge: 0.0143 },
+      { family: 'General Purpose (g7)', name: 'ecs.g7.large', vCpu: 2, ramGb: 8, hourlyOnDemandLinux: 0.0408, hourly1YrReservedLinux: 0.0245, hourly3YrReservedLinux: 0.0163, hourlySpotLinux: 0.0082, windowsHourlySurcharge: 0.0204 },
+      { family: 'General Purpose (g7)', name: 'ecs.g7.xlarge', vCpu: 4, ramGb: 16, hourlyOnDemandLinux: 0.1142, hourly1YrReservedLinux: 0.0685, hourly3YrReservedLinux: 0.0457, hourlySpotLinux: 0.0228, windowsHourlySurcharge: 0.0571 },
+      { family: 'General Purpose (g7)', name: 'ecs.g7.2xlarge', vCpu: 8, ramGb: 32, hourlyOnDemandLinux: 0.3264, hourly1YrReservedLinux: 0.1958, hourly3YrReservedLinux: 0.1306, hourlySpotLinux: 0.0653, windowsHourlySurcharge: 0.1632 },
+      { family: 'Compute Optimized (c7)', name: 'ecs.c7.4xlarge', vCpu: 16, ramGb: 32, hourlyOnDemandLinux: 0.5780, hourly1YrReservedLinux: 0.3468, hourly3YrReservedLinux: 0.2312, hourlySpotLinux: 0.1156, windowsHourlySurcharge: 0.2890 },
+      { family: 'Memory Optimized (r7)', name: 'ecs.r7.4xlarge', vCpu: 16, ramGb: 128, hourlyOnDemandLinux: 0.8568, hourly1YrReservedLinux: 0.5141, hourly3YrReservedLinux: 0.3427, hourlySpotLinux: 0.1714, windowsHourlySurcharge: 0.4284 },
+      { family: 'High Capacity (g7)', name: 'ecs.g7.8xlarge', vCpu: 32, ramGb: 128, hourlyOnDemandLinux: 1.3056, hourly1YrReservedLinux: 0.7834, hourly3YrReservedLinux: 0.5222, hourlySpotLinux: 0.2611, windowsHourlySurcharge: 0.6528 }
+    ],
+    storage: {
+      HOT: { tier: 'HOT', costPerGbMonth: 0.0200, costPer10kReads: 0.004, costPer10kWrites: 0.05 },
+      COOL: { tier: 'COOL', costPerGbMonth: 0.0125, costPer10kReads: 0.01, costPer10kWrites: 0.10 },
+      COLD: { tier: 'COLD', costPerGbMonth: 0.0033, costPer10kReads: 0.05, costPer10kWrites: 0.13 },
+      ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: 0.0018, costPer10kReads: 0.50, costPer10kWrites: 0.30 }
+    },
+    database: [
+      { name: 'ApsaraDB-2x4', vCpu: 2, ramGb: 4, hourlyPostgres: 0.0578, hourlyMySql: 0.0578, hourlySqlServer: 0.1513, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'ApsaraDB-4x16', vCpu: 4, ramGb: 16, hourlyPostgres: 0.2686, hourlyMySql: 0.2686, hourlySqlServer: 0.6426, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'ApsaraDB-8x32', vCpu: 8, ramGb: 32, hourlyPostgres: 0.5372, hourlyMySql: 0.5372, hourlySqlServer: 1.2852, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'ApsaraDB-8x64', vCpu: 8, ramGb: 64, hourlyPostgres: 0.7208, hourlyMySql: 0.7208, hourlySqlServer: 1.4688, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 }
+    ],
+    networking: {
+      first10TbPerGb: 0.081,
+      next40TbPerGb: 0.075,
+      loadBalancerHourly: 0.0187,
+      staticIpHourly: 0.005
+    },
+    kubernetes: {
+      managementHourlyFeePerCluster: 0.00, // ACK Basic — free control plane (Pro tier adds SLA for $0.096/hr)
+      freeFirstCluster: true
+    }
+  },
+
+  [CloudProvider.LINODE]: {
+    provider: CloudProvider.LINODE,
+    region: 'us-east (Newark)',
+    compute: [
+      { family: 'Shared CPU (g6)', name: 'g6-shared-2x4', vCpu: 2, ramGb: 4, hourlyOnDemandLinux: 0.0286, hourly1YrReservedLinux: 0.0286, hourly3YrReservedLinux: 0.0286, hourlySpotLinux: 0.0286, windowsHourlySurcharge: 0.0143 }, // flat rate — no reserved/spot pricing, gated by PROVIDER_CAPABILITIES
+      { family: 'Shared CPU (g6)', name: 'g6-shared-2x8', vCpu: 2, ramGb: 8, hourlyOnDemandLinux: 0.0408, hourly1YrReservedLinux: 0.0408, hourly3YrReservedLinux: 0.0408, hourlySpotLinux: 0.0408, windowsHourlySurcharge: 0.0204 },
+      { family: 'Dedicated CPU (g6)', name: 'g6-dedicated-4x16', vCpu: 4, ramGb: 16, hourlyOnDemandLinux: 0.1411, hourly1YrReservedLinux: 0.1411, hourly3YrReservedLinux: 0.1411, hourlySpotLinux: 0.1411, windowsHourlySurcharge: 0.0706 },
+      { family: 'Dedicated CPU (g6)', name: 'g6-dedicated-8x32', vCpu: 8, ramGb: 32, hourlyOnDemandLinux: 0.4032, hourly1YrReservedLinux: 0.4032, hourly3YrReservedLinux: 0.4032, hourlySpotLinux: 0.4032, windowsHourlySurcharge: 0.2016 },
+      { family: 'Dedicated CPU (g6)', name: 'g6-dedicated-16x32', vCpu: 16, ramGb: 32, hourlyOnDemandLinux: 0.7480, hourly1YrReservedLinux: 0.7480, hourly3YrReservedLinux: 0.7480, hourlySpotLinux: 0.7480, windowsHourlySurcharge: 0.3740 },
+      { family: 'High Memory (g7)', name: 'g7-highmem-16x128', vCpu: 16, ramGb: 128, hourlyOnDemandLinux: 1.1592, hourly1YrReservedLinux: 1.1592, hourly3YrReservedLinux: 1.1592, hourlySpotLinux: 1.1592, windowsHourlySurcharge: 0.5796 },
+      { family: 'High Memory (g7)', name: 'g7-highmem-32x128', vCpu: 32, ramGb: 128, hourlyOnDemandLinux: 1.6896, hourly1YrReservedLinux: 1.6896, hourly3YrReservedLinux: 1.6896, hourlySpotLinux: 1.6896, windowsHourlySurcharge: 0.8448 }
+    ],
+    storage: {
+      HOT: { tier: 'HOT', costPerGbMonth: 0.0200, costPer10kReads: 0.004, costPer10kWrites: 0.05, minimumMonthlyFee: 5 },
+      COOL: { tier: 'COOL', costPerGbMonth: 0.0200, costPer10kReads: 0.01, costPer10kWrites: 0.10, minimumMonthlyFee: 5 }, // UNSUPPORTED — single storage class, cloned from HOT
+      COLD: { tier: 'COLD', costPerGbMonth: 0.0200, costPer10kReads: 0.05, costPer10kWrites: 0.13, minimumMonthlyFee: 5 }, // UNSUPPORTED — cloned from HOT
+      ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: 0.0200, costPer10kReads: 0.50, costPer10kWrites: 0.30, minimumMonthlyFee: 5 } // UNSUPPORTED — cloned from HOT
+    },
+    database: [
+      { name: 'linode-db-2x4', vCpu: 2, ramGb: 4, hourlyPostgres: 0.0748, hourlyMySql: 0.0748, hourlySqlServer: 0.0748, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 }, // sqlServer UNSUPPORTED — cloned, gated by PROVIDER_CAPABILITIES
+      { name: 'linode-db-4x16', vCpu: 4, ramGb: 16, hourlyPostgres: 0.3476, hourlyMySql: 0.3476, hourlySqlServer: 0.3476, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'linode-db-8x32', vCpu: 8, ramGb: 32, hourlyPostgres: 0.6952, hourlyMySql: 0.6952, hourlySqlServer: 0.6952, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'linode-db-8x64', vCpu: 8, ramGb: 64, hourlyPostgres: 0.9328, hourlyMySql: 0.9328, hourlySqlServer: 0.9328, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 }
+    ],
+    networking: {
+      first10TbPerGb: 0.005,
+      next40TbPerGb: 0.005,
+      loadBalancerHourly: 0.0137, // $10/mo NodeBalancer
+      staticIpHourly: 0,
+      bundledEgressGbPerInstance: 1024,
+      overageEgressPerGb: 0.005,
+      egressPolicyNote: 'Transfer is pooled account-wide across every Linode; overage is billed at $0.005/GB — the lowest rate in this comparison.'
+    },
+    kubernetes: {
+      managementHourlyFeePerCluster: 0.00, // LKE control plane is always free, including HA
+      freeFirstCluster: true
+    }
+  },
+
+  [CloudProvider.OVHCLOUD]: {
+    provider: CloudProvider.OVHCLOUD,
+    region: 'BHS (Beauharnois, Canada)',
+    compute: [
+      { family: 'Balanced (b3)', name: 'b3-8', vCpu: 2, ramGb: 4, hourlyOnDemandLinux: 0.0161, hourly1YrReservedLinux: 0.0121, hourly3YrReservedLinux: 0.0105, hourlySpotLinux: 0.0105, windowsHourlySurcharge: 0.0081 },
+      { family: 'Balanced (b3)', name: 'b3-16', vCpu: 2, ramGb: 8, hourlyOnDemandLinux: 0.0230, hourly1YrReservedLinux: 0.0173, hourly3YrReservedLinux: 0.0150, hourlySpotLinux: 0.0150, windowsHourlySurcharge: 0.0115 },
+      { family: 'Balanced (b3)', name: 'b3-32', vCpu: 4, ramGb: 16, hourlyOnDemandLinux: 0.0645, hourly1YrReservedLinux: 0.0484, hourly3YrReservedLinux: 0.0419, hourlySpotLinux: 0.0419, windowsHourlySurcharge: 0.0323 },
+      { family: 'Balanced (b3)', name: 'b3-64', vCpu: 8, ramGb: 32, hourlyOnDemandLinux: 0.1843, hourly1YrReservedLinux: 0.1382, hourly3YrReservedLinux: 0.1198, hourlySpotLinux: 0.1198, windowsHourlySurcharge: 0.0922 },
+      { family: 'Compute Optimized (c3)', name: 'c3-32', vCpu: 16, ramGb: 32, hourlyOnDemandLinux: 0.3264, hourly1YrReservedLinux: 0.2448, hourly3YrReservedLinux: 0.2122, hourlySpotLinux: 0.2122, windowsHourlySurcharge: 0.1632 },
+      { family: 'Memory Optimized (r3)', name: 'r3-128', vCpu: 16, ramGb: 128, hourlyOnDemandLinux: 0.4838, hourly1YrReservedLinux: 0.3629, hourly3YrReservedLinux: 0.3145, hourlySpotLinux: 0.3145, windowsHourlySurcharge: 0.2419 },
+      { family: 'Memory Optimized (r3)', name: 'r3-256', vCpu: 32, ramGb: 128, hourlyOnDemandLinux: 0.7373, hourly1YrReservedLinux: 0.5530, hourly3YrReservedLinux: 0.4792, hourlySpotLinux: 0.4792, windowsHourlySurcharge: 0.3687 } // no spot — hourlySpotLinux cloned from 3-yr, gated by PROVIDER_CAPABILITIES
+    ],
+    storage: {
+      HOT: { tier: 'HOT', costPerGbMonth: 0.0122, costPer10kReads: 0.004, costPer10kWrites: 0.05 },
+      COOL: { tier: 'COOL', costPerGbMonth: 0.0122, costPer10kReads: 0.01, costPer10kWrites: 0.10 }, // UNSUPPORTED — no separate Cool tier, cloned from HOT
+      COLD: { tier: 'COLD', costPerGbMonth: 0.0018, costPer10kReads: 0.05, costPer10kWrites: 0.13 }, // UNSUPPORTED — cloned from ARCHIVE
+      ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: 0.0018, costPer10kReads: 0.50, costPer10kWrites: 0.30 }
+    },
+    database: [
+      { name: 'db1-2-4', vCpu: 2, ramGb: 4, hourlyPostgres: 0.0374, hourlyMySql: 0.0374, hourlySqlServer: 0.0374, storagePerGbMonth: 0.08, multiAzMultiplier: 2.0 }, // sqlServer UNSUPPORTED — cloned, gated by PROVIDER_CAPABILITIES
+      { name: 'db1-4-16', vCpu: 4, ramGb: 16, hourlyPostgres: 0.1738, hourlyMySql: 0.1738, hourlySqlServer: 0.1738, storagePerGbMonth: 0.08, multiAzMultiplier: 2.0 },
+      { name: 'db1-8-32', vCpu: 8, ramGb: 32, hourlyPostgres: 0.3476, hourlyMySql: 0.3476, hourlySqlServer: 0.3476, storagePerGbMonth: 0.08, multiAzMultiplier: 2.0 },
+      { name: 'db1-8-64', vCpu: 8, ramGb: 64, hourlyPostgres: 0.4664, hourlyMySql: 0.4664, hourlySqlServer: 0.4664, storagePerGbMonth: 0.08, multiAzMultiplier: 2.0 }
+    ],
+    networking: {
+      first10TbPerGb: 0,
+      next40TbPerGb: 0,
+      loadBalancerHourly: 0.0169,
+      staticIpHourly: 0.0027,
+      unlimitedEgress: true,
+      egressPolicyNote: 'Outbound bandwidth is unlimited and free on every OVHcloud Public Cloud plan (fair-use policy).'
+    },
+    kubernetes: {
+      managementHourlyFeePerCluster: 0.00, // No paid control-plane tier at all
       freeFirstCluster: true
     }
   }

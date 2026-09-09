@@ -9,6 +9,7 @@ import { TcoChartComponent } from '../../components/charts/tco-chart.component';
 import { RecommendationsComponent } from '../../components/recommendations/recommendations.component';
 import { ExportShareModalComponent } from '../../components/export-share-modal/export-share-modal.component';
 import { CostTopologyComponent } from '../../components/cost-topology/cost-topology.component';
+import { ProviderPickerComponent } from '../../components/provider-picker/provider-picker.component';
 import { EstimatorStore } from '../../state/estimator.store';
 import { SeoService } from '../../core/services/seo.service';
 import { SchemaGenerator } from '../../core/seo/schema-generator';
@@ -26,7 +27,8 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
     TcoChartComponent,
     RecommendationsComponent,
     ExportShareModalComponent,
-    CostTopologyComponent
+    CostTopologyComponent,
+    ProviderPickerComponent
   ],
   template: `
     <div class="space-y-8 pb-16">
@@ -68,6 +70,9 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
         <!-- Interactive Visual Cost Topology (Feature 4) -->
         <app-cost-topology></app-cost-topology>
 
+        <!-- Provider selection — big 3 pre-selected, expand up to all 9 -->
+        <app-provider-picker></app-provider-picker>
+
         <!-- Live Side-by-Side Matrix Table -->
         <app-matrix-table></app-matrix-table>
 
@@ -101,7 +106,7 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
             <div class="rounded-xl bg-slate-800/40 p-5 border border-slate-700/40 text-center">
               <div class="w-10 h-10 mx-auto rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-extrabold mb-3">3</div>
               <h3 class="text-sm font-bold text-white m-0 mb-2">Compare & Share Results</h3>
-              <p class="text-xs text-slate-300 leading-relaxed m-0">View the side-by-side TCO matrix across AWS, Azure, and GCP. Export as CSV, print as PDF, or share via instant URL — no signup required.</p>
+              <p class="text-xs text-slate-300 leading-relaxed m-0">View the side-by-side TCO matrix across up to 9 cloud providers — AWS, Azure, GCP, and 6 more. Export as CSV, print as PDF, or share via instant URL — no signup required.</p>
             </div>
           </div>
         </section>

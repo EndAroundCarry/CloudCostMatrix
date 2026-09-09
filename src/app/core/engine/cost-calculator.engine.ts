@@ -1,4 +1,5 @@
-import { CloudProvider } from '../models/cloud-provider.enum';
+import { ALL_PROVIDERS, CloudProvider, PROVIDER_METAS, normalizeSelectedProviders } from '../models/cloud-provider.enum';
+import { PROVIDER_CAPABILITIES } from '../models/provider-capabilities.model';
 import { ServiceCategory } from '../models/service-category.enum';
 import {
   ArchitectureEstimateConfig,
@@ -11,10 +12,31 @@ import {
   RegionId,
   REGION_DEFINITIONS,
   ServiceCostBreakdown,
-  StorageSpec
+  StorageSpec,
+  UnsupportedReason
 } from '../models/pricing.model';
 import { EFFECTIVE_CATALOGS } from './catalog/pricing-catalog.resolver';
 import { ComputeBenchmark, DatabaseBenchmark } from './catalog/seeded-pricing-catalog';
+
+/** Builds the "Not offered" breakdown for a genuinely unsupported combination — never a fabricated cost. */
+function notOfferedBreakdown(
+  provider: CloudProvider,
+  category: ServiceCategory,
+  reason: UnsupportedReason,
+  note: string | undefined
+): ServiceCostBreakdown {
+  return {
+    provider,
+    category,
+    supported: false,
+    monthlyCost: 0,
+    annualCost: 0,
+    instanceTypeOrTier: 'Not offered',
+    details: [note ?? `${PROVIDER_METAS[provider].shortName} does not offer this combination.`],
+    unsupportedReason: reason,
+    unsupportedNote: note
+  };
+}
 
 export class CostCalculatorEngine {
   /**
@@ -22,14 +44,14 @@ export class CostCalculatorEngine {
    */
   public static calculateCompute(spec: ComputeSpec, provider: CloudProvider): ServiceCostBreakdown {
     const catalog = EFFECTIVE_CATALOGS[provider];
-    
+
     // Find closest match by vCPU and RAM
     const sorted = [...catalog.compute].sort((a, b) => {
       const diffA = Math.abs(a.vCpu - spec.vCpu) * 4 + Math.abs(a.ramGb - spec.ramGb);
       const diffB = Math.abs(b.vCpu - spec.vCpu) * 4 + Math.abs(b.ramGb - spec.ramGb);
       return diffA - diffB;
     });
-    
+
     const matched: ComputeBenchmark = sorted[0] || catalog.compute[0];
 
     // Determine hourly rate based on commitment
@@ -58,6 +80,7 @@ export class CostCalculatorEngine {
     return {
       provider,
       category: ServiceCategory.COMPUTE,
+      supported: true,
       monthlyCost,
       annualCost,
       instanceTypeOrTier: matched.name,
@@ -77,26 +100,33 @@ export class CostCalculatorEngine {
     const catalog = EFFECTIVE_CATALOGS[provider];
     const tierPricing = catalog.storage[spec.tier];
 
-    const capacityCost = spec.capacityGb * tierPricing.costPerGbMonth;
+    const rawCapacityCost = spec.capacityGb * tierPricing.costPerGbMonth;
+    const capacityCost = Math.max(rawCapacityCost, tierPricing.minimumMonthlyFee ?? 0);
     const readCost = (spec.readOpsThousands / 10) * tierPricing.costPer10kReads;
     const writeCost = (spec.writeOpsThousands / 10) * tierPricing.costPer10kWrites;
 
     const monthlyCost = Number((capacityCost + readCost + writeCost).toFixed(2));
     const annualCost = Number((monthlyCost * 12).toFixed(2));
 
-    const tierLabel = `${provider === CloudProvider.AWS ? 'Amazon S3' : provider === CloudProvider.AZURE ? 'Azure Blob' : 'Google Cloud Storage'} (${spec.tier})`;
+    const tierLabel = `${PROVIDER_METAS[provider].services.objectStorage} (${spec.tier})`;
+
+    const details = [
+      `${spec.capacityGb.toLocaleString()} GB at $${tierPricing.costPerGbMonth}/GB-mo ($${rawCapacityCost.toFixed(2)})`,
+      `${spec.readOpsThousands.toLocaleString()}k Read ops ($${readCost.toFixed(2)})`,
+      `${spec.writeOpsThousands.toLocaleString()}k Write ops ($${writeCost.toFixed(2)})`
+    ];
+    if (tierPricing.minimumMonthlyFee && rawCapacityCost < tierPricing.minimumMonthlyFee) {
+      details.push(`$${tierPricing.minimumMonthlyFee}/mo minimum storage fee applied`);
+    }
 
     return {
       provider,
       category: ServiceCategory.STORAGE,
+      supported: true,
       monthlyCost,
       annualCost,
       instanceTypeOrTier: tierLabel,
-      details: [
-        `${spec.capacityGb.toLocaleString()} GB at $${tierPricing.costPerGbMonth}/GB-mo ($${capacityCost.toFixed(2)})`,
-        `${spec.readOpsThousands.toLocaleString()}k Read ops ($${readCost.toFixed(2)})`,
-        `${spec.writeOpsThousands.toLocaleString()}k Write ops ($${writeCost.toFixed(2)})`
-      ],
+      details,
       savingsTips: spec.tier === 'HOT' && spec.capacityGb > 500
         ? 'Enable Lifecycle rules to automatically transition older data to Cool/Cold storage.'
         : undefined
@@ -130,11 +160,12 @@ export class CostCalculatorEngine {
     const monthlyCost = Number((computeMonthly + storageMonthly).toFixed(2));
     const annualCost = Number((monthlyCost * 12).toFixed(2));
 
-    const dbFamilyLabel = `${provider === CloudProvider.AWS ? 'RDS/Aurora' : provider === CloudProvider.AZURE ? 'Azure Database' : 'Cloud SQL'} ${matched.name}`;
+    const dbFamilyLabel = `${PROVIDER_METAS[provider].services.managedDb} ${matched.name}`;
 
     return {
       provider,
       category: ServiceCategory.DATABASE,
+      supported: true,
       monthlyCost,
       annualCost,
       instanceTypeOrTier: dbFamilyLabel,
@@ -150,38 +181,58 @@ export class CostCalculatorEngine {
   }
 
   /**
-   * Calculates networking & data egress cost
+   * Calculates networking & data egress cost.
+   *
+   * `instanceCount` (compute + Kubernetes worker nodes) drives per-instance
+   * bundled bandwidth (DigitalOcean, Linode) — it defaults to 0 so any
+   * external caller that predates this parameter keeps compiling and simply
+   * sees no bundled allowance applied.
    */
-  public static calculateNetworking(spec: NetworkingSpec, provider: CloudProvider): ServiceCostBreakdown {
+  public static calculateNetworking(spec: NetworkingSpec, provider: CloudProvider, instanceCount: number = 0): ServiceCostBreakdown {
     const catalog = EFFECTIVE_CATALOGS[provider];
+    const net = catalog.networking;
     const egressGb = spec.egressGbPerMonth;
 
     let egressCost = 0;
-    if (egressGb <= 10240) {
-      egressCost = egressGb * catalog.networking.first10TbPerGb;
+    let billableGb = egressGb;
+    if (net.unlimitedEgress) {
+      billableGb = 0;
+      egressCost = 0;
     } else {
-      egressCost = (10240 * catalog.networking.first10TbPerGb) + ((egressGb - 10240) * catalog.networking.next40TbPerGb);
+      const freeAllowance = (net.freeEgressGbPerMonth ?? 0) + (net.bundledEgressGbPerInstance ?? 0) * instanceCount;
+      billableGb = Math.max(0, egressGb - freeAllowance);
+      if (net.overageEgressPerGb != null) {
+        egressCost = billableGb * net.overageEgressPerGb;
+      } else if (billableGb <= 10240) {
+        egressCost = billableGb * net.first10TbPerGb;
+      } else {
+        egressCost = (10240 * net.first10TbPerGb) + ((billableGb - 10240) * net.next40TbPerGb);
+      }
     }
 
-    const lbCost = spec.loadBalancersCount * catalog.networking.loadBalancerHourly * 730;
-    const staticIpCost = spec.staticIpsCount * catalog.networking.staticIpHourly * 730;
+    const lbCost = spec.loadBalancersCount * net.loadBalancerHourly * 730;
+    const staticIpCost = spec.staticIpsCount * net.staticIpHourly * 730;
 
     const monthlyCost = Number((egressCost + lbCost + staticIpCost).toFixed(2));
     const annualCost = Number((monthlyCost * 12).toFixed(2));
 
+    const details = [
+      `${egressGb.toLocaleString()} GB Internet Egress ($${egressCost.toFixed(2)})`,
+      `${spec.loadBalancersCount}x Load Balancers ($${lbCost.toFixed(2)}/mo)`,
+      `${spec.staticIpsCount}x Public Static IPv4 ($${staticIpCost.toFixed(2)}/mo)`
+    ];
+    if (net.egressPolicyNote) details.push(net.egressPolicyNote);
+
     return {
       provider,
       category: ServiceCategory.NETWORKING,
+      supported: true,
       monthlyCost,
       annualCost,
-      instanceTypeOrTier: `${provider} Data Transfer & Load Balancer`,
-      details: [
-        `${egressGb.toLocaleString()} GB Internet Egress ($${egressCost.toFixed(2)})`,
-        `${spec.loadBalancersCount}x Load Balancers ($${lbCost.toFixed(2)}/mo)`,
-        `${spec.staticIpsCount}x Public Static IPv4 ($${staticIpCost.toFixed(2)}/mo)`
-      ],
-      savingsTips: egressGb > 5000
-        ? 'Route traffic via CloudFront/Azure CDN/Cloud CDN to cut egress costs by 30-50%.'
+      instanceTypeOrTier: PROVIDER_METAS[provider].services.networking,
+      details,
+      savingsTips: egressGb > 5000 && !net.unlimitedEgress
+        ? `Route traffic via ${PROVIDER_METAS[provider].services.cdn} to cut egress costs by 30-50%.`
         : undefined
     };
   }
@@ -191,7 +242,7 @@ export class CostCalculatorEngine {
    */
   public static calculateKubernetes(spec: KubernetesSpec, provider: CloudProvider): ServiceCostBreakdown {
     const catalog = EFFECTIVE_CATALOGS[provider];
-    
+
     // Control plane management fee
     let billableClusters = spec.clustersCount;
     if (catalog.kubernetes.freeFirstCluster && billableClusters > 0) {
@@ -214,11 +265,12 @@ export class CostCalculatorEngine {
     const monthlyCost = Number((controlPlaneMonthly + workerComputeBreakdown.monthlyCost).toFixed(2));
     const annualCost = Number((monthlyCost * 12).toFixed(2));
 
-    const k8sName = provider === CloudProvider.AWS ? 'Amazon EKS' : provider === CloudProvider.AZURE ? 'Azure AKS' : 'Google Cloud GKE';
+    const k8sName = PROVIDER_METAS[provider].services.kubernetes;
 
     return {
       provider,
       category: ServiceCategory.KUBERNETES,
+      supported: true,
       monthlyCost,
       annualCost,
       instanceTypeOrTier: `${k8sName} (${totalWorkerNodes} Nodes)`,
@@ -227,17 +279,21 @@ export class CostCalculatorEngine {
         `Worker Nodes: ${totalWorkerNodes}x ${workerComputeBreakdown.instanceTypeOrTier} ($${workerComputeBreakdown.monthlyCost.toFixed(2)}/mo)`,
         `Node Sizing: ${spec.workerVcpu} vCPU, ${spec.workerRamGb} GB RAM per node`
       ],
-      savingsTips: provider === CloudProvider.AZURE
-        ? 'AKS Standard Tier includes free cluster management, providing instant base savings.'
-        : 'Use Spot or Graviton/Tau VM node pools for non-critical stateless microservices.'
+      savingsTips: PROVIDER_METAS[provider].savingsTips[ServiceCategory.KUBERNETES]
+        ?? 'Use Spot or preemptible node pools for non-critical stateless microservices.'
     };
   }
 
   /**
-   * Generates a full side-by-side comparison matrix for AWS, Azure, and GCP
+   * Generates a full side-by-side comparison matrix across every provider this
+   * build knows about. All providers are always priced — config.selectedProviders
+   * (normalized) is a pure view/ranking filter, never a computation filter, so
+   * /compare/:slug pages and diff scenarios always have real numbers regardless
+   * of what the user has toggled on in the picker.
    */
   public static calculateFullMatrix(config: ArchitectureEstimateConfig): ComparisonMatrixResult {
-    const providers = [CloudProvider.AWS, CloudProvider.AZURE, CloudProvider.GCP];
+    const providers = ALL_PROVIDERS;
+    const selectedProviders = normalizeSelectedProviders(config.selectedProviders);
     const breakdowns: ServiceCostBreakdown[] = [];
     const providerTotals: Partial<Record<CloudProvider, ProviderTotalCost>> = {};
 
@@ -247,7 +303,14 @@ export class CostCalculatorEngine {
     const regionalMultiplier = regionDef.pricingMultiplier;
     const scaleFactor = Math.max(1, config.scaleFactor || 1);
 
+    const computeInstances = config.activeCategories[ServiceCategory.COMPUTE] ? config.compute.count * scaleFactor : 0;
+    const k8sInstances = config.activeCategories[ServiceCategory.KUBERNETES]
+      ? config.kubernetes.clustersCount * config.kubernetes.workerNodesPerCluster * scaleFactor
+      : 0;
+    const totalInstanceCount = computeInstances + k8sInstances;
+
     for (const provider of providers) {
+      const cap = PROVIDER_CAPABILITIES[provider];
       const categoryTotals: Record<ServiceCategory, number> = {
         [ServiceCategory.COMPUTE]: 0,
         [ServiceCategory.STORAGE]: 0,
@@ -255,18 +318,30 @@ export class CostCalculatorEngine {
         [ServiceCategory.NETWORKING]: 0,
         [ServiceCategory.KUBERNETES]: 0
       };
+      const unsupportedCategories: ServiceCategory[] = [];
+
+      const applyMultiplier = (bd: ServiceCostBreakdown) => {
+        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
+        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
+      };
 
       if (config.activeCategories[ServiceCategory.COMPUTE]) {
-        // Adjust for scaleFactor and region
         const scaledCompute: ComputeSpec = {
           ...config.compute,
           count: config.compute.count * scaleFactor
         };
-        const bd = this.calculateCompute(scaledCompute, provider);
-        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
-        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
+        let bd: ServiceCostBreakdown;
+        if (!cap.categories[ServiceCategory.COMPUTE]) {
+          bd = notOfferedBreakdown(provider, ServiceCategory.COMPUTE, 'CATEGORY_NOT_OFFERED', cap.notes.categories?.[ServiceCategory.COMPUTE]);
+        } else if (scaledCompute.os === 'WINDOWS' && !cap.windowsOs) {
+          bd = notOfferedBreakdown(provider, ServiceCategory.COMPUTE, 'WINDOWS_NOT_OFFERED', cap.notes.windowsOs);
+        } else {
+          bd = this.calculateCompute(scaledCompute, provider);
+          applyMultiplier(bd);
+        }
         breakdowns.push(bd);
-        categoryTotals[ServiceCategory.COMPUTE] = bd.monthlyCost;
+        if (bd.supported) categoryTotals[ServiceCategory.COMPUTE] = bd.monthlyCost;
+        else unsupportedCategories.push(ServiceCategory.COMPUTE);
       }
 
       if (config.activeCategories[ServiceCategory.STORAGE]) {
@@ -276,11 +351,18 @@ export class CostCalculatorEngine {
           readOpsThousands: config.storage.readOpsThousands * scaleFactor,
           writeOpsThousands: config.storage.writeOpsThousands * scaleFactor
         };
-        const bd = this.calculateStorage(scaledStorage, provider);
-        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
-        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
+        let bd: ServiceCostBreakdown;
+        if (!cap.categories[ServiceCategory.STORAGE]) {
+          bd = notOfferedBreakdown(provider, ServiceCategory.STORAGE, 'CATEGORY_NOT_OFFERED', cap.notes.categories?.[ServiceCategory.STORAGE]);
+        } else if (!cap.storageTiers[scaledStorage.tier]) {
+          bd = notOfferedBreakdown(provider, ServiceCategory.STORAGE, 'STORAGE_TIER_NOT_OFFERED', cap.notes.storageTiers?.[scaledStorage.tier]);
+        } else {
+          bd = this.calculateStorage(scaledStorage, provider);
+          applyMultiplier(bd);
+        }
         breakdowns.push(bd);
-        categoryTotals[ServiceCategory.STORAGE] = bd.monthlyCost;
+        if (bd.supported) categoryTotals[ServiceCategory.STORAGE] = bd.monthlyCost;
+        else unsupportedCategories.push(ServiceCategory.STORAGE);
       }
 
       if (config.activeCategories[ServiceCategory.DATABASE]) {
@@ -288,11 +370,18 @@ export class CostCalculatorEngine {
           ...config.database,
           storageGb: config.database.storageGb * scaleFactor
         };
-        const bd = this.calculateDatabase(scaledDb, provider);
-        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
-        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
+        let bd: ServiceCostBreakdown;
+        if (!cap.categories[ServiceCategory.DATABASE]) {
+          bd = notOfferedBreakdown(provider, ServiceCategory.DATABASE, 'CATEGORY_NOT_OFFERED', cap.notes.categories?.[ServiceCategory.DATABASE]);
+        } else if (!cap.dbEngines[scaledDb.engine]) {
+          bd = notOfferedBreakdown(provider, ServiceCategory.DATABASE, 'DB_ENGINE_NOT_OFFERED', cap.notes.dbEngines?.[scaledDb.engine]);
+        } else {
+          bd = this.calculateDatabase(scaledDb, provider);
+          applyMultiplier(bd);
+        }
         breakdowns.push(bd);
-        categoryTotals[ServiceCategory.DATABASE] = bd.monthlyCost;
+        if (bd.supported) categoryTotals[ServiceCategory.DATABASE] = bd.monthlyCost;
+        else unsupportedCategories.push(ServiceCategory.DATABASE);
       }
 
       if (config.activeCategories[ServiceCategory.NETWORKING]) {
@@ -300,11 +389,16 @@ export class CostCalculatorEngine {
           ...config.networking,
           egressGbPerMonth: config.networking.egressGbPerMonth * scaleFactor
         };
-        const bd = this.calculateNetworking(scaledNet, provider);
-        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
-        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
+        let bd: ServiceCostBreakdown;
+        if (!cap.categories[ServiceCategory.NETWORKING]) {
+          bd = notOfferedBreakdown(provider, ServiceCategory.NETWORKING, 'CATEGORY_NOT_OFFERED', cap.notes.categories?.[ServiceCategory.NETWORKING]);
+        } else {
+          bd = this.calculateNetworking(scaledNet, provider, totalInstanceCount);
+          applyMultiplier(bd);
+        }
         breakdowns.push(bd);
-        categoryTotals[ServiceCategory.NETWORKING] = bd.monthlyCost;
+        if (bd.supported) categoryTotals[ServiceCategory.NETWORKING] = bd.monthlyCost;
+        else unsupportedCategories.push(ServiceCategory.NETWORKING);
       }
 
       if (config.activeCategories[ServiceCategory.KUBERNETES]) {
@@ -312,28 +406,21 @@ export class CostCalculatorEngine {
           ...config.kubernetes,
           workerNodesPerCluster: config.kubernetes.workerNodesPerCluster * scaleFactor
         };
-        const bd = this.calculateKubernetes(scaledK8s, provider);
-        bd.monthlyCost = Number((bd.monthlyCost * regionalMultiplier).toFixed(2));
-        bd.annualCost = Number((bd.monthlyCost * 12).toFixed(2));
+        let bd: ServiceCostBreakdown;
+        if (!cap.categories[ServiceCategory.KUBERNETES]) {
+          bd = notOfferedBreakdown(provider, ServiceCategory.KUBERNETES, 'CATEGORY_NOT_OFFERED', cap.notes.categories?.[ServiceCategory.KUBERNETES]);
+        } else {
+          bd = this.calculateKubernetes(scaledK8s, provider);
+          applyMultiplier(bd);
+        }
         breakdowns.push(bd);
-        categoryTotals[ServiceCategory.KUBERNETES] = bd.monthlyCost;
+        if (bd.supported) categoryTotals[ServiceCategory.KUBERNETES] = bd.monthlyCost;
+        else unsupportedCategories.push(ServiceCategory.KUBERNETES);
       }
 
       const monthlyTotal = Number(Object.values(categoryTotals).reduce((sum, val) => sum + val, 0).toFixed(2));
       const annualTotal = Number((monthlyTotal * 12).toFixed(2));
       const threeYearTotal = Number((annualTotal * 3).toFixed(2));
-
-      const highlightNotes: string[] = [];
-      if (provider === CloudProvider.AWS) {
-        highlightNotes.push('Graviton3/4 arm64 processors offer up to 20% lower price/performance.');
-        highlightNotes.push('Savings Plans apply flexibly across EC2, Fargate, and Lambda.');
-      } else if (provider === CloudProvider.AZURE) {
-        highlightNotes.push('Azure Hybrid Benefit cuts up to 40% on Windows & SQL Server licenses.');
-        highlightNotes.push('Free AKS cluster management on baseline tier.');
-      } else if (provider === CloudProvider.GCP) {
-        highlightNotes.push('Custom Machine Types avoid paying for unused vCPUs or RAM.');
-        highlightNotes.push('First GKE zonal cluster management fee is completely waived.');
-      }
 
       providerTotals[provider] = {
         provider,
@@ -341,33 +428,43 @@ export class CostCalculatorEngine {
         annualTotal,
         threeYearTotal,
         categoryBreakdown: categoryTotals,
-        highlightNotes
+        highlightNotes: [...PROVIDER_METAS[provider].highlightNotes],
+        unsupportedCategories,
+        hasCoverageGap: unsupportedCategories.length > 0
       };
     }
 
-    // Determine cheapest providers
-    const sortedByMonthly = [...providers].sort(
-      (a, b) => (providerTotals[a]?.monthlyTotal ?? 0) - (providerTotals[b]?.monthlyTotal ?? 0)
-    );
-    const sortedByAnnual = [...providers].sort(
-      (a, b) => (providerTotals[a]?.annualTotal ?? 0) - (providerTotals[b]?.annualTotal ?? 0)
-    );
+    const totals = providerTotals as Record<CloudProvider, ProviderTotalCost>;
+
+    // Rank only over providers the user actually selected, and only the ones
+    // that can honestly be compared for this config — a missing line item
+    // must never let a provider "win" purely because it couldn't be priced.
+    const comparableProviders = selectedProviders.filter((p) => !totals[p].hasCoverageGap);
+    const allSelectedHaveGaps = comparableProviders.length === 0;
+    const rankPool = allSelectedHaveGaps ? selectedProviders : comparableProviders;
+
+    const sortedByMonthly = [...rankPool].sort((a, b) => totals[a].monthlyTotal - totals[b].monthlyTotal);
+    const sortedByAnnual = [...rankPool].sort((a, b) => totals[a].annualTotal - totals[b].annualTotal);
 
     const cheapestMonthly = sortedByMonthly[0];
     const mostExpensiveMonthly = sortedByMonthly[sortedByMonthly.length - 1];
 
-    const minCost = providerTotals[cheapestMonthly]?.monthlyTotal ?? 0;
-    const maxCost = providerTotals[mostExpensiveMonthly]?.monthlyTotal ?? 0;
+    const minCost = totals[cheapestMonthly]?.monthlyTotal ?? 0;
+    const maxCost = totals[mostExpensiveMonthly]?.monthlyTotal ?? 0;
     const monthlyMaxSavings = Number((maxCost - minCost).toFixed(2));
     const monthlyMaxSavingsPercent = maxCost > 0 ? Math.round((monthlyMaxSavings / maxCost) * 100) : 0;
     const annualMaxSavings = Number((monthlyMaxSavings * 12).toFixed(2));
 
     return {
       config,
-      providers: providerTotals as Record<CloudProvider, ProviderTotalCost>,
+      providers: totals,
       breakdowns,
+      selectedProviders,
+      comparableProviders,
+      allSelectedHaveGaps,
       cheapestMonthlyProvider: cheapestMonthly,
       cheapestAnnualProvider: sortedByAnnual[0],
+      mostExpensiveMonthlyProvider: mostExpensiveMonthly,
       monthlyMaxSavings,
       monthlyMaxSavingsPercent,
       annualMaxSavings

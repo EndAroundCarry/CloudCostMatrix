@@ -48,7 +48,7 @@ import {
                 {{ store.pricingLabel() }}
               </span>
             </div>
-            <p class="text-xs text-slate-400 hidden sm:block m-0">AWS vs. Azure vs. GCP TCO Estimator</p>
+            <p class="text-xs text-slate-400 hidden sm:block m-0">9-Provider Multi-Cloud TCO Estimator</p>
           </div>
         </a>
 
@@ -184,7 +184,10 @@ export class HeaderComponent {
     if (mode === 'live') {
       const stamp = this.store.pricingLastSyncedAt();
       const date = stamp ? new Date(stamp).toUTCString() : 'unknown';
-      return `Live pricing feed synced ${date}\nSources: AWS S3 · Azure Retail · GCP Catalog\nApp bundled at build-time — zero runtime cost.`;
+      const liveSources = Object.entries(this.store.pricingSources())
+        .filter(([, v]) => v.startsWith('live'))
+        .map(([k]) => k);
+      return `Live pricing feed synced ${date}\nLive sources: ${liveSources.join(', ') || 'none'} · Remaining providers use the 2026 seed benchmark\nApp bundled at build-time — zero runtime cost.`;
     }
     return 'Benchmark 2026 catalog (seed). Run scripts/sync-prices.mjs to fetch live cloud price feeds.';
   }

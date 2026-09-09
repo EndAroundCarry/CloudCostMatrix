@@ -114,7 +114,7 @@ export interface KubernetesSpec {
 export interface ArchitectureEstimateConfig {
   id?: string;
   name: string;
-  region: string;
+  region: RegionId;
   scaleFactor?: number; // 1x baseline, 2x, 5x, 10x
   compute: ComputeSpec;
   storage: StorageSpec;
@@ -122,16 +122,33 @@ export interface ArchitectureEstimateConfig {
   networking: NetworkingSpec;
   kubernetes: KubernetesSpec;
   activeCategories: Record<ServiceCategory, boolean>;
+  /**
+   * Which providers to compare/rank. Optional so every pre-existing share link,
+   * saved estimate, and blueprint config keeps parsing unchanged — always read
+   * this through normalizeSelectedProviders(), never directly, since a raw
+   * value may be missing, stale, or carry an id this build doesn't recognize.
+   */
+  selectedProviders?: CloudProvider[];
 }
+
+export type UnsupportedReason =
+  | 'CATEGORY_NOT_OFFERED'
+  | 'STORAGE_TIER_NOT_OFFERED'
+  | 'DB_ENGINE_NOT_OFFERED'
+  | 'WINDOWS_NOT_OFFERED';
 
 export interface ServiceCostBreakdown {
   provider: CloudProvider;
   category: ServiceCategory;
-  monthlyCost: number;
-  annualCost: number;
-  instanceTypeOrTier: string;
+  /** false when this provider genuinely does not sell this combination. */
+  supported: boolean;
+  monthlyCost: number; // 0 when !supported — never a fabricated number
+  annualCost: number; // 0 when !supported
+  instanceTypeOrTier: string; // 'Not offered' when !supported
   details: string[];
   savingsTips?: string;
+  unsupportedReason?: UnsupportedReason;
+  unsupportedNote?: string;
 }
 
 export interface ProviderTotalCost {
@@ -141,14 +158,26 @@ export interface ProviderTotalCost {
   threeYearTotal: number;
   categoryBreakdown: Record<ServiceCategory, number>;
   highlightNotes: string[];
+  /** ACTIVE categories (per config.activeCategories) this provider could not price. */
+  unsupportedCategories: ServiceCategory[];
+  /** true when unsupportedCategories is non-empty — this total is NOT a fair comparison. */
+  hasCoverageGap: boolean;
 }
 
 export interface ComparisonMatrixResult {
   config: ArchitectureEstimateConfig;
+  /** Always all providers this build knows about — never partial. selectedProviders is the view filter. */
   providers: Record<CloudProvider, ProviderTotalCost>;
   breakdowns: ServiceCostBreakdown[];
+  /** The user's chosen comparison set (normalized — see normalizeSelectedProviders). */
+  selectedProviders: CloudProvider[];
+  /** selectedProviders minus any with a coverage gap for this config — what ranking is computed over. */
+  comparableProviders: CloudProvider[];
+  /** true when every selected provider has a coverage gap — ranking falls back to the full selection. */
+  allSelectedHaveGaps: boolean;
   cheapestMonthlyProvider: CloudProvider;
   cheapestAnnualProvider: CloudProvider;
+  mostExpensiveMonthlyProvider: CloudProvider;
   monthlyMaxSavings: number; // Difference between highest and lowest
   monthlyMaxSavingsPercent: number;
   annualMaxSavings: number;

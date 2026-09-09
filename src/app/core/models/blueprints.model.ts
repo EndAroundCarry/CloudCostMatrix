@@ -23,7 +23,7 @@ export const ARCHITECTURE_BLUEPRINTS: ArchitectureBlueprint[] = [
     recommendedFor: 'Early startups, MVPs, B2B SaaS applications',
     config: {
       name: 'SaaS Starter MVP',
-      region: 'US-East (Virginia)',
+      region: 'us-east-1',
       activeCategories: {
         [ServiceCategory.COMPUTE]: true,
         [ServiceCategory.STORAGE]: true,
@@ -76,7 +76,7 @@ export const ARCHITECTURE_BLUEPRINTS: ArchitectureBlueprint[] = [
     recommendedFor: 'Online retail, flash-sale platforms, payment processing',
     config: {
       name: 'High-Traffic E-Commerce',
-      region: 'US-East (Virginia)',
+      region: 'us-east-1',
       activeCategories: {
         [ServiceCategory.COMPUTE]: true,
         [ServiceCategory.STORAGE]: true,
@@ -129,7 +129,7 @@ export const ARCHITECTURE_BLUEPRINTS: ArchitectureBlueprint[] = [
     recommendedFor: 'Microservices, FinTech, high-availability multi-tenant platforms',
     config: {
       name: 'Enterprise Microservices (K8s)',
-      region: 'US-East (Virginia)',
+      region: 'us-east-1',
       activeCategories: {
         [ServiceCategory.COMPUTE]: false,
         [ServiceCategory.STORAGE]: true,
@@ -182,7 +182,7 @@ export const ARCHITECTURE_BLUEPRINTS: ArchitectureBlueprint[] = [
     recommendedFor: 'GenAI applications, model hosting, real-time embeddings search',
     config: {
       name: 'AI / ML Inference & Pipeline',
-      region: 'US-East (Virginia)',
+      region: 'us-east-1',
       activeCategories: {
         [ServiceCategory.COMPUTE]: true,
         [ServiceCategory.STORAGE]: true,

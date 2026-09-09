@@ -1,4 +1,4 @@
-import { CloudProvider } from '../../models/cloud-provider.enum';
+import { ALL_PROVIDERS, CloudProvider } from '../../models/cloud-provider.enum';
 import { BENCHMARK_CATALOGS, ProviderPricingCatalog } from './seeded-pricing-catalog';
 import * as liveCacheJson from './live-pricing-cache.json';
 
@@ -47,8 +47,9 @@ function mergeOverSeed(seed: ProviderPricingCatalog, live?: ProviderPricingCatal
   };
 }
 
-export const EFFECTIVE_CATALOGS: Record<CloudProvider, ProviderPricingCatalog> = {
-  [CloudProvider.AWS]: mergeOverSeed(BENCHMARK_CATALOGS[CloudProvider.AWS], LIVE_PRICING_CACHE.catalogs?.[CloudProvider.AWS]),
-  [CloudProvider.AZURE]: mergeOverSeed(BENCHMARK_CATALOGS[CloudProvider.AZURE], LIVE_PRICING_CACHE.catalogs?.[CloudProvider.AZURE]),
-  [CloudProvider.GCP]: mergeOverSeed(BENCHMARK_CATALOGS[CloudProvider.GCP], LIVE_PRICING_CACHE.catalogs?.[CloudProvider.GCP])
-};
+export const EFFECTIVE_CATALOGS: Record<CloudProvider, ProviderPricingCatalog> = Object.fromEntries(
+  ALL_PROVIDERS.map((provider) => [
+    provider,
+    mergeOverSeed(BENCHMARK_CATALOGS[provider], LIVE_PRICING_CACHE.catalogs?.[provider])
+  ])
+) as Record<CloudProvider, ProviderPricingCatalog>;

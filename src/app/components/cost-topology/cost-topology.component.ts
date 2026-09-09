@@ -5,6 +5,7 @@ import { EstimatorStore } from '../../state/estimator.store';
 import { ServiceCategory } from '../../core/models/service-category.enum';
 import { ArchitectureEstimateConfig } from '../../core/models/pricing.model';
 import { CostCalculatorEngine } from '../../core/engine/cost-calculator.engine';
+import { PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
 
 interface TopologyNode {
   id: ServiceCategory;
@@ -207,8 +208,7 @@ export class CostTopologyComponent {
   });
 
   protected readonly cheapestProviderName = computed(() => {
-    const metas: Record<string, string> = { AWS: 'AWS', AZURE: 'Azure', GCP: 'GCP' };
-    return metas[this.matrix().cheapestMonthlyProvider] ?? 'the cheapest provider';
+    return PROVIDER_METAS[this.matrix().cheapestMonthlyProvider]?.shortName ?? 'the cheapest provider';
   });
 
   nodeCost(id: ServiceCategory): number {

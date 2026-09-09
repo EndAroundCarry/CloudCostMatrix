@@ -1,6 +1,6 @@
 import { ArchitectureEstimateConfig, ComparisonMatrixResult, ServiceCostBreakdown } from '../models/pricing.model';
 import { ServiceCategory } from '../models/service-category.enum';
-import { CloudProvider } from '../models/cloud-provider.enum';
+import { CloudProvider, normalizeSelectedProviders } from '../models/cloud-provider.enum';
 import { CostCalculatorEngine } from './cost-calculator.engine';
 import { SERVICE_CATEGORY_METAS } from '../models/service-category.enum';
 
@@ -69,8 +69,11 @@ export class ArchitectureDiffEngine {
     rows.push(this.specRow('K8s clusters', ServiceCategory.KUBERNETES, `${configA.kubernetes.clustersCount}`, `${configB.kubernetes.clustersCount}`, configA.kubernetes.clustersCount !== configB.kubernetes.clustersCount));
     rows.push(this.specRow('K8s worker nodes', ServiceCategory.KUBERNETES, `${configA.kubernetes.workerNodesPerCluster}`, `${configB.kubernetes.workerNodesPerCluster}`, configA.kubernetes.workerNodesPerCluster !== configB.kubernetes.workerNodesPerCluster));
 
-    // Provider monthly deltas (B − A)
-    const providers = [CloudProvider.AWS, CloudProvider.AZURE, CloudProvider.GCP];
+    // Provider monthly deltas (B − A) — union of both scenarios' selections so
+    // the delta grid isn't lopsided when A and B compare different provider sets.
+    const selA = normalizeSelectedProviders(configA.selectedProviders);
+    const selB = normalizeSelectedProviders(configB.selectedProviders);
+    const providers = [...new Set([...selA, ...selB])];
     const providerDeltas: ProviderMonthlyDelta[] = providers.map((p) => {
       const a = matrixA.providers[p].monthlyTotal;
       const b = matrixB.providers[p].monthlyTotal;

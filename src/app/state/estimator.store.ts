@@ -14,6 +14,7 @@ import {
 import { ServiceCategory } from '../core/models/service-category.enum';
 import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../core/models/blueprints.model';
 import { CostCalculatorEngine } from '../core/engine/cost-calculator.engine';
+import { ALL_PROVIDERS, CloudProvider, DEFAULT_SELECTED_PROVIDERS, normalizeSelectedProviders } from '../core/models/cloud-provider.enum';
 import { UrlStateService } from '../core/services/url-state.service';
 import { ESTIMATE_REPOSITORY_TOKEN, SavedEstimateRecord } from '../core/repositories/estimate.repository.interface';
 import { AUTH_SERVICE_TOKEN, AppUser } from '../core/repositories/auth.service.interface';
@@ -32,7 +33,8 @@ export class EstimatorStore {
   public readonly config = signal<ArchitectureEstimateConfig>({
     ...JSON.parse(JSON.stringify(ARCHITECTURE_BLUEPRINTS[0].config)),
     scaleFactor: 1,
-    region: 'us-east-1'
+    region: 'us-east-1',
+    selectedProviders: [...DEFAULT_SELECTED_PROVIDERS]
   });
   public readonly activeCategory = signal<ServiceCategory>(ServiceCategory.COMPUTE);
   public readonly selectedCurrency = signal<CurrencyCode>('USD');
@@ -230,7 +232,9 @@ export class EstimatorStore {
   public async loadEstimate(id: string): Promise<void> {
     const rec = this.savedEstimates().find((r) => r.id === id);
     if (!rec) return;
-    this.config.set(JSON.parse(JSON.stringify(rec.config)));
+    const cfg: ArchitectureEstimateConfig = JSON.parse(JSON.stringify(rec.config));
+    cfg.selectedProviders = normalizeSelectedProviders(cfg.selectedProviders);
+    this.config.set(cfg);
     this.activeBlueprint.set(null);
     this.isSavedEstimatesOpen.set(false);
     this.showToast(`Loaded "${rec.name}" into the matrix.`);
@@ -242,7 +246,8 @@ export class EstimatorStore {
     if (!user || !rec) return;
     const copy: ArchitectureEstimateConfig = {
       ...JSON.parse(JSON.stringify(rec.config)),
-      name: `${rec.name} (copy)`
+      name: `${rec.name} (copy)`,
+      selectedProviders: normalizeSelectedProviders(rec.config.selectedProviders)
     };
     await this.estimateRepo.saveGuestEstimate(user.uid, copy, user.isAnonymous);
     await this.refreshSavedEstimates();
@@ -288,6 +293,7 @@ export class EstimatorStore {
       if (encoded) {
         const decoded = this.urlState.decodeFromUrl(encoded);
         if (decoded) {
+          decoded.selectedProviders = normalizeSelectedProviders(decoded.selectedProviders);
           this.config.set(decoded);
           this.activeBlueprint.set(null);
           this.showToast('Loaded shared architecture configuration!');
@@ -308,8 +314,42 @@ export class EstimatorStore {
   // Action methods
   public applyBlueprint(blueprint: ArchitectureBlueprint): void {
     this.activeBlueprint.set(blueprint);
-    this.config.set(JSON.parse(JSON.stringify(blueprint.config)));
+    const cfg: ArchitectureEstimateConfig = JSON.parse(JSON.stringify(blueprint.config));
+    cfg.selectedProviders = normalizeSelectedProviders(cfg.selectedProviders);
+    this.config.set(cfg);
     this.showToast(`Applied "${blueprint.name}" preset`);
+  }
+
+  // ---- Provider selection actions -------------------------------------
+
+  /** Toggles one provider in/out of the comparison, refusing to drop the last one. */
+  public toggleProvider(provider: CloudProvider): void {
+    this.config.update((c) => {
+      const current = normalizeSelectedProviders(c.selectedProviders);
+      const isSelected = current.includes(provider);
+      if (isSelected && current.length <= 1) return c; // never allow an empty matrix
+      const next = isSelected ? current.filter((p) => p !== provider) : [...current, provider];
+      return { ...c, selectedProviders: next };
+    });
+  }
+
+  public setSelectedProviders(providers: CloudProvider[]): void {
+    this.config.update((c) => ({ ...c, selectedProviders: normalizeSelectedProviders(providers) }));
+  }
+
+  public selectDefaultProviders(): void {
+    this.setSelectedProviders([...DEFAULT_SELECTED_PROVIDERS]);
+  }
+
+  public selectAllProviders(): void {
+    this.setSelectedProviders([...ALL_PROVIDERS]);
+  }
+
+  /** Selects the N providers with the lowest monthly total for the current config. */
+  public selectCheapestProviders(count: number): void {
+    const m = this.matrix();
+    const ranked = [...ALL_PROVIDERS].sort((a, b) => m.providers[a].monthlyTotal - m.providers[b].monthlyTotal);
+    this.setSelectedProviders(ranked.slice(0, Math.max(1, count)));
   }
 
   public toggleCategory(cat: ServiceCategory): void {

@@ -169,7 +169,7 @@ interface DiffSelection {
                   <mat-icon class="!text-base text-emerald-400">payments</mat-icon>
                   Monthly TCO Delta by Provider
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-5">
+                <div class="grid gap-3 p-5" [style.grid-template-columns]="'repeat(auto-fit, minmax(180px, 1fr))'">
                   @for (pd of d.providerDeltas; track pd.provider) {
                     <div class="rounded-xl bg-slate-800/50 border border-slate-700/60 p-4">
                       <div class="flex items-center gap-2 mb-2">

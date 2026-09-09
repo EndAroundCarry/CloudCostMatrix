@@ -27,15 +27,15 @@ import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../../core/model
 
         <!-- Main H1 SEO Heading -->
         <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight max-w-4xl mx-auto">
-          Compare <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500">AWS</span>, 
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-500">Azure</span> & 
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-400">GCP</span> 
-          Infrastructure Costs
+          Compare <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500">AWS</span>,
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-500">Azure</span>,
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-400">GCP</span>
+          & 6 More Cloud Infrastructure Costs
         </h1>
 
         <!-- Subheading -->
         <p class="mt-4 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal">
-          Real-time, side-by-side Total Cost of Ownership (TCO) estimator for Compute, Storage, Managed Databases, and Egress with instant commit discounts.
+          Real-time Total Cost of Ownership (TCO) estimator across 9 providers — the big 3 plus Oracle, IBM, DigitalOcean, Alibaba, Linode, and OVHcloud — for Compute, Storage, Managed Databases, and Egress with instant commit discounts.
         </p>
 
         <!-- Presets Selection Bar -->

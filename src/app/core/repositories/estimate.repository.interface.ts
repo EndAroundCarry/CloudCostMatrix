@@ -23,18 +23,26 @@ export interface IEstimateRepository {
   deleteUserEstimate(userId: string, estimateId: string): Promise<void>;
 
   /**
-   * Guest-first local persistence. Estimates saved anonymously are stored in
-   * local storage under the guest's anonymous UID. Signing in later links the
-   * same guest UID so nothing is lost.
+   * Guest-first persistence. Anonymous users are stored 100% locally
+   * (zero Firestore reads → Spark-tier free); signed-in users are stored in
+   * Firestore under their UID for cross-device access.
    */
-  saveGuestEstimate(userId: string, config: ArchitectureEstimateConfig): Promise<string>;
-  getGuestEstimates(userId: string): Promise<SavedEstimateRecord[]>;
-  deleteGuestEstimate(userId: string, estimateId: string): Promise<void>;
+  saveGuestEstimate(userId: string, config: ArchitectureEstimateConfig, isAnonymous: boolean): Promise<string>;
+  getGuestEstimates(userId: string, isAnonymous: boolean): Promise<SavedEstimateRecord[]>;
+  deleteGuestEstimate(userId: string, estimateId: string, isAnonymous: boolean): Promise<void>;
 
   /**
    * Renames a persisted estimate (guest local or remote).
    */
-  renameEstimate(userId: string, estimateId: string, newName: string): Promise<void>;
+  renameEstimate(userId: string, estimateId: string, newName: string, isAnonymous: boolean): Promise<void>;
+
+  /**
+   * Moves an anonymous guest's locally-stored estimates into a newly signed-in
+   * account's Firestore library. Used when an anonymous session upgrades to a
+   * real account under a different UID (e.g. linking failed and a pre-existing
+   * account was signed into instead).
+   */
+  migrateGuestData(oldUserId: string, newUserId: string): Promise<void>;
 }
 
 export const ESTIMATE_REPOSITORY_TOKEN = new InjectionToken<IEstimateRepository>('IEstimateRepository');

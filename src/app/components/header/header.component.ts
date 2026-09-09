@@ -4,6 +4,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 import { EstimatorStore } from '../../state/estimator.store';
 import { ThemeService } from '../../core/services/theme.service';
 import { AUTH_SERVICE_TOKEN } from '../../core/repositories/auth.service.interface';
@@ -17,7 +18,7 @@ import {
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [RouterLink, RouterLinkActive, MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule, MatMenuModule],
   template: `
     <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/90 border-b border-slate-800">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -124,22 +125,36 @@ import {
             <span class="hidden sm:inline">Share</span>
           </button>
 
-          <button
-            mat-flat-button
-            class="!bg-gradient-to-r !from-blue-600 !to-indigo-600 !text-white shadow-md shadow-blue-500/20"
-            (click)="handleAuthClick()">
-            @if (authService.isAuthenticated() && !authService.isAnonymous()) {
-              <span class="flex items-center gap-1">
-                <mat-icon class="!mr-1">account_circle</mat-icon>
-                <span class="hidden sm:inline">Dashboard</span>
+          @if (authService.isAuthenticated() && !authService.isAnonymous()) {
+            <button
+              mat-stroked-button
+              [matMenuTriggerFor]="accountMenu"
+              class="!border-slate-700 !text-slate-200 !bg-slate-800/50 hover:!bg-slate-700">
+              <mat-icon class="!mr-1 text-emerald-400">account_circle</mat-icon>
+              <span class="hidden sm:inline max-w-[8rem] truncate align-middle">
+                {{ authService.currentUser()?.displayName || authService.currentUser()?.email }}
               </span>
-            } @else {
-              <span class="flex items-center gap-1">
-                <mat-icon class="!mr-1">cloud_sync</mat-icon>
-                <span class="hidden sm:inline">Sign In</span>
-              </span>
-            }
-          </button>
+              <mat-icon class="!ml-0.5 !text-base">expand_more</mat-icon>
+            </button>
+            <mat-menu #accountMenu="matMenu">
+              <button mat-menu-item (click)="openSavedEstimates()">
+                <mat-icon class="text-amber-500">dashboard</mat-icon>
+                <span>Dashboard</span>
+              </button>
+              <button mat-menu-item (click)="store.signOut()">
+                <mat-icon class="text-red-400">logout</mat-icon>
+                <span>Sign Out</span>
+              </button>
+            </mat-menu>
+          } @else {
+            <button
+              mat-flat-button
+              class="!bg-gradient-to-r !from-blue-600 !to-indigo-600 !text-white shadow-md shadow-blue-500/20"
+              (click)="store.openAuthModal()">
+              <mat-icon class="!mr-1">cloud_sync</mat-icon>
+              <span class="hidden sm:inline">Sign In</span>
+            </button>
+          }
         </div>
 
       </div>
@@ -180,15 +195,5 @@ export class HeaderComponent {
 
   openSavedEstimates(): void {
     this.store.isSavedEstimatesOpen.set(true);
-  }
-
-  async handleAuthClick(): Promise<void> {
-    if (this.authService.isAuthenticated() && !this.authService.isAnonymous()) {
-      this.openSavedEstimates();
-    } else {
-      await this.authService.signInWithGoogle();
-      this.store.showToast('Signed in successfully with Google!');
-      this.openSavedEstimates();
-    }
   }
 }

@@ -16,7 +16,7 @@ import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../core/models/b
 import { CostCalculatorEngine } from '../core/engine/cost-calculator.engine';
 import { UrlStateService } from '../core/services/url-state.service';
 import { ESTIMATE_REPOSITORY_TOKEN, SavedEstimateRecord } from '../core/repositories/estimate.repository.interface';
-import { AUTH_SERVICE_TOKEN } from '../core/repositories/auth.service.interface';
+import { AUTH_SERVICE_TOKEN, AppUser } from '../core/repositories/auth.service.interface';
 import { LIVE_PRICING_CACHE, PRICING_LAST_SYNCED_AT, PRICING_MODE } from '../core/engine/catalog/pricing-catalog.resolver';
 
 @Injectable({
@@ -38,6 +38,7 @@ export class EstimatorStore {
   public readonly selectedCurrency = signal<CurrencyCode>('USD');
   public readonly isShareModalOpen = signal<boolean>(false);
   public readonly isSavedEstimatesOpen = signal<boolean>(false);
+  public readonly isAuthModalOpen = signal<boolean>(false);
   public readonly toastMessage = signal<string | null>(null);
 
   // Saved-estimates state
@@ -95,18 +96,103 @@ export class EstimatorStore {
   }
 
   private async restoreSavedEstimates(): Promise<void> {
-    const user = this.authService.currentUser();
-    if (!user && typeof window !== 'undefined') {
-      // Establish a guest session immediately so saves work before sign-in.
-      const guest = await this.authService.signInAnonymously();
-      const list = await this.estimateRepo.getGuestEstimates(guest.uid);
+    // Wait for Firebase to restore (or rule out) a persisted session before
+    // deciding whether a fresh guest session is needed.
+    const user = await this.authService.whenReady();
+    if (user) {
+      const list = await this.estimateRepo.getGuestEstimates(user.uid, user.isAnonymous);
       this.savedEstimates.set(list);
       return;
     }
-    if (user) {
-      const list = await this.estimateRepo.getGuestEstimates(user.uid);
-      this.savedEstimates.set(list);
+    if (typeof window !== 'undefined') {
+      try {
+        const guest = await this.authService.signInAnonymously();
+        const list = await this.estimateRepo.getGuestEstimates(guest.uid, true);
+        this.savedEstimates.set(list);
+      } catch {
+        // Offline / no network — the app still works, saves just won't persist yet.
+      }
     }
+  }
+
+  // ---- Authentication actions -----------------------------------------
+
+  public openAuthModal(): void {
+    this.authService.clearAuthError();
+    this.isAuthModalOpen.set(true);
+  }
+
+  public closeAuthModal(): void {
+    this.isAuthModalOpen.set(false);
+    this.authService.clearAuthError();
+  }
+
+  public async signInWithGoogle(): Promise<void> {
+    const before = this.authService.currentUser();
+    try {
+      const after = await this.authService.signInWithGoogle();
+      await this.completeSignIn(before, after);
+    } catch {
+      // authService.authError() already carries a message for the modal to show.
+    }
+  }
+
+  public async signInWithEmail(email: string, password: string): Promise<void> {
+    const before = this.authService.currentUser();
+    try {
+      const after = await this.authService.signInWithEmail(email, password);
+      await this.completeSignIn(before, after);
+    } catch {
+      // handled via authService.authError()
+    }
+  }
+
+  public async signUpWithEmail(email: string, password: string, displayName: string): Promise<void> {
+    const before = this.authService.currentUser();
+    try {
+      const after = await this.authService.signUpWithEmail(email, password, displayName);
+      await this.completeSignIn(before, after);
+    } catch {
+      // handled via authService.authError()
+    }
+  }
+
+  public async sendPasswordReset(email: string): Promise<void> {
+    try {
+      await this.authService.sendPasswordReset(email);
+    } catch {
+      // handled via authService.authError()
+    }
+  }
+
+  public async signOut(): Promise<void> {
+    await this.authService.signOut();
+    this.savedEstimates.set([]);
+    this.showToast('Signed out.');
+    if (typeof window !== 'undefined') {
+      try {
+        const guest = await this.authService.signInAnonymously();
+        const list = await this.estimateRepo.getGuestEstimates(guest.uid, true);
+        this.savedEstimates.set(list);
+      } catch {
+        // Offline — stay signed out locally until the next reload.
+      }
+    }
+  }
+
+  private async completeSignIn(before: AppUser | null, after: AppUser): Promise<void> {
+    // Linking (the common path) keeps the same UID but switches the storage
+    // backend from local (anonymous) to Firestore (signed-in) — migrate
+    // whenever the anonymous->real transition happens, not just when the UID
+    // itself changes (that only differs on the credential-already-in-use
+    // fallback, where a pre-existing account is signed into instead).
+    if (before?.isAnonymous && !after.isAnonymous) {
+      await this.estimateRepo.migrateGuestData(before.uid, after.uid);
+    }
+    const list = await this.estimateRepo.getGuestEstimates(after.uid, after.isAnonymous);
+    this.savedEstimates.set(list);
+    this.isAuthModalOpen.set(false);
+    this.showToast(`Welcome${after.displayName ? ', ' + after.displayName : ''}! Your architectures now sync across devices.`);
   }
 
   // ---- Saved-estimates actions --------------------------------------
@@ -126,7 +212,7 @@ export class EstimatorStore {
     if (!user) return;
     const trimmed = name.trim() || `Architecture ${new Date().toLocaleDateString()}`;
     const snapshot: ArchitectureEstimateConfig = JSON.parse(JSON.stringify(this.config()));
-    const id = await this.estimateRepo.saveGuestEstimate(user.uid, { ...snapshot, name: trimmed });
+    const id = await this.estimateRepo.saveGuestEstimate(user.uid, { ...snapshot, name: trimmed }, user.isAnonymous);
     this.isSaveNameDialogOpen.set(false);
     this.showToast(`Saved "${trimmed}" to your architecture library.`);
     await this.refreshSavedEstimates(id);
@@ -135,7 +221,7 @@ export class EstimatorStore {
   public async renameEstimate(record: SavedEstimateRecord, newName: string): Promise<void> {
     const user = this.authService.currentUser();
     if (!user) return;
-    await this.estimateRepo.renameEstimate(user.uid, record.id, newName.trim() || record.name);
+    await this.estimateRepo.renameEstimate(user.uid, record.id, newName.trim() || record.name, user.isAnonymous);
     this.isSaveNameDialogOpen.set(false);
     await this.refreshSavedEstimates();
     this.showToast('Estimate renamed.');
@@ -158,7 +244,7 @@ export class EstimatorStore {
       ...JSON.parse(JSON.stringify(rec.config)),
       name: `${rec.name} (copy)`
     };
-    await this.estimateRepo.saveGuestEstimate(user.uid, copy);
+    await this.estimateRepo.saveGuestEstimate(user.uid, copy, user.isAnonymous);
     await this.refreshSavedEstimates();
     this.showToast(`Duplicated "${rec.name}" as a new branch.`);
   }
@@ -167,7 +253,7 @@ export class EstimatorStore {
     const user = this.authService.currentUser();
     const rec = this.savedEstimates().find((r) => r.id === id);
     if (!user || !rec) return;
-    await this.estimateRepo.deleteGuestEstimate(user.uid, id);
+    await this.estimateRepo.deleteGuestEstimate(user.uid, id, user.isAnonymous);
     await this.refreshSavedEstimates();
     this.showToast(`Deleted "${rec.name}".`);
   }
@@ -175,7 +261,7 @@ export class EstimatorStore {
   public async refreshSavedEstimates(highlightId?: string): Promise<void> {
     const user = this.authService.currentUser();
     if (!user) return;
-    const list = await this.estimateRepo.getGuestEstimates(user.uid);
+    const list = await this.estimateRepo.getGuestEstimates(user.uid, user.isAnonymous);
     this.savedEstimates.set(list);
   }
 

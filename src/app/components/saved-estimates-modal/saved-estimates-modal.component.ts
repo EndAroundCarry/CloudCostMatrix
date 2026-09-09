@@ -41,6 +41,18 @@ import { AUTH_SERVICE_TOKEN } from '../../core/repositories/auth.service.interfa
           </button>
         </header>
 
+        @if (authService.isAnonymous()) {
+          <div class="mx-6 mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 flex items-center gap-3">
+            <mat-icon class="!text-lg text-blue-400">cloud_sync</mat-icon>
+            <p class="text-[11px] text-slate-300 m-0 flex-1">
+              Signed in as a guest — architectures stay in this browser only.
+            </p>
+            <button mat-stroked-button class="!h-8 !text-[11px] !border-blue-500/50 !text-blue-300 shrink-0" (click)="store.openAuthModal()">
+              Sign In to Sync
+            </button>
+          </div>
+        }
+
         <!-- Search & filter -->
         <div class="px-6 py-3 border-b border-slate-800/80">
           <div class="relative">

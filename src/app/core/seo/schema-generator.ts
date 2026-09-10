@@ -13,7 +13,7 @@ export class SchemaGenerator {
       'applicationCategory': 'BusinessApplication',
       'operatingSystem': 'All',
       'browserRequirements': 'Requires JavaScript',
-      'description': 'Free, real-time multi-cloud infrastructure cost estimator comparing AWS, Microsoft Azure, and Google Cloud Platform pricing side-by-side for Compute, Storage, Database, Kubernetes, and Egress. Save unlimited architectures, diff migration scenarios, and export team-ready reports.',
+      'description': 'Free, real-time multi-cloud infrastructure cost estimator comparing 9 providers — AWS, Microsoft Azure, Google Cloud, Oracle Cloud, IBM Cloud, DigitalOcean, Alibaba Cloud, Linode, and OVHcloud — side-by-side for Compute, Storage, Database, Kubernetes, and Egress. Save unlimited architectures, diff migration scenarios, and export team-ready reports.',
       'offers': {
         '@type': 'Offer',
         'price': '0',
@@ -28,19 +28,15 @@ export class SchemaGenerator {
         'Guest-first saved architecture library with rename, duplicate & branch — no signup required',
         'Architecture A vs B scenario diffing with monthly / 3-year TCO deltas and migration ROI',
         'Visual cost topology heatmap that highlights budget hotspots in real time',
-        'Automated live price sync from official Azure Retail, AWS Price List, and GCP Catalog feeds',
+        'Automated live price sync from official AWS, Azure, Oracle Cloud, and Linode pricing APIs, with a per-provider Live/Verified/Estimate freshness badge for all 9 providers',
         'Instant zero-database URL sharing with LZ-String compression',
         'Team exports: Slack/Teams summary, Markdown RFC table, and executive PDF print brief',
         'Exportable CSV and printable PDF comparison reports'
       ],
-      'screenshot': 'https://cloudcostmatrix.com/og-preview.png',
-      'aggregateRating': {
-        '@type': 'AggregateRating',
-        'ratingValue': '4.8',
-        'ratingCount': '127',
-        'bestRating': '5',
-        'worstRating': '1'
-      }
+      'screenshot': 'https://cloudcostmatrix.com/og-preview.png'
+      // Deliberately no `aggregateRating` — the app has no review system, and a
+      // fabricated one is a Google structured-data policy violation (manual
+      // action risk). Only add this back if/when real user ratings exist.
     };
   }
 
@@ -53,7 +49,7 @@ export class SchemaGenerator {
       '@type': 'Organization',
       'name': 'CloudCostMatrix',
       'url': 'https://cloudcostmatrix.com',
-      'logo': 'https://cloudcostmatrix.com/favicon.ico',
+      'logo': 'https://cloudcostmatrix.com/og-preview.png',
       'description': 'Independent multi-cloud infrastructure cost comparison and TCO estimation platform.',
       'sameAs': []
     };
@@ -113,6 +109,11 @@ export class SchemaGenerator {
         'name': 'CloudCostMatrix',
         'url': 'https://cloudcostmatrix.com'
       },
+      // Prerendering freezes new Date() to the build machine's clock forever —
+      // pass an explicit dateModified (e.g. PRICING_LAST_SYNCED_AT) wherever
+      // one is meaningful. This bare fallback only fires for callers that
+      // genuinely have no better date, and still reflects build time rather
+      // than a stale hardcoded string.
       'dateModified': config.dateModified || new Date().toISOString().split('T')[0],
       'inLanguage': 'en'
     };

@@ -52,12 +52,14 @@ import { EstimatorStore } from './state/estimator.store';
             <span class="text-slate-500 font-bold">Compare:</span>
             <a routerLink="/compare/aws-vs-azure" class="hover:text-white transition-colors">AWS vs Azure</a>
             <a routerLink="/compare/aws-vs-gcp" class="hover:text-white transition-colors">AWS vs GCP</a>
-            <a routerLink="/compare/azure-vs-gcp" class="hover:text-white transition-colors">Azure vs GCP</a>
+            <a routerLink="/compare/oracle-vs-aws" class="hover:text-white transition-colors">Oracle vs AWS</a>
+            <a routerLink="/compare/digitalocean-vs-linode" class="hover:text-white transition-colors">DigitalOcean vs Linode</a>
             <span class="text-slate-500 font-bold">Blueprints:</span>
             <a routerLink="/blueprints/saas-starter-mvp" class="hover:text-white transition-colors">SaaS MVP</a>
             <a routerLink="/blueprints/ecommerce-high-traffic" class="hover:text-white transition-colors">E-Commerce</a>
-            <a routerLink="/blueprints/enterprise-microservices-k8s" class="hover:text-white transition-colors">K8s Cluster</a>
-            <a routerLink="/blueprints/ai-ml-inference-cluster" class="hover:text-white transition-colors">AI/ML Inference</a>
+            <span class="text-slate-500 font-bold">About:</span>
+            <a routerLink="/methodology" class="hover:text-white transition-colors">Methodology</a>
+            <a routerLink="/disclosure" class="hover:text-white transition-colors">Affiliate Disclosure</a>
             <a href="/sitemap.xml" class="hover:text-white transition-colors" target="_blank" rel="noopener">Sitemap</a>
           </nav>
         </div>

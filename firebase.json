@@ -12,10 +12,11 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "trailingSlash": false,
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "/index.csr.html"
       }
     ]
   },

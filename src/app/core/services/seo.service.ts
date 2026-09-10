@@ -117,9 +117,12 @@ export class SeoService {
       this.doc.head.appendChild(script);
     }
 
-    // Combine multiple schemas into a single @graph for richer rich results
+    // Combine multiple schemas into a single @graph for richer rich results.
+    // .textContent rather than .text — both work in a real browser, but
+    // .textContent is the portable spelling across Angular's server-side DOM
+    // implementation used during prerendering.
     if (Array.isArray(schemaInput)) {
-      script.text = JSON.stringify({
+      script.textContent = JSON.stringify({
         '@context': 'https://schema.org',
         '@graph': schemaInput.map(s => {
           const copy = { ...s } as Record<string, unknown>;
@@ -128,7 +131,7 @@ export class SeoService {
         })
       });
     } else {
-      script.text = JSON.stringify(schemaInput);
+      script.textContent = JSON.stringify(schemaInput);
     }
   }
 }

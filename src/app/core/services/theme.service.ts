@@ -57,6 +57,7 @@ export class ThemeService {
         meta.setAttribute('content', theme === 'light' ? '#eef2f7' : '#0b1120');
       }
     }
+    if (typeof window === 'undefined') return; // prerender — nothing left to persist
     try {
       window.localStorage?.setItem(STORAGE_KEY, theme);
     } catch {

@@ -1,17 +1,17 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-07T21:08:52.061Z",
+    "lastSyncedAt": "2026-09-10T07:50:22.600Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-07T21:08:52.061Z",
-      "AZURE": "live@2026-09-07T21:08:52.061Z",
+      "AWS": "live@2026-09-10T07:50:22.600Z",
+      "AZURE": "live@2026-09-10T07:50:22.600Z",
       "GCP": "seed",
-      "ORACLE": "seed",
+      "ORACLE": "live@2026-09-10T07:50:22.600Z",
       "IBM": "seed",
       "DIGITALOCEAN": "seed",
       "ALIBABA": "seed",
-      "LINODE": "seed",
+      "LINODE": "live@2026-09-10T07:50:22.600Z",
       "OVHCLOUD": "seed"
     }
   },
@@ -144,11 +144,299 @@
       }
     },
     "GCP": null,
-    "ORACLE": null,
+    "ORACLE": {
+      "provider": "ORACLE",
+      "region": "us-ashburn-1 (Ashburn)",
+      "compute": [
+        {
+          "family": "General Purpose (E5.Flex)",
+          "name": "VM.Standard.E5.Flex-2x4",
+          "vCpu": 2,
+          "ramGb": 4,
+          "hourlyOnDemandLinux": 0.038,
+          "hourly1YrReservedLinux": 0.0285,
+          "hourly3YrReservedLinux": 0.0255,
+          "hourlySpotLinux": 0.019,
+          "windowsHourlySurcharge": 0.092
+        },
+        {
+          "family": "General Purpose (E5.Flex)",
+          "name": "VM.Standard.E5.Flex-2x8",
+          "vCpu": 2,
+          "ramGb": 8,
+          "hourlyOnDemandLinux": 0.046,
+          "hourly1YrReservedLinux": 0.0345,
+          "hourly3YrReservedLinux": 0.0308,
+          "hourlySpotLinux": 0.023,
+          "windowsHourlySurcharge": 0.092
+        },
+        {
+          "family": "General Purpose (E5.Flex)",
+          "name": "VM.Standard.E5.Flex-4x16",
+          "vCpu": 4,
+          "ramGb": 16,
+          "hourlyOnDemandLinux": 0.092,
+          "hourly1YrReservedLinux": 0.069,
+          "hourly3YrReservedLinux": 0.0616,
+          "hourlySpotLinux": 0.046,
+          "windowsHourlySurcharge": 0.184
+        },
+        {
+          "family": "General Purpose (E5.Flex)",
+          "name": "VM.Standard.E5.Flex-8x32",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.184,
+          "hourly1YrReservedLinux": 0.138,
+          "hourly3YrReservedLinux": 0.1233,
+          "hourlySpotLinux": 0.092,
+          "windowsHourlySurcharge": 0.368
+        },
+        {
+          "family": "General Purpose (E5.Flex)",
+          "name": "VM.Standard.E5.Flex-16x32",
+          "vCpu": 16,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.304,
+          "hourly1YrReservedLinux": 0.228,
+          "hourly3YrReservedLinux": 0.2037,
+          "hourlySpotLinux": 0.152,
+          "windowsHourlySurcharge": 0.736
+        },
+        {
+          "family": "General Purpose (E5.Flex)",
+          "name": "VM.Standard.E5.Flex-16x128",
+          "vCpu": 16,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 0.496,
+          "hourly1YrReservedLinux": 0.372,
+          "hourly3YrReservedLinux": 0.3323,
+          "hourlySpotLinux": 0.248,
+          "windowsHourlySurcharge": 0.736
+        },
+        {
+          "family": "General Purpose (E5.Flex)",
+          "name": "VM.Standard.E5.Flex-32x128",
+          "vCpu": 32,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 0.736,
+          "hourly1YrReservedLinux": 0.552,
+          "hourly3YrReservedLinux": 0.4931,
+          "hourlySpotLinux": 0.368,
+          "windowsHourlySurcharge": 1.472
+        }
+      ],
+      "storage": {
+        "HOT": {
+          "tier": "HOT",
+          "costPerGbMonth": 0.0255,
+          "costPer10kReads": 0.0034,
+          "costPer10kWrites": 0.0034
+        },
+        "COOL": {
+          "tier": "COOL",
+          "costPerGbMonth": 0.01,
+          "costPer10kReads": 0.0034,
+          "costPer10kWrites": 0.0034
+        },
+        "COLD": {
+          "tier": "COLD",
+          "costPerGbMonth": 0.01,
+          "costPer10kReads": 0.0034,
+          "costPer10kWrites": 0.0034
+        },
+        "ARCHIVE": {
+          "tier": "ARCHIVE",
+          "costPerGbMonth": 0.0026,
+          "costPer10kReads": 0.0034,
+          "costPer10kWrites": 0.0034
+        }
+      },
+      "database": [],
+      "networking": {
+        "first10TbPerGb": 0.0085,
+        "next40TbPerGb": 0.0085,
+        "loadBalancerHourly": 0.0113,
+        "staticIpHourly": 0.003,
+        "freeEgressGbPerMonth": 10240,
+        "egressPolicyNote": "The first 10 TB of outbound data transfer is free every month on every OCI tenancy."
+      },
+      "kubernetes": {
+        "managementHourlyFeePerCluster": 0,
+        "freeFirstCluster": true
+      }
+    },
     "IBM": null,
     "DIGITALOCEAN": null,
     "ALIBABA": null,
-    "LINODE": null,
+    "LINODE": {
+      "provider": "LINODE",
+      "region": "us-east (Newark)",
+      "compute": [
+        {
+          "family": "Shared CPU (g6-standard)",
+          "name": "g6-standard-2",
+          "vCpu": 2,
+          "ramGb": 4,
+          "hourlyOnDemandLinux": 0.0329,
+          "hourly1YrReservedLinux": 0.0329,
+          "hourly3YrReservedLinux": 0.0329,
+          "hourlySpotLinux": 0.0329,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Dedicated CPU (g6-dedicated)",
+          "name": "g6-dedicated-2",
+          "vCpu": 2,
+          "ramGb": 4,
+          "hourlyOnDemandLinux": 0.0493,
+          "hourly1YrReservedLinux": 0.0493,
+          "hourly3YrReservedLinux": 0.0493,
+          "hourlySpotLinux": 0.0493,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Shared CPU (g6-standard)",
+          "name": "g6-standard-4",
+          "vCpu": 4,
+          "ramGb": 8,
+          "hourlyOnDemandLinux": 0.0658,
+          "hourly1YrReservedLinux": 0.0658,
+          "hourly3YrReservedLinux": 0.0658,
+          "hourlySpotLinux": 0.0658,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Shared CPU (g6-standard)",
+          "name": "g6-standard-8",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.263,
+          "hourly1YrReservedLinux": 0.263,
+          "hourly3YrReservedLinux": 0.263,
+          "hourlySpotLinux": 0.263,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Dedicated CPU (g6-dedicated)",
+          "name": "g6-dedicated-16",
+          "vCpu": 16,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.3945,
+          "hourly1YrReservedLinux": 0.3945,
+          "hourly3YrReservedLinux": 0.3945,
+          "hourlySpotLinux": 0.3945,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Shared CPU (g6-standard)",
+          "name": "g6-standard-24",
+          "vCpu": 24,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 1.0521,
+          "hourly1YrReservedLinux": 1.0521,
+          "hourly3YrReservedLinux": 1.0521,
+          "hourlySpotLinux": 1.0521,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Shared CPU (g6-standard)",
+          "name": "g6-standard-32",
+          "vCpu": 32,
+          "ramGb": 192,
+          "hourlyOnDemandLinux": 1.5781,
+          "hourly1YrReservedLinux": 1.5781,
+          "hourly3YrReservedLinux": 1.5781,
+          "hourlySpotLinux": 1.5781,
+          "windowsHourlySurcharge": 0
+        }
+      ],
+      "storage": {
+        "HOT": {
+          "tier": "HOT",
+          "costPerGbMonth": 0.02,
+          "costPer10kReads": 0.004,
+          "costPer10kWrites": 0.05,
+          "minimumMonthlyFee": 5
+        },
+        "COOL": {
+          "tier": "COOL",
+          "costPerGbMonth": 0.02,
+          "costPer10kReads": 0.004,
+          "costPer10kWrites": 0.05,
+          "minimumMonthlyFee": 5
+        },
+        "COLD": {
+          "tier": "COLD",
+          "costPerGbMonth": 0.02,
+          "costPer10kReads": 0.004,
+          "costPer10kWrites": 0.05,
+          "minimumMonthlyFee": 5
+        },
+        "ARCHIVE": {
+          "tier": "ARCHIVE",
+          "costPerGbMonth": 0.02,
+          "costPer10kReads": 0.004,
+          "costPer10kWrites": 0.05,
+          "minimumMonthlyFee": 5
+        }
+      },
+      "database": [
+        {
+          "name": "g6-standard-2",
+          "vCpu": 2,
+          "ramGb": 4,
+          "hourlyPostgres": 0.094,
+          "hourlyMySql": 0.094,
+          "hourlySqlServer": 0.094,
+          "storagePerGbMonth": 0.1,
+          "multiAzMultiplier": 2.34
+        },
+        {
+          "name": "g6-standard-4",
+          "vCpu": 4,
+          "ramGb": 8,
+          "hourlyPostgres": 0.189,
+          "hourlyMySql": 0.189,
+          "hourlySqlServer": 0.189,
+          "storagePerGbMonth": 0.1,
+          "multiAzMultiplier": 2.33
+        },
+        {
+          "name": "g6-standard-8",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyPostgres": 0.756,
+          "hourlyMySql": 0.756,
+          "hourlySqlServer": 0.756,
+          "storagePerGbMonth": 0.1,
+          "multiAzMultiplier": 2.33
+        },
+        {
+          "name": "g6-standard-16",
+          "vCpu": 16,
+          "ramGb": 64,
+          "hourlyPostgres": 1.512,
+          "hourlyMySql": 1.512,
+          "hourlySqlServer": 1.512,
+          "storagePerGbMonth": 0.1,
+          "multiAzMultiplier": 2.33
+        }
+      ],
+      "networking": {
+        "first10TbPerGb": 0.005,
+        "next40TbPerGb": 0.005,
+        "loadBalancerHourly": 0.0137,
+        "staticIpHourly": 0,
+        "bundledEgressGbPerInstance": 4000,
+        "overageEgressPerGb": 0.005,
+        "egressPolicyNote": "Transfer is pooled account-wide across every Linode; overage is billed at $0.005/GB — the lowest rate in this comparison."
+      },
+      "kubernetes": {
+        "managementHourlyFeePerCluster": 0,
+        "freeFirstCluster": true
+      }
+    },
     "OVHCLOUD": null
   }
 }

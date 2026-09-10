@@ -9,6 +9,8 @@ import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.
 import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/service-category.enum';
 import { ComparisonMatrixResult, ServiceCostBreakdown } from '../../core/models/pricing.model';
 import { EFFECTIVE_CATALOGS } from '../../core/engine/catalog/pricing-catalog.resolver';
+import { getProviderFreshness } from '../../core/engine/catalog/provider-verification';
+import { AffiliateCtaComponent } from '../affiliate-cta/affiliate-cta.component';
 
 /** One row of the transposed matrix: a provider + its cost per active category. */
 interface ProviderRow {
@@ -65,7 +67,7 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
 @Component({
   selector: 'app-matrix-table',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatChipsModule, MatTooltipModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatChipsModule, MatTooltipModule, AffiliateCtaComponent],
   template: `
     <div class="w-full">
       <!-- Matrix Header Summary -->
@@ -156,6 +158,9 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
               💡 {{ winner.total.highlightNotes[0] }}
             </p>
           </div>
+          <div class="mt-4 pt-3 border-t border-slate-700/60">
+            <app-affiliate-cta [provider]="winner.provider" variant="primary" context="matrix-hero"></app-affiliate-cta>
+          </div>
         </div>
       }
 
@@ -172,6 +177,13 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
                 <mat-icon class="!text-sm">{{ meta.icon }}</mat-icon>
               </span>
               <span class="text-sm font-bold text-white flex-1 truncate">{{ meta.shortName }}</span>
+              <span class="hidden md:inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide cursor-help"
+                    [class.text-emerald-400]="freshness(row.provider).tier === 'LIVE'"
+                    [class.text-blue-400]="freshness(row.provider).tier === 'VERIFIED'"
+                    [class.text-amber-400]="freshness(row.provider).tier === 'ESTIMATE'"
+                    [matTooltip]="freshness(row.provider).caveats.join(' ')">
+                {{ freshness(row.provider).label }}
+              </span>
               @if (row.hasGap) {
                 <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
                   <mat-icon class="!text-xs">warning</mat-icon> Not ranked — coverage gap
@@ -212,7 +224,14 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
                       <mat-icon class="!text-sm">{{ meta.icon }}</mat-icon>
                     </div>
                     <div>
-                      <div class="font-bold text-white text-sm">{{ meta.shortName }}</div>
+                      <div class="font-bold text-white text-sm flex items-center gap-1.5">
+                        {{ meta.shortName }}
+                        <span class="w-1.5 h-1.5 rounded-full cursor-help"
+                              [class.bg-emerald-400]="freshness(row.provider).tier === 'LIVE'"
+                              [class.bg-blue-400]="freshness(row.provider).tier === 'VERIFIED'"
+                              [class.bg-amber-400]="freshness(row.provider).tier === 'ESTIMATE'"
+                              [matTooltip]="freshness(row.provider).label + ' — ' + freshness(row.provider).caveats.join(' ')"></span>
+                      </div>
                       <div class="text-[11px] text-slate-500">{{ row.region }}</div>
                     </div>
                   </div>
@@ -289,6 +308,10 @@ export class MatrixTableComponent {
   };
 
   protected readonly tableAriaLabel = () => `Cloud cost comparison table across ${this.regionSummary()}`;
+
+  freshness(provider: CloudProvider) {
+    return getProviderFreshness(provider);
+  }
 
   deltaBarPercent(row: ReturnType<typeof buildProviderRows>[number]): number {
     const rows = this.providerRows();

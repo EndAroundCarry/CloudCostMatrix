@@ -65,14 +65,20 @@ export class EstimatorStore {
   public readonly pricingLastSyncedAt = computed<string | null>(() => PRICING_LAST_SYNCED_AT);
   public readonly pricingSources = computed<Record<string, string>>(() => LIVE_PRICING_CACHE.meta?.sources ?? {});
 
+  /**
+   * "N of 9 live" rather than a blanket "Pricing Verified" — the old copy
+   * claimed full verification the moment ANY single provider synced live,
+   * which is exactly the kind of overclaim that gets a technical audience to
+   * stop trusting every other number on the page. See PROVIDER_VERIFICATION
+   * / getProviderFreshness for the per-row breakdown this summarizes.
+   */
   public readonly pricingLabel = computed<string>(() => {
-    const stamp = PRICING_LAST_SYNCED_AT;
-    if (PRICING_MODE === 'live' && stamp) {
-      const d = new Date(stamp);
-      const month = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-      return `Pricing Verified: ${month}`;
-    }
-    return 'Benchmark Pricing 2026';
+    const sources = LIVE_PRICING_CACHE.meta?.sources ?? {};
+    const total = ALL_PROVIDERS.length;
+    const liveCount = Object.values(sources).filter((v) => v.startsWith('live')).length;
+    if (liveCount === 0) return 'Benchmark Pricing 2026';
+    if (liveCount === total) return `${total} of ${total} live`;
+    return `${liveCount} of ${total} live`;
   });
 
   // Helper to format any USD amount into active currency

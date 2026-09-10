@@ -6,6 +6,9 @@ on:
     - cron: '0 4,16 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
+permissions:
+  contents: write
+
 jobs:
   sync-pricing:
     runs-on: ubuntu-latest
@@ -16,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install sync dependencies
         run: npm ci || npm install
@@ -27,3 +30,21 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
           node scripts/sync-prices.mjs
+
+      # Without this step the freshly-written live-pricing-cache.json only ever
+      # exists inside this ephemeral runner — every prior run of this workflow
+      # has quietly discarded its own output. The app bundles the *committed*
+      # JSON (pricing-catalog.resolver.ts imports it directly), so a sync that
+      # never lands in the repo is a sync that never reaches production.
+      - name: Commit refreshed pricing catalog
+        run: |
+          git config user.name 'ccm-price-bot'
+          git config user.email 'ccm-price-bot@users.noreply.github.com'
+          git add src/app/core/engine/catalog/live-pricing-cache.json
+          git diff --staged --quiet || git commit -m "chore(pricing): sync $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push
+
+      - name: Trigger Firebase Hosting deploy
+        if: success()
+        run: |
+          echo "Pricing catalog updated — trigger your deploy workflow/action here (e.g. workflow_dispatch on a deploy.yml, or firebase-tools deploy) so the new numbers actually ship."

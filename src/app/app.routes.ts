@@ -14,7 +14,17 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/blueprints/blueprint-detail.component').then(m => m.BlueprintDetailComponent)
   },
   {
+    path: 'methodology',
+    loadComponent: () => import('./pages/methodology/methodology.component').then(m => m.MethodologyComponent)
+  },
+  {
+    path: 'disclosure',
+    loadComponent: () => import('./pages/disclosure/disclosure.component').then(m => m.DisclosureComponent)
+  },
+  {
+    // A genuine 404 rather than the old silent `redirectTo: ''` — see
+    // not-found.component.ts for why that mattered.
     path: '**',
-    redirectTo: ''
+    loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent)
   }
 ];

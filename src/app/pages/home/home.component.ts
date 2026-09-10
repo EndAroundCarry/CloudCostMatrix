@@ -162,7 +162,7 @@ export class HomeComponent implements OnInit {
     },
     {
       question: 'How accurate are the pricing estimates?',
-      answer: 'CloudCostMatrix uses benchmark pricing data sourced from official AWS, Azure, and GCP public pricing feeds, updated regularly via automated synchronization. Actual costs may vary based on specific instance availability, negotiated enterprise agreements, and regional pricing differences. The estimates provide directional accuracy for architecture planning and cloud provider selection.'
+      answer: 'Accuracy varies by provider, and CloudCostMatrix tells you which is which rather than implying uniform confidence. AWS object storage, Azure compute/egress, Oracle Cloud compute/storage/egress, and Linode compute/database/storage sync live from official public pricing APIs; the remaining categories and providers use a manually-reconciled 2026 benchmark. Every provider row in the comparison table shows a Live / Verified / Estimate badge with a source link — see the full breakdown on the Methodology page. Actual costs may also vary based on instance availability, negotiated enterprise agreements, and regional pricing differences; treat every figure as directional for architecture planning, not a quote.'
     },
     {
       question: 'Can I save and compare multiple cloud architectures?',
@@ -170,7 +170,7 @@ export class HomeComponent implements OnInit {
     },
     {
       question: 'How fresh is the cloud pricing data?',
-      answer: 'CloudCostMatrix bundles an automated price-sync pipeline that ingests the official Azure Retail Prices API, the AWS Price List bulk feeds (S3 tiers), and the GCP Cloud Billing Catalog. A freshness badge in the header shows exactly when pricing was last verified — no stale month-old guesswork, and zero runtime API cost since the catalog is compiled into the app.'
+      answer: 'CloudCostMatrix runs an automated price-sync pipeline against each provider\'s official public pricing API on a schedule — currently AWS (S3 storage tiers), Azure (Retail Prices API), Oracle Cloud (cetools price list), and Linode (v4 API). The header badge reports exactly how many of the 9 providers are currently live-synced rather than a single blanket claim, and each row in the comparison table shows its own Live / Verified / Estimate status with a source link. Zero runtime API cost either way, since the catalog is compiled into the app at build time.'
     }
   ];
 

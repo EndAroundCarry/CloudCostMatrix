@@ -1,59 +1,49 @@
 # CloudCostMatrix
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.3.
+A free, real-time multi-cloud infrastructure cost estimator — compare Compute, Storage, Managed Database, Networking/Egress, and Kubernetes pricing side-by-side across **9 cloud providers**: AWS, Microsoft Azure, Google Cloud, Oracle Cloud Infrastructure, IBM Cloud, DigitalOcean, Alibaba Cloud, Linode (Akamai), and OVHcloud.
 
-## Development server
+No signup required — architectures save locally in your browser, share instantly via a compressed URL, and the whole pricing catalog is compiled into the app at build time (zero runtime API cost, zero backend).
 
-To start a local development server, run:
+## How pricing works
 
-```bash
-ng serve
-```
+Every number is directional, not a quote — see **[/methodology](https://cloudcostmatrix.com/methodology)** for exactly how the engine calculates costs, and **[/disclosure](https://cloudcostmatrix.com/disclosure)** for the affiliate-link policy.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+A price-sync pipeline (`scripts/sync-prices.mjs`, extracted per-provider fetchers in `scripts/fetchers/`) pulls live rates from each provider's public pricing API on a schedule (see `.github/workflows/price-sync-cron.yml`):
 
-## Code scaffolding
+| Provider | Status | Source |
+|---|---|---|
+| AWS | Live (object storage) | Price List Bulk API |
+| Azure | Live (compute + egress) | Retail Prices API |
+| Oracle Cloud | Live (compute, storage, egress) | cetools price list |
+| Linode | Live (compute, database, storage) | v4 public API |
+| GCP, IBM, DigitalOcean, Alibaba, OVHcloud | Seeded 2026 benchmark | see `/methodology` |
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Every provider row in the app shows its own **Live / Verified / Estimate** freshness badge — never a blanket claim.
 
-```bash
-ng generate component component-name
-```
+## Architecture
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- **Angular 21**, standalone components, signals, zoneless-style state (`src/app/state/estimator.store.ts`).
+- **Prerendered static output** (`outputMode: 'static'` + `@angular/ssr`) — every curated route ships as real HTML for crawlers; see `src/app/app.routes.server.ts`.
+- **Firebase** (Auth + Firestore) for guest-first, cross-device saved architectures; swapped for no-op implementations during prerendering (`src/app/infrastructure/noop/`) so Firebase never executes server-side.
+- **Cost engine** (`src/app/core/engine/cost-calculator.engine.ts`) is fully data-driven off the provider catalogs — no per-provider branching in the math.
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Development
 
 ```bash
-ng test
+npm install
+npm start              # dev server at http://localhost:4200
+npm run build           # production build, including prerendering
+npm test                 # Angular/vitest unit suite
+npm run test:scripts     # fixture-based tests for the price-sync fetchers
+npm run sync-prices       # refresh live-pricing-cache.json from live provider APIs
+npm run verify:prerender  # smoke-test the prerendered output after a build
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+## Deploying
 
 ```bash
-ng e2e
+npm run build
+firebase deploy --only hosting
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+`firebase.json` serves prerendered static files where they exist and falls back to the client-rendered shell (`index.csr.html`) for any URL that wasn't prerendered (e.g. an uncurated `/compare/:a-vs-:b` pair, which still resolves correctly client-side).

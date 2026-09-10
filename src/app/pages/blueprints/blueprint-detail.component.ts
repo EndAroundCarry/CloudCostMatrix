@@ -12,6 +12,7 @@ import { CostCalculatorEngine } from '../../core/engine/cost-calculator.engine';
 import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
 import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/service-category.enum';
 import { CostTopologyComponent } from '../../components/cost-topology/cost-topology.component';
+import { PRICING_LAST_SYNCED_AT } from '../../core/engine/catalog/pricing-catalog.resolver';
 
 @Component({
   selector: 'app-blueprint-detail',
@@ -218,7 +219,8 @@ export class BlueprintDetailComponent implements OnInit, OnDestroy {
         SchemaGenerator.generateWebPageSchema({
           name: `${bp.name} Cloud Cost Blueprint`,
           description: bp.description,
-          url: canonicalUrl
+          url: canonicalUrl,
+          dateModified: PRICING_LAST_SYNCED_AT ?? undefined
         })
       ]
     });

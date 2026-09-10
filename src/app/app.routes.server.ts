@@ -1,5 +1,6 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 import { COMPARISON_SLUGS } from './pages/programmatic/comparison-pages.data';
+import { GUIDE_SLUGS } from './pages/guides/guide-pages.data';
 import { ARCHITECTURE_BLUEPRINTS } from './core/models/blueprints.model';
 
 /**
@@ -30,6 +31,13 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender,
     async getPrerenderParams() {
       return ARCHITECTURE_BLUEPRINTS.map((b) => ({ slug: b.slug }));
+    }
+  },
+  {
+    path: 'guides/:slug',
+    renderMode: RenderMode.Prerender,
+    async getPrerenderParams() {
+      return GUIDE_SLUGS.map((slug) => ({ slug }));
     }
   },
   // Covers every other route declared in app.routes.ts that carries no

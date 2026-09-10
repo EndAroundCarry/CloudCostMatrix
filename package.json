@@ -4,11 +4,12 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && node scripts/generate-sitemap.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:scripts": "vitest run scripts",
     "verify:prerender": "node scripts/verify-prerender.mjs",
+    "generate:sitemap": "node scripts/generate-sitemap.mjs",
     "sync-prices": "node scripts/sync-prices.mjs"
   },
   "prettier": {

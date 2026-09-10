@@ -9,7 +9,7 @@ import path from 'node:path';
 const DIST_BROWSER = path.join(process.cwd(), 'dist', 'CloudCostMatrix', 'browser');
 const ROUTES_JSON = path.join(process.cwd(), 'dist', 'CloudCostMatrix', 'prerendered-routes.json');
 
-const MIN_EXPECTED_ROUTES = 20; // home + methodology + disclosure + privacy + 12 curated compares + 4 blueprints
+const MIN_EXPECTED_ROUTES = 23; // home + methodology + disclosure + privacy + 12 curated compares + 4 blueprints + 3 guides
 
 let failures = 0;
 function check(label, condition) {

@@ -57,6 +57,10 @@ import { EstimatorStore } from './state/estimator.store';
             <span class="text-slate-500 font-bold">Blueprints:</span>
             <a routerLink="/blueprints/saas-starter-mvp" class="hover:text-white transition-colors">SaaS MVP</a>
             <a routerLink="/blueprints/ecommerce-high-traffic" class="hover:text-white transition-colors">E-Commerce</a>
+            <span class="text-slate-500 font-bold">Guides:</span>
+            <a routerLink="/guides/cheapest-cloud-egress-pricing" class="hover:text-white transition-colors">Cheapest Egress</a>
+            <a routerLink="/guides/cheapest-cloud-provider-for-startups" class="hover:text-white transition-colors">Cheapest for Startups</a>
+            <a routerLink="/guides/eu-cloud-providers-gdpr-data-residency" class="hover:text-white transition-colors">EU Cloud &amp; GDPR</a>
             <span class="text-slate-500 font-bold">About:</span>
             <a routerLink="/methodology" class="hover:text-white transition-colors">Methodology</a>
             <a routerLink="/disclosure" class="hover:text-white transition-colors">Affiliate Disclosure</a>

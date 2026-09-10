@@ -14,6 +14,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/blueprints/blueprint-detail.component').then(m => m.BlueprintDetailComponent)
   },
   {
+    // Ranked-list guides (egress pricing, startup costs, EU residency). Kept as
+    // its own /guides/ pattern so /compare/ keeps one meaning per URL shape.
+    path: 'guides/:slug',
+    loadComponent: () => import('./pages/guides/guide-page.component').then(m => m.GuidePageComponent)
+  },
+  {
     path: 'methodology',
     loadComponent: () => import('./pages/methodology/methodology.component').then(m => m.MethodologyComponent)
   },

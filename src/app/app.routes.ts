@@ -22,6 +22,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/disclosure/disclosure.component').then(m => m.DisclosureComponent)
   },
   {
+    path: 'privacy',
+    loadComponent: () => import('./pages/privacy/privacy.component').then(m => m.PrivacyComponent)
+  },
+  {
     // A genuine 404 rather than the old silent `redirectTo: ''` — see
     // not-found.component.ts for why that mattered.
     path: '**',

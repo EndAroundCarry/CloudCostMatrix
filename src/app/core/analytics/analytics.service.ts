@@ -31,9 +31,28 @@ interface QueuedEvent {
 const MAX_QUEUE = 50;
 
 /**
+ * Privacy-limited GA4 config, applied in the initial `initializeAnalytics`
+ * call. GA4 already truncates IP addresses, but `anonymize_ip` is stated
+ * explicitly and `allow_google_signals` (cross-device advertising features,
+ * remarketing audiences) is disabled outright. Exported so the posture is
+ * asserted in tests rather than only existing at one call site — this is the
+ * same promise /privacy makes in writing.
+ */
+export const ANALYTICS_CONSENT_CONFIG = {
+  anonymize_ip: true,
+  allow_google_signals: false
+} as const;
+
+/**
  * Thin wrapper around Firebase Analytics (GA4). Firebase's own `measurementId`
  * is already provisioned in firebase.config.ts — this service is what turns it
  * on, with three mandatory gates:
+ *
+ *  0. Consent posture — `anonymize_ip` and `allow_google_signals: false` are
+ *     set in the initial gtag config (see `initializeAnalytics` below). The
+ *     content strategy deliberately targets EU-cloud keywords, so GDPR/ePrivacy
+ *     applies to a meaningful share of traffic; this is the minimum honest
+ *     posture, not full consent-management. Revisit if EU traffic is material.
  *
  *  1. isPlatformBrowser — getAnalytics() touches document.cookie / navigator /
  *     window.gtag and must never execute during prerender.
@@ -71,7 +90,13 @@ export class AnalyticsService {
       const mod = await import('firebase/analytics');
       if (!(await mod.isSupported())) return;          // gate 3 — cookies/IndexedDB unavailable
       this.analyticsModule = mod;
-      this.analyticsInstance = mod.getAnalytics(getFirebaseApp());
+      // `initializeAnalytics` (rather than `getAnalytics`) so the gtag config
+      // is applied at creation: GA4 already truncates/anonymizes IPs, but the
+      // setting is stated explicitly, and Google Signals (cross-device ad
+      // features) is off outright. See the consent posture note above.
+      this.analyticsInstance = mod.initializeAnalytics(getFirebaseApp(), {
+        config: { ...ANALYTICS_CONSENT_CONFIG }
+      });
       mod.setDefaultEventParameters({ pricing_mode: PRICING_MODE });
       this.ready = true;
 
@@ -115,6 +140,11 @@ export class AnalyticsService {
   }
 
   // ---- Convenience wrappers for the most common events -------------------
+  //
+  // GA4 does not validate custom parameter names — a typo silently vanishes
+  // with no error anywhere. Funnelling call sites through these keeps the
+  // parameter vocabulary in one place. Custom params must also be registered
+  // in the GA4 UI before they appear in reports.
 
   public trackAffiliateClick(provider: CloudProvider, context: string, isPaid: boolean, hasLink: boolean): void {
     this.track('affiliate_click', { provider, context, is_paid: isPaid, has_link: hasLink });
@@ -124,8 +154,32 @@ export class AnalyticsService {
     this.track('provider_toggle', { provider, selected, selection_size: selectionSize });
   }
 
+  public trackBlueprintApply(blueprint: string, blueprintName: string): void {
+    this.track('blueprint_apply', { blueprint, blueprint_name: blueprintName });
+  }
+
+  public trackCommitmentChange(commitment: string): void {
+    this.track('commitment_change', { commitment });
+  }
+
+  public trackRegionChange(region: string): void {
+    this.track('region_change', { region });
+  }
+
+  public trackCurrencyChange(currency: string): void {
+    this.track('currency_change', { currency });
+  }
+
+  public trackEstimateSave(): void {
+    this.track('estimate_save', {});
+  }
+
   public trackExport(format: 'csv' | 'slack' | 'markdown' | 'pdf'): void {
     this.track('export', { format });
+  }
+
+  public trackShare(surface: string): void {
+    this.track('share', { surface });
   }
 
   public trackComparisonView(slug: string, isCurated: boolean, winner: CloudProvider | null): void {

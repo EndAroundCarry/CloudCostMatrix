@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EstimatorStore } from '../../state/estimator.store';
 import { ExportService } from '../../core/services/export.service';
+import { AnalyticsService } from '../../core/analytics/analytics.service';
 
 @Component({
   selector: 'app-export-share-modal',
@@ -118,31 +119,37 @@ import { ExportService } from '../../core/services/export.service';
 export class ExportShareModalComponent {
   protected readonly store = inject(EstimatorStore);
   protected readonly exportService = inject(ExportService);
+  private readonly analytics = inject(AnalyticsService);
 
   copyLink(): void {
     navigator.clipboard.writeText(this.store.shareableUrl());
     this.store.showToast('Copied shareable link to clipboard!');
+    this.analytics.trackShare('share_modal');
   }
 
   downloadCsv(): void {
     this.exportService.exportCsv(this.store.matrix());
     this.store.showToast('Downloaded CSV comparison report!');
+    this.analytics.trackExport('csv');
   }
 
   copyForSlack(): void {
     const text = this.exportService.buildSlackSummary(this.store.matrix(), this.store.shareableUrl());
     navigator.clipboard.writeText(text);
     this.store.showToast('Copied Slack/Teams summary to clipboard!');
+    this.analytics.trackExport('slack');
   }
 
   copyMarkdownRfc(): void {
     const md = this.exportService.buildMarkdownRfc(this.store.matrix());
     navigator.clipboard.writeText(md);
     this.store.showToast('Copied Markdown RFC table to clipboard!');
+    this.analytics.trackExport('markdown');
   }
 
   printExecutivePdf(): void {
     this.exportService.printExecutivePdf(this.store.matrix());
     this.store.showToast('Opening executive print preview — choose "Save as PDF".');
+    this.analytics.trackExport('pdf');
   }
 }

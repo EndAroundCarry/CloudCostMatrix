@@ -60,6 +60,7 @@ import { EstimatorStore } from './state/estimator.store';
             <span class="text-slate-500 font-bold">About:</span>
             <a routerLink="/methodology" class="hover:text-white transition-colors">Methodology</a>
             <a routerLink="/disclosure" class="hover:text-white transition-colors">Affiliate Disclosure</a>
+            <a routerLink="/privacy" class="hover:text-white transition-colors">Privacy</a>
             <a href="/sitemap.xml" class="hover:text-white transition-colors" target="_blank" rel="noopener">Sitemap</a>
           </nav>
         </div>

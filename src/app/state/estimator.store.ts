@@ -16,6 +16,7 @@ import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../core/models/b
 import { CostCalculatorEngine } from '../core/engine/cost-calculator.engine';
 import { ALL_PROVIDERS, CloudProvider, DEFAULT_SELECTED_PROVIDERS, normalizeSelectedProviders } from '../core/models/cloud-provider.enum';
 import { UrlStateService } from '../core/services/url-state.service';
+import { AnalyticsService } from '../core/analytics/analytics.service';
 import { ESTIMATE_REPOSITORY_TOKEN, SavedEstimateRecord } from '../core/repositories/estimate.repository.interface';
 import { AUTH_SERVICE_TOKEN, AppUser } from '../core/repositories/auth.service.interface';
 import { LIVE_PRICING_CACHE, PRICING_LAST_SYNCED_AT, PRICING_MODE } from '../core/engine/catalog/pricing-catalog.resolver';
@@ -27,6 +28,7 @@ export class EstimatorStore {
   private readonly urlState = inject(UrlStateService);
   private readonly estimateRepo = inject(ESTIMATE_REPOSITORY_TOKEN);
   private readonly authService = inject(AUTH_SERVICE_TOKEN);
+  private readonly analytics = inject(AnalyticsService);
 
   // State signals
   public readonly activeBlueprint = signal<ArchitectureBlueprint | null>(ARCHITECTURE_BLUEPRINTS[0]);
@@ -223,6 +225,7 @@ export class EstimatorStore {
     const id = await this.estimateRepo.saveGuestEstimate(user.uid, { ...snapshot, name: trimmed }, user.isAnonymous);
     this.isSaveNameDialogOpen.set(false);
     this.showToast(`Saved "${trimmed}" to your architecture library.`);
+    this.analytics.trackEstimateSave();
     await this.refreshSavedEstimates(id);
   }
 
@@ -324,6 +327,7 @@ export class EstimatorStore {
     cfg.selectedProviders = normalizeSelectedProviders(cfg.selectedProviders);
     this.config.set(cfg);
     this.showToast(`Applied "${blueprint.name}" preset`);
+    this.analytics.trackBlueprintApply(blueprint.slug, blueprint.name);
   }
 
   // ---- Provider selection actions -------------------------------------
@@ -337,6 +341,8 @@ export class EstimatorStore {
       const next = isSelected ? current.filter((p) => p !== provider) : [...current, provider];
       return { ...c, selectedProviders: next };
     });
+    const after = normalizeSelectedProviders(this.config().selectedProviders);
+    this.analytics.trackProviderToggle(provider, after.includes(provider), after.length);
   }
 
   public setSelectedProviders(providers: CloudProvider[]): void {
@@ -396,6 +402,7 @@ export class EstimatorStore {
       ...c,
       compute: { ...c.compute, commitment }
     }));
+    this.analytics.trackCommitmentChange(commitment);
   }
 
   public updateComputeOs(os: OperatingSystem): void {
@@ -476,12 +483,14 @@ export class EstimatorStore {
   public setCurrency(currency: CurrencyCode): void {
     this.selectedCurrency.set(currency);
     this.showToast(`Switched currency to ${CURRENCY_DEFINITIONS[currency].name} (${CURRENCY_DEFINITIONS[currency].symbol})`);
+    this.analytics.trackCurrencyChange(currency);
   }
 
   public setRegion(regionId: RegionId): void {
     this.config.update(c => ({ ...c, region: regionId }));
     const regionName = REGION_DEFINITIONS[regionId]?.name || regionId;
     this.showToast(`Switched cloud deployment region to ${regionName}`);
+    this.analytics.trackRegionChange(regionId);
   }
 
   public setScaleFactor(scaleFactor: number): void {

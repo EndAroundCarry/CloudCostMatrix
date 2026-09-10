@@ -3,28 +3,34 @@ import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
-const getAnalyticsMock = vi.fn();
+const initializeAnalyticsMock = vi.fn().mockReturnValue({ mockAnalytics: true });
 const isSupportedMock = vi.fn().mockResolvedValue(true);
 const logEventMock = vi.fn();
 const setDefaultEventParametersMock = vi.fn();
 
 vi.mock('firebase/analytics', () => ({
-  getAnalytics: getAnalyticsMock,
+  initializeAnalytics: initializeAnalyticsMock,
   isSupported: isSupportedMock,
   logEvent: logEventMock,
   setDefaultEventParameters: setDefaultEventParametersMock
 }));
 
-import { AnalyticsService } from './analytics.service';
+import { ANALYTICS_CONSENT_CONFIG, AnalyticsService } from './analytics.service';
+
+describe('AnalyticsService — consent posture', () => {
+  it('is the privacy-limited config promised on /privacy', () => {
+    expect(ANALYTICS_CONSENT_CONFIG).toEqual({ anonymize_ip: true, allow_google_signals: false });
+  });
+});
 
 describe('AnalyticsService — server platform', () => {
   beforeEach(() => {
-    getAnalyticsMock.mockClear();
+    initializeAnalyticsMock.mockClear();
     isSupportedMock.mockClear();
     logEventMock.mockClear();
   });
 
-  it('never imports firebase/analytics when constructed on the server platform, and track() is a silent no-op', async () => {
+  it('never initializes firebase/analytics when constructed on the server platform, and track() is a silent no-op', async () => {
     await TestBed.configureTestingModule({
       providers: [provideRouter([]), { provide: PLATFORM_ID, useValue: 'server' }]
     }).compileComponents();
@@ -36,14 +42,14 @@ describe('AnalyticsService — server platform', () => {
     // Give any stray microtask a chance to run before asserting nothing fired.
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(getAnalyticsMock).not.toHaveBeenCalled();
+    expect(initializeAnalyticsMock).not.toHaveBeenCalled();
     expect(logEventMock).not.toHaveBeenCalled();
   });
 });
 
 describe('AnalyticsService — browser platform', () => {
   beforeEach(() => {
-    getAnalyticsMock.mockClear();
+    initializeAnalyticsMock.mockClear();
     isSupportedMock.mockClear();
     logEventMock.mockClear();
     isSupportedMock.mockResolvedValue(true);

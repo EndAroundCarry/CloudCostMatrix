@@ -44,7 +44,5 @@ jobs:
           git diff --staged --quiet || git commit -m "chore(pricing): sync $(date -u +%Y-%m-%dT%H:%MZ)"
           git push
 
-      - name: Trigger Firebase Hosting deploy
-        if: success()
-        run: |
-          echo "Pricing catalog updated — trigger your deploy workflow/action here (e.g. workflow_dispatch on a deploy.yml, or firebase-tools deploy) so the new numbers actually ship."
+      # Deployment is intentionally manual: run `npm run build` then
+      # `firebase deploy --only hosting` to ship the refreshed catalog.

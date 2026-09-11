@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, afterNextRender } from '@angular/core';
 import { 
   ArchitectureEstimateConfig, 
   ComparisonMatrixResult, 
@@ -87,7 +87,10 @@ export class EstimatorStore {
   public formatMoney(usdAmount: number = 0): string {
     const cur = this.currencyDef();
     const converted = Math.round(usdAmount * cur.rateAgainstUsd);
-    return `${cur.symbol}${converted.toLocaleString()}`;
+    // Explicit 'en-US' (not the ambient locale): this string is rendered during
+    // prerendering AND on the client, and a locale-dependent grouping separator
+    // would make the two disagree for non-en-US visitors, breaking hydration.
+    return `${cur.symbol}${converted.toLocaleString('en-US')}`;
   }
 
   // Computed comparison matrix
@@ -101,8 +104,16 @@ export class EstimatorStore {
   });
 
   constructor() {
-    this.checkInitialUrlParams();
-    this.restoreSavedEstimates();
+    // Both of these read browser-only state — the ?c= share link and Firebase's
+    // persisted session. Running them before the first render would make the
+    // client's initial DOM disagree with the prerendered HTML (a 7-provider
+    // share link against a 3-row prerendered default) and break hydration.
+    // afterNextRender keeps them out of that first render; the shared config
+    // and saved estimates apply immediately afterward.
+    afterNextRender(() => {
+      this.checkInitialUrlParams();
+      void this.restoreSavedEstimates();
+    });
   }
 
   private async restoreSavedEstimates(): Promise<void> {

@@ -6,6 +6,7 @@ import { ESTIMATE_REPOSITORY_TOKEN } from './core/repositories/estimate.reposito
 import { FirebaseEstimateRepository } from './infrastructure/firebase/firebase-estimate.repository';
 import { AUTH_SERVICE_TOKEN } from './core/repositories/auth.service.interface';
 import { FirebaseAuthService } from './infrastructure/firebase/firebase-auth.service';
+import { NoopAuthService } from './infrastructure/noop/noop-auth.service';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -23,5 +24,34 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
+  });
+
+  describe('server bindings', () => {
+    beforeEach(async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [App],
+        providers: [
+          provideRouter([]),
+          { provide: ESTIMATE_REPOSITORY_TOKEN, useClass: FirebaseEstimateRepository },
+          // Mirrors app.config.server.ts, where NoopAuthService is registered
+          // last so DI resolves it over the Firebase binding. This proves the
+          // server path constructs without ever touching firebase/auth.
+          { provide: AUTH_SERVICE_TOKEN, useClass: NoopAuthService }
+        ]
+      }).compileComponents();
+    });
+
+    it('resolves the noop auth service and never initializes Firebase Auth', () => {
+      const auth = TestBed.inject(AUTH_SERVICE_TOKEN);
+      expect(auth).toBeInstanceOf(NoopAuthService);
+      expect(auth.isAuthenticated()).toBe(false);
+      expect(auth.isAnonymous()).toBe(true);
+    });
+
+    it('whenReady() resolves null immediately so prerendering cannot hang', async () => {
+      const auth = TestBed.inject(AUTH_SERVICE_TOKEN);
+      await expect(auth.whenReady()).resolves.toBeNull();
+    });
   });
 });

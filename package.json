@@ -10,6 +10,7 @@
     "test:scripts": "vitest run scripts",
     "verify:prerender": "node scripts/verify-prerender.mjs",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
+    "generate:icons": "node scripts/generate-icons.mjs",
     "sync-prices": "node scripts/sync-prices.mjs"
   },
   "prettier": {

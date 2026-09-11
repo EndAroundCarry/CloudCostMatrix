@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { EstimatorStore } from '../../state/estimator.store';
 import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
@@ -8,7 +7,7 @@ import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.
 @Component({
   selector: 'app-tco-chart',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule],
+  imports: [CommonModule, MatIconModule],
   template: `
     <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6 shadow-xl">
       <div class="flex items-center justify-between mb-5">

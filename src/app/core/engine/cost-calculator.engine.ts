@@ -111,9 +111,9 @@ export class CostCalculatorEngine {
     const tierLabel = `${PROVIDER_METAS[provider].services.objectStorage} (${spec.tier})`;
 
     const details = [
-      `${spec.capacityGb.toLocaleString()} GB at $${tierPricing.costPerGbMonth}/GB-mo ($${rawCapacityCost.toFixed(2)})`,
-      `${spec.readOpsThousands.toLocaleString()}k Read ops ($${readCost.toFixed(2)})`,
-      `${spec.writeOpsThousands.toLocaleString()}k Write ops ($${writeCost.toFixed(2)})`
+      `${spec.capacityGb.toLocaleString('en-US')} GB at $${tierPricing.costPerGbMonth}/GB-mo ($${rawCapacityCost.toFixed(2)})`,
+      `${spec.readOpsThousands.toLocaleString('en-US')}k Read ops ($${readCost.toFixed(2)})`,
+      `${spec.writeOpsThousands.toLocaleString('en-US')}k Write ops ($${writeCost.toFixed(2)})`
     ];
     if (tierPricing.minimumMonthlyFee && rawCapacityCost < tierPricing.minimumMonthlyFee) {
       details.push(`$${tierPricing.minimumMonthlyFee}/mo minimum storage fee applied`);
@@ -217,7 +217,7 @@ export class CostCalculatorEngine {
     const annualCost = Number((monthlyCost * 12).toFixed(2));
 
     const details = [
-      `${egressGb.toLocaleString()} GB Internet Egress ($${egressCost.toFixed(2)})`,
+      `${egressGb.toLocaleString('en-US')} GB Internet Egress ($${egressCost.toFixed(2)})`,
       `${spec.loadBalancersCount}x Load Balancers ($${lbCost.toFixed(2)}/mo)`,
       `${spec.staticIpsCount}x Public Static IPv4 ($${staticIpCost.toFixed(2)}/mo)`
     ];

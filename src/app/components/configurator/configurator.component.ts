@@ -1,11 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EstimatorStore } from '../../state/estimator.store';
@@ -18,11 +16,9 @@ import { CommitmentType, DbEngine, OperatingSystem, StorageTier } from '../../co
   imports: [
     CommonModule,
     FormsModule,
-    MatCardModule,
     MatSliderModule,
     MatSelectModule,
     MatSlideToggleModule,
-    MatChipsModule,
     MatButtonModule,
     MatIconModule
   ],
@@ -173,7 +169,7 @@ import { CommitmentType, DbEngine, OperatingSystem, StorageTier } from '../../co
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
               <label class="text-xs font-bold text-slate-300 block mb-1">
-                Storage Capacity: <span class="text-blue-400 font-extrabold text-sm">{{ store.config().storage.capacityGb.toLocaleString() }} GB</span>
+                Storage Capacity: <span class="text-blue-400 font-extrabold text-sm">{{ store.config().storage.capacityGb.toLocaleString('en-US') }} GB</span>
               </label>
               <input 
                 type="range" 
@@ -257,7 +253,7 @@ import { CommitmentType, DbEngine, OperatingSystem, StorageTier } from '../../co
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
               <label class="text-xs font-bold text-slate-300 block mb-1">
-                Outbound Internet Egress: <span class="text-blue-400 font-extrabold text-sm">{{ store.config().networking.egressGbPerMonth.toLocaleString() }} GB/mo</span>
+                Outbound Internet Egress: <span class="text-blue-400 font-extrabold text-sm">{{ store.config().networking.egressGbPerMonth.toLocaleString('en-US') }} GB/mo</span>
               </label>
               <input 
                 type="range" 

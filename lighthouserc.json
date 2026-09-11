@@ -1,0 +1,27 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": "./dist/CloudCostMatrix/browser",
+      "url": [
+        "http://localhost/index.html",
+        "http://localhost/compare/aws-vs-azure/index.html",
+        "http://localhost/guides/cheapest-cloud-egress-pricing/index.html"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "preset": "desktop"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "categories:seo": ["error", { "minScore": 1 }],
+        "categories:best-practices": ["warn", { "minScore": 0.9 }],
+        "categories:performance": ["error", { "minScore": 0.85 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

@@ -1,8 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EstimatorStore } from '../../state/estimator.store';
 import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
@@ -67,7 +65,7 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
 @Component({
   selector: 'app-matrix-table',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatChipsModule, MatTooltipModule, AffiliateCtaComponent],
+  imports: [CommonModule, MatIconModule, MatTooltipModule, AffiliateCtaComponent],
   template: `
     <div class="w-full">
       <!-- Matrix Header Summary -->
@@ -198,7 +196,13 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
         }
       </div>
 
-      <!-- Transposed Line-by-Line Service Detail Table: providers as rows, categories as columns -->
+      <!-- Transposed Line-by-Line Service Detail Table: providers as rows, categories as columns.
+           At 375px this is wider than the viewport, so a swipe hint + edge fade keep the
+           hidden columns discoverable instead of silently off-screen. -->
+      <p class="sm:hidden mb-2 text-[11px] font-semibold text-slate-400" aria-hidden="true">
+        Swipe to see every service category &rarr;
+      </p>
+      <div class="relative">
       <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl">
         <table class="w-full text-left text-sm border-collapse" [attr.aria-label]="tableAriaLabel()">
           <caption class="sr-only">Detailed breakdown of cloud costs by service category, one row per provider</caption>
@@ -265,6 +269,9 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
             }
           </tbody>
         </table>
+      </div>
+        <!-- Right-edge fade: signals more columns exist. Hidden once the table fits. -->
+        <div class="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-2xl bg-gradient-to-l from-slate-900/95 to-transparent sm:hidden" aria-hidden="true"></div>
       </div>
     </div>
   `

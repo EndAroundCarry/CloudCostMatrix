@@ -9,17 +9,26 @@ export const FETCH_TIMEOUT_MS = 45_000;
 export const USER_AGENT = 'CloudCostMatrix-PriceSync/1.0 (+https://cloudcostmatrix.com)';
 
 export async function fetchJson(url, extraHeaders = {}) {
+  const text = await fetchText(url, extraHeaders);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Non-JSON response from ${url} (${text.slice(0, 80)})`);
+  }
+}
+
+/**
+ * Fetches a raw text/HTML response. Same UA + timeout behaviour as fetchJson,
+ * for sources that publish pricing as server-rendered markup rather than a
+ * JSON API (see the DigitalOcean fetcher).
+ */
+export async function fetchText(url, extraHeaders = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await fetch(url, { signal: controller.signal, headers: { 'User-Agent': USER_AGENT, ...extraHeaders } });
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}`);
-    const text = await res.text();
-    try {
-      return JSON.parse(text);
-    } catch {
-      throw new Error(`Non-JSON response from ${url} (${text.slice(0, 80)})`);
-    }
+    return await res.text();
   } finally {
     clearTimeout(timer);
   }

@@ -1,17 +1,17 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-10T07:50:22.600Z",
+    "lastSyncedAt": "2026-09-11T21:24:42.641Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-10T07:50:22.600Z",
-      "AZURE": "live@2026-09-10T07:50:22.600Z",
+      "AWS": "live@2026-09-11T21:24:42.641Z",
+      "AZURE": "live@2026-09-11T21:24:42.641Z",
       "GCP": "seed",
-      "ORACLE": "live@2026-09-10T07:50:22.600Z",
+      "ORACLE": "live@2026-09-11T21:24:42.641Z",
       "IBM": "seed",
-      "DIGITALOCEAN": "seed",
+      "DIGITALOCEAN": "live@2026-09-11T21:24:42.641Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-09-10T07:50:22.600Z",
+      "LINODE": "live@2026-09-11T21:24:42.641Z",
       "OVHCLOUD": "seed"
     }
   },
@@ -267,7 +267,94 @@
       }
     },
     "IBM": null,
-    "DIGITALOCEAN": null,
+    "DIGITALOCEAN": {
+      "provider": "DIGITALOCEAN",
+      "region": "NYC3 (New York)",
+      "compute": [
+        {
+          "family": "Basic Droplet",
+          "name": "s-2vcpu-4gb",
+          "vCpu": 2,
+          "ramGb": 4,
+          "hourlyOnDemandLinux": 0.0329,
+          "hourly1YrReservedLinux": 0.0329,
+          "hourly3YrReservedLinux": 0.0329,
+          "hourlySpotLinux": 0.0329,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose Droplet",
+          "name": "g-2vcpu-8gb",
+          "vCpu": 2,
+          "ramGb": 8,
+          "hourlyOnDemandLinux": 0.0863,
+          "hourly1YrReservedLinux": 0.0863,
+          "hourly3YrReservedLinux": 0.0863,
+          "hourlySpotLinux": 0.0863,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose Droplet",
+          "name": "g-4vcpu-16gb",
+          "vCpu": 4,
+          "ramGb": 16,
+          "hourlyOnDemandLinux": 0.1726,
+          "hourly1YrReservedLinux": 0.1726,
+          "hourly3YrReservedLinux": 0.1726,
+          "hourlySpotLinux": 0.1726,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose Droplet",
+          "name": "g-8vcpu-32gb",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.3452,
+          "hourly1YrReservedLinux": 0.3452,
+          "hourly3YrReservedLinux": 0.3452,
+          "hourlySpotLinux": 0.3452,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "CPU-Optimized Droplet",
+          "name": "c-16",
+          "vCpu": 16,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.4603,
+          "hourly1YrReservedLinux": 0.4603,
+          "hourly3YrReservedLinux": 0.4603,
+          "hourlySpotLinux": 0.4603,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Memory-Optimized Droplet",
+          "name": "m-16vcpu-128gb",
+          "vCpu": 16,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 0.9205,
+          "hourly1YrReservedLinux": 0.9205,
+          "hourly3YrReservedLinux": 0.9205,
+          "hourlySpotLinux": 0.9205,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose Droplet",
+          "name": "g-32vcpu-128gb",
+          "vCpu": 32,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 1.3808,
+          "hourly1YrReservedLinux": 1.3808,
+          "hourly3YrReservedLinux": 1.3808,
+          "hourlySpotLinux": 1.3808,
+          "windowsHourlySurcharge": 0
+        }
+      ],
+      "networking": {
+        "bundledEgressGbPerInstance": 5000,
+        "overageEgressPerGb": 0.01,
+        "egressPolicyNote": "Bandwidth is pooled account-wide and bundled per Droplet (5,000 GB on the g-4vcpu-16gb reference plan; other plans range higher or lower); overage is billed at a flat $0.01/GB once the allowance is exhausted."
+      }
+    },
     "ALIBABA": null,
     "LINODE": {
       "provider": "LINODE",

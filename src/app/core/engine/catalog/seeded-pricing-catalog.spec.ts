@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ALL_PROVIDERS, CloudProvider } from '../../models/cloud-provider.enum';
 import { BENCHMARK_CATALOGS } from './seeded-pricing-catalog';
+import { EFFECTIVE_CATALOGS } from './pricing-catalog.resolver';
 import { CostCalculatorEngine } from '../cost-calculator.engine';
 
 describe('BENCHMARK_CATALOGS sanity', () => {
@@ -74,17 +75,36 @@ describe('Egress allowance math', () => {
     expect(underAllowance.monthlyCost).toBe(0);
 
     const overAllowance = CostCalculatorEngine.calculateNetworking({ ...baseSpec, egressGbPerMonth: 15_360 }, CloudProvider.ORACLE, 0);
-    const rate = BENCHMARK_CATALOGS[CloudProvider.ORACLE].networking.first10TbPerGb;
+    // Read the EFFECTIVE catalog — the one the engine actually resolves against —
+    // not BENCHMARK_CATALOGS, which a live sync may have superseded.
+    const rate = EFFECTIVE_CATALOGS[CloudProvider.ORACLE].networking.first10TbPerGb;
     expect(overAllowance.monthlyCost).toBeCloseTo((15_360 - 10_240) * rate, 2);
   });
 
   it('DigitalOcean bills only the transfer above its pooled per-Droplet bundle', () => {
-    const net = BENCHMARK_CATALOGS[CloudProvider.DIGITALOCEAN].networking;
+    // EFFECTIVE_CATALOGS, not BENCHMARK_CATALOGS: DigitalOcean's bundle is now
+    // supplied by the live fetcher, so the seed value no longer matches what the
+    // engine bills against.
+    const net = EFFECTIVE_CATALOGS[CloudProvider.DIGITALOCEAN].networking;
     const instanceCount = 2;
-    const requestedGb = 3_000;
-    const result = CostCalculatorEngine.calculateNetworking({ ...baseSpec, egressGbPerMonth: requestedGb }, CloudProvider.DIGITALOCEAN, instanceCount);
     const bundled = (net.bundledEgressGbPerInstance ?? 0) * instanceCount;
-    const expectedBillable = Math.max(0, requestedGb - bundled);
-    expect(result.monthlyCost).toBeCloseTo(expectedBillable * (net.overageEgressPerGb ?? 0), 2);
+    expect(bundled).toBeGreaterThan(0);
+
+    // Under the pooled allowance → nothing billable.
+    const under = CostCalculatorEngine.calculateNetworking(
+      { ...baseSpec, egressGbPerMonth: Math.floor(bundled / 2) },
+      CloudProvider.DIGITALOCEAN,
+      instanceCount
+    );
+    expect(under.monthlyCost).toBe(0);
+
+    // Over it → only the excess is billed, at the flat overage rate.
+    const excessGb = 1_000;
+    const over = CostCalculatorEngine.calculateNetworking(
+      { ...baseSpec, egressGbPerMonth: bundled + excessGb },
+      CloudProvider.DIGITALOCEAN,
+      instanceCount
+    );
+    expect(over.monthlyCost).toBeCloseTo(excessGb * (net.overageEgressPerGb ?? 0), 2);
   });
 });

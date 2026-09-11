@@ -16,7 +16,8 @@ A price-sync pipeline (`scripts/sync-prices.mjs`, extracted per-provider fetcher
 | Azure | Live (compute + egress) | Retail Prices API |
 | Oracle Cloud | Live (compute, storage, egress) | cetools price list |
 | Linode | Live (compute, database, storage) | v4 public API |
-| GCP, IBM, DigitalOcean, Alibaba, OVHcloud | Seeded 2026 benchmark | see `/methodology` |
+| DigitalOcean | Live (compute + bundled egress) | Droplet pricing page |
+| GCP, IBM, Alibaba, OVHcloud | Seeded 2026 benchmark | see `/methodology` |
 
 Every provider row in the app shows its own **Live / Verified / Estimate** freshness badge — never a blanket claim.
 

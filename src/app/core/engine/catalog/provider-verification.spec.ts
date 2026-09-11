@@ -19,17 +19,23 @@ describe('PROVIDER_VERIFICATION', () => {
 
 describe('getProviderFreshness', () => {
   it('reports LIVE exactly for providers whose live-cache source starts with "live@"', () => {
-    // AWS, Azure, Oracle, and Linode have live fetchers wired up today (see
-    // scripts/fetchers/). This reads whatever is actually committed in
-    // live-pricing-cache.json, so it reflects the last real sync, not a fixture.
-    for (const p of [CloudProvider.AWS, CloudProvider.AZURE, CloudProvider.ORACLE, CloudProvider.LINODE]) {
+    // AWS, Azure, Oracle, Linode, and DigitalOcean have live fetchers wired up
+    // today (see scripts/fetchers/). This reads whatever is actually committed
+    // in live-pricing-cache.json, so it reflects the last real sync, not a fixture.
+    for (const p of [
+      CloudProvider.AWS,
+      CloudProvider.AZURE,
+      CloudProvider.ORACLE,
+      CloudProvider.LINODE,
+      CloudProvider.DIGITALOCEAN
+    ]) {
       expect(getProviderFreshness(p).tier, `${p} should be LIVE`).toBe('LIVE');
       expect(getProviderFreshness(p).label).toContain('Live');
     }
   });
 
   it('never reports LIVE for a provider with no fetcher configured', () => {
-    for (const p of [CloudProvider.IBM, CloudProvider.DIGITALOCEAN, CloudProvider.ALIBABA, CloudProvider.OVHCLOUD]) {
+    for (const p of [CloudProvider.IBM, CloudProvider.ALIBABA, CloudProvider.OVHCLOUD]) {
       expect(getProviderFreshness(p).tier).not.toBe('LIVE');
     }
   });

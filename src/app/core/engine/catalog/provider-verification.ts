@@ -74,10 +74,16 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
   },
   [CloudProvider.DIGITALOCEAN]: {
     provider: CloudProvider.DIGITALOCEAN,
-    lastVerifiedAt: '2026-01-15',
-    method: 'DERIVED_ESTIMATE',
-    sourceUrl: 'https://www.digitalocean.com/pricing',
-    caveats: ['Pricing is a relative-positioning estimate anchored to AWS list price. DigitalOcean\'s Droplet size API requires an authenticated API token to fetch live — not yet wired up.']
+    lastVerifiedAt: '2026-09-11',
+    method: 'LIVE_API',
+    sourceUrl: 'https://www.digitalocean.com/pricing/droplets',
+    caveats: [
+      'Compute pricing syncs live from DigitalOcean\'s public Droplet pricing page for the bundled-plan families (Basic, CPU-Optimized, General Purpose, Memory-Optimized) across a 2–32 vCPU envelope. DigitalOcean\'s /v2/sizes API is deliberately NOT used: it returns a filtered catalog whose largest non-GPU Droplet is 4 vCPU, which would match a 32 vCPU request to a 4 vCPU shape and render DigitalOcean roughly 8x too cheap.',
+      'Rates are derived from each plan\'s flat monthly cap (monthly / 730), not the published $/hr meter — DigitalOcean prices the hourly meter above the monthly-equivalent rate so a full month billed hourly never undercuts the bundled price.',
+      'v5 Droplets are excluded: they bill per configured resource hourly with no monthly cap, so a monthly-equivalent rate is not a like-for-like comparison.',
+      'Spaces object storage and Managed Databases are not published on this page, so those sections carry the seeded 2026 benchmark. Spaces has a single storage class (no Cool/Cold/Archive tiering), DigitalOcean offers no SQL Server, and it does not sell Windows Server licensing on Droplets.',
+      'Bundled outbound transfer genuinely varies by plan (500–10,000 GB). This catalog models one flat per-instance allowance taken from the reference plan, not a per-shape value.'
+    ]
   },
   [CloudProvider.ALIBABA]: {
     provider: CloudProvider.ALIBABA,

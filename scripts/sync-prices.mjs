@@ -15,10 +15,13 @@
  *   - GCP:    Cloud Billing Catalog       https://cloudbilling.googleapis.com/v1/services (needs GCP_API_KEY)
  *   - Oracle: cetools public price list   https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/
  *   - Linode: v4 public API               https://api.linode.com/v4/
+ *   - DigitalOcean: public pricing page   https://www.digitalocean.com/pricing/droplets
+ *     (its /v2/sizes API is a filtered view topping out at 4 vCPU — see
+ *     fetchers/digitalocean.mjs for why the page is the honest source)
  *
- * The remaining 4 providers (IBM, DigitalOcean, Alibaba, OVHcloud) have no
- * fetcher registered below and are intentionally skipped — see the loop in
- * runSync() — rather than treated as a failure.
+ * The remaining 3 providers (IBM, Alibaba, OVHcloud) have no fetcher registered
+ * below and are intentionally skipped — see the loop in runSync() — rather than
+ * treated as a failure.
  *
  * The script is intentionally resilient: when a feed is unreachable it falls
  * back to the current live cache (or the built-in seed baseline) so a network
@@ -40,14 +43,14 @@ import { fetchAzureCatalog } from './fetchers/azure.mjs';
 import { fetchGcpCatalog } from './fetchers/gcp.mjs';
 import { fetchOracleCatalog } from './fetchers/oracle.mjs';
 import { fetchLinodeCatalog } from './fetchers/linode.mjs';
+import { fetchDigitalOceanCatalog } from './fetchers/digitalocean.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = path.join(__dirname, '..', 'src', 'app', 'core', 'engine', 'catalog', 'live-pricing-cache.json');
 
-// AWS/Azure/GCP/Oracle/Linode have live fetchers below. IBM, DigitalOcean,
-// Alibaba, and OVHcloud ship seed-only — DigitalOcean needs an authenticated
-// API token, IBM and Alibaba need signed requests, and OVHcloud's public
-// catalog has no USD subsidiary (only EUR/CAD/GBP) — see
+// AWS/Azure/GCP/Oracle/Linode/DigitalOcean have live fetchers below. IBM,
+// Alibaba, and OVHcloud ship seed-only — IBM and Alibaba need signed requests,
+// and OVHcloud's public catalog has no USD subsidiary (only EUR/CAD/GBP) — see
 // provider-verification.ts for the per-provider reasoning.
 const PROVIDERS = ['AWS', 'AZURE', 'GCP', 'ORACLE', 'IBM', 'DIGITALOCEAN', 'ALIBABA', 'LINODE', 'OVHCLOUD'];
 
@@ -60,7 +63,7 @@ function readCache() {
 }
 
 async function runSync() {
-  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP, Oracle, Linode live; 4 more seed-only)...');
+  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP, Oracle, Linode, DigitalOcean live; 3 more seed-only)...');
 
   const cacheDoc = readCache();
   const syncedAt = new Date().toISOString();
@@ -73,7 +76,8 @@ async function runSync() {
     AZURE: fetchAzureCatalog,
     GCP: fetchGcpCatalog,
     ORACLE: fetchOracleCatalog,
-    LINODE: fetchLinodeCatalog
+    LINODE: fetchLinodeCatalog,
+    DIGITALOCEAN: fetchDigitalOceanCatalog
   };
 
   for (const provider of PROVIDERS) {

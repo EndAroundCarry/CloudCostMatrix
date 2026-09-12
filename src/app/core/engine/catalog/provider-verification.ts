@@ -50,10 +50,12 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
   },
   [CloudProvider.AZURE]: {
     provider: CloudProvider.AZURE,
-    lastVerifiedAt: '2026-09-07',
+    lastVerifiedAt: '2026-09-12',
     method: 'LIVE_API',
     sourceUrl: 'https://prices.azure.com/api/retail/prices',
-    caveats: ['Compute and egress are fetched live from the Azure Retail Prices API. Reserved-instance (1-yr/3-yr) and Spot rates are derived as fixed multipliers of the live on-demand rate, not fetched directly — Azure does not publish those via this API.']
+    caveats: [
+      'Compute, internet egress, and Blob Storage capacity and operation rates are fetched live from the Azure Retail Prices API (eastus). Storage is pinned to Locally-Redundant (LRS) General Block Blob v2 meters and to the marginal first-volume tier — geo-redundant (GRS/ZRS) redundancy is not modelled. Reserved-instance (1-yr/3-yr) and Spot rates are derived as fixed multipliers of the live on-demand rate, not fetched directly — Azure does not publish those via this API.'
+    ]
   },
   [CloudProvider.GCP]: {
     provider: CloudProvider.GCP,

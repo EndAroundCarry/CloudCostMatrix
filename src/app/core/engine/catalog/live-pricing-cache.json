@@ -1,17 +1,17 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-12T16:55:20.466Z",
+    "lastSyncedAt": "2026-09-12T20:44:38.416Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-12T16:55:20.466Z",
-      "AZURE": "live@2026-09-12T16:55:20.466Z",
-      "GCP": "live@2026-09-12T16:55:20.466Z",
-      "ORACLE": "live@2026-09-12T16:55:20.466Z",
+      "AWS": "live@2026-09-12T20:44:38.416Z",
+      "AZURE": "live@2026-09-12T20:44:38.416Z",
+      "GCP": "live@2026-09-12T20:44:38.416Z",
+      "ORACLE": "live@2026-09-12T20:44:38.416Z",
       "IBM": "seed",
-      "DIGITALOCEAN": "live@2026-09-12T16:55:20.466Z",
+      "DIGITALOCEAN": "live@2026-09-12T20:44:38.416Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-09-12T16:55:20.466Z",
+      "LINODE": "live@2026-09-12T20:44:38.416Z",
       "OVHCLOUD": "seed"
     }
   },
@@ -109,27 +109,27 @@
       "storage": {
         "HOT": {
           "tier": "HOT",
-          "costPerGbMonth": 0.018,
-          "costPer10kReads": 0.0004,
-          "costPer10kWrites": 0.005
+          "costPerGbMonth": 0.0208,
+          "costPer10kReads": 0.004,
+          "costPer10kWrites": 0.05
         },
         "COOL": {
           "tier": "COOL",
-          "costPerGbMonth": 0.01,
-          "costPer10kReads": 0.001,
-          "costPer10kWrites": 0.01
+          "costPerGbMonth": 0.0152,
+          "costPer10kReads": 0.01,
+          "costPer10kWrites": 0.1
         },
         "COLD": {
           "tier": "COLD",
           "costPerGbMonth": 0.0036,
-          "costPer10kReads": 0.005,
-          "costPer10kWrites": 0.013
+          "costPer10kReads": 0.1,
+          "costPer10kWrites": 0.18
         },
         "ARCHIVE": {
           "tier": "ARCHIVE",
           "costPerGbMonth": 0.00099,
-          "costPer10kReads": 0.05,
-          "costPer10kWrites": 0.03
+          "costPer10kReads": 5,
+          "costPer10kWrites": 0.1
         }
       },
       "networking": {

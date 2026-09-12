@@ -1,17 +1,17 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-11T21:24:42.641Z",
+    "lastSyncedAt": "2026-09-12T16:55:20.466Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-11T21:24:42.641Z",
-      "AZURE": "live@2026-09-11T21:24:42.641Z",
-      "GCP": "seed",
-      "ORACLE": "live@2026-09-11T21:24:42.641Z",
+      "AWS": "live@2026-09-12T16:55:20.466Z",
+      "AZURE": "live@2026-09-12T16:55:20.466Z",
+      "GCP": "live@2026-09-12T16:55:20.466Z",
+      "ORACLE": "live@2026-09-12T16:55:20.466Z",
       "IBM": "seed",
-      "DIGITALOCEAN": "live@2026-09-11T21:24:42.641Z",
+      "DIGITALOCEAN": "live@2026-09-12T16:55:20.466Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-09-11T21:24:42.641Z",
+      "LINODE": "live@2026-09-12T16:55:20.466Z",
       "OVHCLOUD": "seed"
     }
   },
@@ -143,7 +143,114 @@
         "freeFirstCluster": true
       }
     },
-    "GCP": null,
+    "GCP": {
+      "provider": "GCP",
+      "region": "us-east1 (South Carolina)",
+      "compute": [
+        {
+          "family": "General Purpose (e2/n2)",
+          "name": "e2-standard-2",
+          "vCpu": 2,
+          "ramGb": 8,
+          "hourlyOnDemandLinux": 0.067,
+          "hourly1YrReservedLinux": 0.0469,
+          "hourly3YrReservedLinux": 0.0369,
+          "hourlySpotLinux": 0.0235,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose (e2/n2)",
+          "name": "e2-standard-4",
+          "vCpu": 4,
+          "ramGb": 16,
+          "hourlyOnDemandLinux": 0.134,
+          "hourly1YrReservedLinux": 0.0938,
+          "hourly3YrReservedLinux": 0.0737,
+          "hourlySpotLinux": 0.0469,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "General Purpose (n2)",
+          "name": "n2-standard-8",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.3885,
+          "hourly1YrReservedLinux": 0.2719,
+          "hourly3YrReservedLinux": 0.2137,
+          "hourlySpotLinux": 0.136,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Compute Optimized (c2)",
+          "name": "c2-standard-16",
+          "vCpu": 16,
+          "ramGb": 64,
+          "hourlyOnDemandLinux": 0.8352,
+          "hourly1YrReservedLinux": 0.5847,
+          "hourly3YrReservedLinux": 0.4594,
+          "hourlySpotLinux": 0.2923,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "Memory Optimized (m1)",
+          "name": "n2-highmem-16",
+          "vCpu": 16,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 1.0481,
+          "hourly1YrReservedLinux": 0.7337,
+          "hourly3YrReservedLinux": 0.5765,
+          "hourlySpotLinux": 0.3668,
+          "windowsHourlySurcharge": 0
+        },
+        {
+          "family": "High Capacity",
+          "name": "n2-standard-32",
+          "vCpu": 32,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 1.5539,
+          "hourly1YrReservedLinux": 1.0877,
+          "hourly3YrReservedLinux": 0.8546,
+          "hourlySpotLinux": 0.5439,
+          "windowsHourlySurcharge": 0
+        }
+      ],
+      "storage": {
+        "HOT": {
+          "tier": "HOT",
+          "costPerGbMonth": 0.02,
+          "costPer10kReads": 0.0004,
+          "costPer10kWrites": 0.005
+        },
+        "COOL": {
+          "tier": "COOL",
+          "costPerGbMonth": 0.01,
+          "costPer10kReads": 0.001,
+          "costPer10kWrites": 0.01
+        },
+        "COLD": {
+          "tier": "COLD",
+          "costPerGbMonth": 0.004,
+          "costPer10kReads": 0.005,
+          "costPer10kWrites": 0.013
+        },
+        "ARCHIVE": {
+          "tier": "ARCHIVE",
+          "costPerGbMonth": 0.0012,
+          "costPer10kReads": 0.05,
+          "costPer10kWrites": 0.03
+        }
+      },
+      "networking": {
+        "first10TbPerGb": 0.085,
+        "next40TbPerGb": 0.08,
+        "loadBalancerHourly": 0.025,
+        "staticIpHourly": 0.004
+      },
+      "kubernetes": {
+        "managementHourlyFeePerCluster": 0.1,
+        "freeFirstCluster": true
+      }
+    },
     "ORACLE": {
       "provider": "ORACLE",
       "region": "us-ashburn-1 (Ashburn)",

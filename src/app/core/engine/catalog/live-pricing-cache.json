@@ -1,17 +1,17 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-12T20:44:38.416Z",
+    "lastSyncedAt": "2026-09-12T20:50:08.091Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-12T20:44:38.416Z",
-      "AZURE": "live@2026-09-12T20:44:38.416Z",
-      "GCP": "live@2026-09-12T20:44:38.416Z",
-      "ORACLE": "live@2026-09-12T20:44:38.416Z",
+      "AWS": "live@2026-09-12T20:50:08.091Z",
+      "AZURE": "live@2026-09-12T20:50:08.091Z",
+      "GCP": "live@2026-09-12T20:50:08.091Z",
+      "ORACLE": "live@2026-09-12T20:50:08.091Z",
       "IBM": "seed",
-      "DIGITALOCEAN": "live@2026-09-12T20:44:38.416Z",
+      "DIGITALOCEAN": "live@2026-09-12T20:50:08.091Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-09-12T20:44:38.416Z",
+      "LINODE": "live@2026-09-12T20:50:08.091Z",
       "OVHCLOUD": "seed"
     }
   },
@@ -41,7 +41,7 @@
         },
         "ARCHIVE": {
           "tier": "ARCHIVE",
-          "costPerGbMonth": 0.001,
+          "costPerGbMonth": 0.00099,
           "costPer10kReads": 0.05,
           "costPer10kWrites": 0.03
         }

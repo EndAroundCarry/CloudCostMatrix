@@ -1,4 +1,4 @@
-import { fetchJson, round } from './shared.mjs';
+import { fetchJson, round, roundStorageRate } from './shared.mjs';
 
 /* ------------------------------------------------------------------ */
 /* Oracle Cloud Infrastructure — public cetools price list             */
@@ -138,10 +138,10 @@ export async function fetchOracleCatalog() {
   // PROVIDER_CAPABILITIES so neither is ever surfaced as a real number.
   const opRate = round(requestsRate, 4);
   const storage = {
-    HOT: { tier: 'HOT', costPerGbMonth: round(storageHot), costPer10kReads: opRate, costPer10kWrites: opRate },
-    COOL: { tier: 'COOL', costPerGbMonth: round(storageCool), costPer10kReads: opRate, costPer10kWrites: opRate },
-    COLD: { tier: 'COLD', costPerGbMonth: round(storageCool), costPer10kReads: opRate, costPer10kWrites: opRate }, // UNSUPPORTED — cloned from COOL, gated by PROVIDER_CAPABILITIES
-    ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: round(storageArchive), costPer10kReads: opRate, costPer10kWrites: opRate }
+    HOT: { tier: 'HOT', costPerGbMonth: roundStorageRate(storageHot), costPer10kReads: opRate, costPer10kWrites: opRate },
+    COOL: { tier: 'COOL', costPerGbMonth: roundStorageRate(storageCool), costPer10kReads: opRate, costPer10kWrites: opRate },
+    COLD: { tier: 'COLD', costPerGbMonth: roundStorageRate(storageCool), costPer10kReads: opRate, costPer10kWrites: opRate }, // UNSUPPORTED — cloned from COOL, gated by PROVIDER_CAPABILITIES
+    ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: roundStorageRate(storageArchive), costPer10kReads: opRate, costPer10kWrites: opRate }
   };
 
   const egressRate = ociMarginalRate(byPart, PART_NUMBERS.egress);

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchAllPages, unitPriceToNumber, round } from './shared.mjs';
+import { fetchAllPages, unitPriceToNumber, round, roundStorageRate } from './shared.mjs';
 
 const jsonResponse = (body) => ({
   ok: true,
@@ -31,6 +31,20 @@ describe('round', () => {
     expect(round(NaN)).toBe(0);
     expect(round(Infinity)).toBe(0);
     expect(round(0.388472, 4)).toBe(0.3885);
+  });
+});
+
+describe('roundStorageRate', () => {
+  it('preserves sub-cent per-GB rates that the default 4 dp silently corrupts', () => {
+    // S3 Glacier Deep Archive and Azure Archive are both $0.00099/GB-mo.
+    expect(roundStorageRate(0.00099)).toBe(0.00099);
+    // The bug this helper exists to prevent:
+    expect(round(0.00099)).toBe(0.001);
+  });
+
+  it('still strips floating-point noise', () => {
+    expect(roundStorageRate(0.020800000000000003)).toBe(0.0208);
+    expect(roundStorageRate(0.0152)).toBe(0.0152);
   });
 });
 

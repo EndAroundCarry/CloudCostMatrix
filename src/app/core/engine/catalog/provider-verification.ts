@@ -46,7 +46,7 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
     lastVerifiedAt: '2026-09-07',
     method: 'LIVE_API',
     sourceUrl: 'https://aws.amazon.com/s3/pricing/',
-    caveats: ['Object storage (S3) is fetched live. EC2 compute and internet egress use the seeded 2026 benchmark — the AWS Price List bulk EC2 index is ~480MB, impractical to sync on a schedule.']
+    caveats: ['S3 capacity tiers are fetched live. S3 request/operation rates, EC2 compute, and internet egress use the seeded 2026 benchmark — the AWS Price List bulk EC2 index is ~480MB, impractical to sync on a schedule.']
   },
   [CloudProvider.AZURE]: {
     provider: CloudProvider.AZURE,

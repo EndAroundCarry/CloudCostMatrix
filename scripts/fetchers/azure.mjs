@@ -1,4 +1,4 @@
-import { fetchAllPages, fetchJson, round } from './shared.mjs';
+import { fetchAllPages, fetchJson, round, roundStorageRate } from './shared.mjs';
 
 /* ------------------------------------------------------------------ */
 /* Azure — Retail Prices REST API                                      */
@@ -163,10 +163,9 @@ export function parseAzureStorage(items) {
     const hit = resolved.get(tierDef.tier);
     out[tierDef.tier] = {
       tier: tierDef.tier,
-      // 6 dp, not the shared helper's default 4: per-GB storage rates are
-      // legitimately sub-cent (Archive is $0.00099/GB-mo), and rounding to
-      // 4 dp silently turns that into $0.001 — a corrupted list price.
-      costPerGbMonth: round(hit.stored, 6),
+      // roundStorageRate, not the default 4 dp: Archive is $0.00099/GB-mo and
+      // 4 dp would silently round the published list price to $0.001.
+      costPerGbMonth: roundStorageRate(hit.stored),
       // Already per 10,000 operations — see STORAGE_TIERS note above.
       costPer10kReads: round(hit.reads),
       costPer10kWrites: round(hit.writes)

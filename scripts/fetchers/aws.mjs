@@ -1,4 +1,4 @@
-import { fetchJson, round } from './shared.mjs';
+import { fetchJson, round, roundStorageRate } from './shared.mjs';
 
 /* ------------------------------------------------------------------ */
 /* AWS — Price List Bulk API                                           */
@@ -63,10 +63,10 @@ export async function fetchAwsCatalog() {
   }
 
   const storage = {
-    HOT: { tier: 'HOT', costPerGbMonth: round(tierMatches.HOT ?? 0.023), costPer10kReads: 0.0004, costPer10kWrites: 0.005 },
-    COOL: { tier: 'COOL', costPerGbMonth: round(tierMatches.COOL ?? 0.0125), costPer10kReads: 0.001, costPer10kWrites: 0.01 },
-    COLD: { tier: 'COLD', costPerGbMonth: round(tierMatches.COLD ?? 0.0036), costPer10kReads: 0.005, costPer10kWrites: 0.013 },
-    ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: round(tierMatches.ARCHIVE ?? 0.00099), costPer10kReads: 0.05, costPer10kWrites: 0.03 }
+    HOT: { tier: 'HOT', costPerGbMonth: roundStorageRate(tierMatches.HOT ?? 0.023), costPer10kReads: 0.0004, costPer10kWrites: 0.005 },
+    COOL: { tier: 'COOL', costPerGbMonth: roundStorageRate(tierMatches.COOL ?? 0.0125), costPer10kReads: 0.001, costPer10kWrites: 0.01 },
+    COLD: { tier: 'COLD', costPerGbMonth: roundStorageRate(tierMatches.COLD ?? 0.0036), costPer10kReads: 0.005, costPer10kWrites: 0.013 },
+    ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: roundStorageRate(tierMatches.ARCHIVE ?? 0.00099), costPer10kReads: 0.05, costPer10kWrites: 0.03 }
   };
 
   // Refuse to stamp a provider "live" if none of its tier rates matched the

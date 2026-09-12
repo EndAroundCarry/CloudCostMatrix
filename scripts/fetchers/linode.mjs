@@ -1,4 +1,4 @@
-import { fetchJson, round, nearest } from './shared.mjs';
+import { fetchJson, round, nearest, roundStorageRate } from './shared.mjs';
 
 /* ------------------------------------------------------------------ */
 /* Linode (Akamai) — public v4 API, all endpoints unauthenticated       */
@@ -117,7 +117,7 @@ export async function fetchLinodeCatalog() {
   const objOverage = (objRes.data || []).find((o) => o.id === 'objectstorage-overage');
   if (!objBase || !objOverage) throw new Error('Linode object-storage feed missing expected SKUs');
   const minimumMonthlyFee = objBase.price.monthly;
-  const costPerGbMonth = round(objOverage.price.hourly, 4); // mislabeled field, see comment above
+  const costPerGbMonth = roundStorageRate(objOverage.price.hourly); // mislabeled field, see comment above
   if (!(costPerGbMonth > 0.005 && costPerGbMonth < 0.10)) throw new Error(`Linode storage rate out of expected range: ${costPerGbMonth}`);
   const storageTier = { costPerGbMonth, costPer10kReads: 0.004, costPer10kWrites: 0.05, minimumMonthlyFee };
   const storage = {

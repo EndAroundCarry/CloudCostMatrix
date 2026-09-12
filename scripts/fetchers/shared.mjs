@@ -40,6 +40,18 @@ export function round(n, digits = 4) {
 }
 
 /**
+ * Rounding for per-GB-month storage rates specifically.
+ *
+ * Those rates are legitimately sub-cent — S3 Glacier Deep Archive and Azure
+ * Archive are both $0.00099/GB-mo — so the default 4 dp turns the published
+ * list price into $0.001. 6 dp keeps the real value while still removing
+ * floating-point noise.
+ */
+export function roundStorageRate(n) {
+  return round(n, 6);
+}
+
+/**
  * Walks a token-paginated JSON endpoint to completion.
  *
  * Feeds page differently — GCP takes a `pageToken` query param, Azure hands

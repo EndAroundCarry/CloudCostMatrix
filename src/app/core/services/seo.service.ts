@@ -1,6 +1,14 @@
 import { Injectable, inject, DOCUMENT } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
 
+/**
+ * Directive applied when a page doesn't specify its own. Prerendered HTML and
+ * `src/index.html` both ship this value, so the client-side renderer must agree
+ * with them — otherwise an SPA navigation would quietly diverge from the crawl.
+ */
+const DEFAULT_ROBOTS_META =
+  'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
+
 export interface SeoTagsConfig {
   title: string;
   description: string;
@@ -33,10 +41,15 @@ export class SeoService {
       this.metaService.updateTag({ name: 'keywords', content: config.keywords.join(', ') });
     }
 
-    // Robots directive
-    if (config.robotsMeta) {
-      this.metaService.updateTag({ name: 'robots', content: config.robotsMeta });
-    }
+    // Robots directive — ALWAYS set, never left stale. This runs on every route,
+    // so a page that omits robotsMeta must actively restore the index directive.
+    // Otherwise a client-side navigation away from a `noindex` page (a derived
+    // /compare/... pair or the 404) would leave that noindex behind on a page we
+    // want indexed, and Google would drop it.
+    this.metaService.updateTag({
+      name: 'robots',
+      content: config.robotsMeta ?? DEFAULT_ROBOTS_META
+    });
 
     // Canonical URL — critical for preventing duplicate content from ?c= share URLs
     if (config.canonicalUrl) {

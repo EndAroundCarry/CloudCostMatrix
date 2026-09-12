@@ -210,6 +210,7 @@ export class BlueprintDetailComponent implements OnInit, OnDestroy {
       description: `${bp.tagline} Compare estimated TCO across AWS, Azure, GCP, and 6 more providers. Detailed infrastructure sizing and cost breakdown.`,
       keywords: [bp.name, 'cloud architecture blueprint', 'AWS vs Azure vs GCP cost', 'multi-cloud cost comparison', bp.recommendedFor, 'TCO estimator 2026'],
       canonicalUrl,
+      robotsMeta: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
       structuredDataJson: [
         SchemaGenerator.generateBreadcrumbSchema([
           { name: 'Home', url: 'https://cloudcostmatrix.com/' },

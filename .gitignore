@@ -29,6 +29,11 @@ yarn-error.log
 .history/*
 .commandcode
 
+# Local secrets — never commit real keys (see .env.example for the names)
+.env
+.env.*
+!.env.example
+
 # Miscellaneous
 /.angular/cache
 /.firebase

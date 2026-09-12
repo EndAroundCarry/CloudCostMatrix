@@ -20,21 +20,27 @@ import {
   imports: [RouterLink, RouterLinkActive, MatButtonModule, MatIconModule, MatTooltipModule, MatMenuModule],
   template: `
     <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/90 border-b border-slate-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Three zones: brand, quick-compare nav, config + actions. The explicit
+           gap is a minimum so the zones can never touch when the row is tight;
+           justify-between adds the rest of the slack on wide viewports.
+           Below lg the controls wrap onto their own row instead of overflowing —
+           every control stays reachable rather than being hidden on phones. -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-16 py-2 lg:py-0 flex flex-wrap lg:flex-nowrap items-center justify-between gap-x-4 gap-y-2 lg:gap-x-6">
         
         <!-- Logo & Title -->
-        <a routerLink="/" class="flex items-center gap-3 group no-underline">
+        <a routerLink="/" class="flex items-center gap-3 group no-underline shrink-0">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-blue-600 to-sky-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
             <mat-icon class="on-accent">dataset</mat-icon>
           </div>
           <div>
-            <div class="flex items-center gap-2">
-              <span class="font-extrabold text-lg text-white tracking-tight">CloudCostMatrix</span>
-              <!-- Live Pricing Freshness Badge -->
+            <div class="flex items-center gap-2.5">
+              <span class="font-extrabold text-lg text-white tracking-tight whitespace-nowrap">CloudCostMatrix</span>
+              <!-- Live Pricing Freshness Badge. shrink-0 + nowrap keep "N of 9
+                   live" on one line — without them the label broke across three. -->
               <span
                 [matTooltip]="pricingTooltip()"
                 matTooltipPosition="below"
-                class="text-[10px] px-2 py-0.5 rounded-full font-bold cursor-help border flex items-center gap-1"
+                class="shrink-0 whitespace-nowrap text-[11px] px-2 py-1 rounded-full font-bold cursor-help border flex items-center gap-1"
                 [class.bg-emerald-500/15]="store.pricingMode() === 'live'"
                 [class.text-emerald-400]="store.pricingMode() === 'live'"
                 [class.border-emerald-500/30]="store.pricingMode() === 'live'"
@@ -47,33 +53,42 @@ import {
                 {{ store.pricingLabel() }}
               </span>
             </div>
-            <p class="text-xs text-slate-400 hidden sm:block m-0">9-Provider Multi-Cloud TCO Estimator</p>
+            <p class="text-xs text-slate-400 hidden sm:block m-0 whitespace-nowrap">9-Provider Multi-Cloud TCO Estimator</p>
           </div>
         </a>
 
-        <!-- Quick Provider Badges & Nav -->
-        <div class="hidden lg:flex items-center gap-2">
-          <a routerLink="/compare/aws-vs-azure" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+        <!-- Quick compare links. Shown only from xl: the row needs ~1250px to
+             hold brand + nav + controls, and max-w-7xl only ever offers 1216px,
+             so at lg these overflowed the header by ~260px. They remain
+             reachable from the footer, the guides hub, and every compare page. -->
+        <div class="hidden xl:flex items-center gap-1.5 shrink-0">
+          <a routerLink="/compare/aws-vs-azure" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-1.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700 whitespace-nowrap">
             AWS vs Azure
           </a>
-          <a routerLink="/compare/aws-vs-gcp" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+          <a routerLink="/compare/aws-vs-gcp" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-1.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700 whitespace-nowrap">
             AWS vs GCP
           </a>
-          <a routerLink="/compare/azure-vs-gcp" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+          <a routerLink="/compare/azure-vs-gcp" routerLinkActive="!bg-blue-600 !text-white !border-blue-500" class="text-xs font-semibold px-1.5 py-1 rounded-md bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700 whitespace-nowrap">
             Azure vs GCP
           </a>
         </div>
 
         <!-- Region & Currency Selector Controls + Action Buttons -->
-        <div class="flex items-center gap-2 sm:gap-3">
-          <!-- Region Dropdown -->
+        <div class="flex items-center gap-2 shrink-0 w-full justify-end lg:w-auto">
+          <!-- Region Dropdown. A native select is sized by its LONGEST option, so
+               the "(1.2x)" suffix used to force ~176px of dead width here; the
+               multiplier now lives in the tooltip and on /methodology. -->
           <div class="relative hidden sm:block">
             <select 
+              aria-label="Pricing region"
               [value]="store.config().region" 
+              [attr.title]="'Regional pricing multiplier: ' + regionMultiplier() + 'x (scaled from the US East baseline)'"
               (change)="onRegionChange($event)"
               class="appearance-none bg-slate-800/90 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold pr-7 focus:outline-none focus:border-blue-500 cursor-pointer">
               @for (reg of regionList; track reg.id) {
-                <option [value]="reg.id">{{ reg.flag }} {{ reg.shortLocation }} ({{ reg.pricingMultiplier }}x)</option>
+                <!-- No flag emoji: Windows has no regional-indicator glyphs, so it
+                     rendered as "us US East" — the letters duplicating the name. -->
+                <option [value]="reg.id">{{ reg.shortLocation }}</option>
               }
             </select>
             <mat-icon class="!text-xs absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</mat-icon>
@@ -82,6 +97,7 @@ import {
           <!-- Currency Dropdown -->
           <div class="relative">
             <select 
+              aria-label="Display currency"
               [value]="store.selectedCurrency()" 
               (change)="onCurrencyChange($event)"
               class="appearance-none bg-slate-800/90 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold pr-6 focus:outline-none focus:border-blue-500 cursor-pointer">
@@ -105,10 +121,11 @@ import {
 
           <button 
             mat-stroked-button 
+            aria-label="Saved architectures"
             class="!border-slate-700 !text-slate-200 !bg-slate-800/50 hover:!bg-slate-700 relative"
             (click)="openSavedEstimates()">
             <mat-icon class="!mr-1 text-amber-400">bookmarks</mat-icon>
-            <span class="hidden sm:inline">Saved Architectures</span>
+            <span class="hidden sm:inline" title="Saved Architectures">Saved</span>
             @if (store.savedEstimateCount() > 0) {
               <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 on-vivid text-[10px] font-black flex items-center justify-center shadow">
                 {{ store.savedEstimateCount() }}
@@ -118,6 +135,7 @@ import {
 
           <button 
             mat-stroked-button 
+            aria-label="Share this estimate"
             class="!border-slate-700 !text-slate-200 !bg-slate-800/50 hover:!bg-slate-700"
             (click)="openShareModal()">
             <mat-icon class="!mr-1 text-sky-400">share</mat-icon>
@@ -150,8 +168,7 @@ import {
               mat-flat-button
               class="!bg-gradient-to-r !from-blue-600 !to-indigo-600 !text-white shadow-md shadow-blue-500/20"
               (click)="store.openAuthModal()">
-              <mat-icon class="!mr-1">cloud_sync</mat-icon>
-              <span class="hidden sm:inline">Sign In</span>
+              <span class="whitespace-nowrap">Sign In</span>
             </button>
           }
         </div>
@@ -171,6 +188,11 @@ export class HeaderComponent {
   onRegionChange(event: Event): void {
     const val = (event.target as HTMLSelectElement).value as RegionId;
     this.store.setRegion(val);
+  }
+
+  /** Regional price multiplier, surfaced in the region select's tooltip rather than its label. */
+  regionMultiplier(): number {
+    return REGION_DEFINITIONS[this.store.config().region]?.pricingMultiplier ?? 1;
   }
 
   onCurrencyChange(event: Event): void {

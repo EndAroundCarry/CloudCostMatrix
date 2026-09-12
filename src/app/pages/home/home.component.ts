@@ -200,6 +200,7 @@ export class HomeComponent implements OnInit {
         'cloud FinOps calculator'
       ],
       canonicalUrl: 'https://cloudcostmatrix.com/',
+      robotsMeta: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
       structuredDataJson: [
         SchemaGenerator.generateWebApplicationSchema(),
         SchemaGenerator.generateOrganizationSchema(),

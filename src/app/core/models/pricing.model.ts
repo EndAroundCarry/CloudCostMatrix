@@ -30,9 +30,13 @@ export type RegionId = 'us-east-1' | 'us-west-2' | 'eu-central-1' | 'ap-northeas
 export interface RegionDefinition {
   id: RegionId;
   name: string;
+  /**
+   * Display name for the region, used as plain text. Deliberately carries no
+   * flag emoji: platforms without regional-indicator glyphs (Windows) render
+   * "🇺🇸 US East" as the literal letters "us US East".
+   */
   shortLocation: string;
   pricingMultiplier: number; // Baseline us-east-1 is 1.0
-  flag: string;
 }
 
 export const REGION_DEFINITIONS: Record<RegionId, RegionDefinition> = {
@@ -40,36 +44,31 @@ export const REGION_DEFINITIONS: Record<RegionId, RegionDefinition> = {
     id: 'us-east-1',
     name: 'US-East (Virginia / N. Virginia)',
     shortLocation: 'US East',
-    pricingMultiplier: 1.0,
-    flag: '🇺🇸'
+    pricingMultiplier: 1.0
   },
   'us-west-2': {
     id: 'us-west-2',
     name: 'US-West (Oregon / California)',
     shortLocation: 'US West',
-    pricingMultiplier: 1.02,
-    flag: '🇺🇸'
+    pricingMultiplier: 1.02
   },
   'eu-central-1': {
     id: 'eu-central-1',
     name: 'Europe (Frankfurt / Dublin)',
     shortLocation: 'Europe',
-    pricingMultiplier: 1.10,
-    flag: '🇪🇺'
+    pricingMultiplier: 1.10
   },
   'ap-northeast-1': {
     id: 'ap-northeast-1',
     name: 'Asia Pacific (Tokyo / Singapore)',
     shortLocation: 'Asia Pacific',
-    pricingMultiplier: 1.16,
-    flag: '🇯🇵'
+    pricingMultiplier: 1.16
   },
   'sa-east-1': {
     id: 'sa-east-1',
     name: 'South America (São Paulo)',
     shortLocation: 'South America',
-    pricingMultiplier: 1.30,
-    flag: '🇧🇷'
+    pricingMultiplier: 1.30
   }
 };
 

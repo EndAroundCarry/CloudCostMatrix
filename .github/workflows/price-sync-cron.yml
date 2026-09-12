@@ -9,6 +9,13 @@ on:
 permissions:
   contents: write
 
+# Serialize runs: two overlapping syncs would race each other's `git push` to
+# the same branch and one would fail. Queue rather than cancel, so every run
+# still lands its refreshed catalog.
+concurrency:
+  group: price-sync
+  cancel-in-progress: false
+
 jobs:
   sync-pricing:
     runs-on: ubuntu-latest
@@ -24,12 +31,8 @@ jobs:
       - name: Install sync dependencies
         run: npm ci || npm install
 
-      - name: Run cloud pricing scrapers & write to Firestore
-        env:
-          # In GitHub repo settings -> Secrets, add your Firebase Service Account JSON
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-        run: |
-          node scripts/sync-prices.mjs
+      - name: Run cloud pricing scrapers
+        run: node scripts/sync-prices.mjs
 
       # Without this step the freshly-written live-pricing-cache.json only ever
       # exists inside this ephemeral runner — every prior run of this workflow

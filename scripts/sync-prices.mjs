@@ -3,11 +3,8 @@
  * -------------------------------------------------
  * Fetches the latest public pricing feeds for the providers that have one
  * wired up, normalizes them into the app's benchmark catalog contract, and
- * writes:
- *
- *   1. src/app/core/engine/catalog/live-pricing-cache.json  (committed artifact,
- *      bundled at build-time so the SPA has ZERO runtime API dependencies)
- *   2. Firestore /pricing/latest  (only when FIREBASE_SERVICE_ACCOUNT_KEY is set)
+ * writes src/app/core/engine/catalog/live-pricing-cache.json — a committed
+ * artifact, bundled at build-time so the SPA has ZERO runtime API dependencies.
  *
  * Sources (all public / free):
  *   - Azure:  Retail Prices REST API      https://prices.azure.com/api/retail/prices
@@ -125,30 +122,6 @@ async function runSync() {
 
   fs.writeFileSync(CACHE_PATH, JSON.stringify(next, null, 2) + '\n', 'utf8');
   console.log(`💾 Wrote live-pricing-cache.json (mode=${next.meta.mode}, syncedAt=${next.meta.lastSyncedAt || 'n/a'})`);
-
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-    console.log('  🔥 FIREBASE_SERVICE_ACCOUNT_KEY detected — writing /pricing/latest snapshot...');
-    try {
-      // The Admin SDK is intentionally lazy-required here: local/test runs have no
-      // service-account key and thus never pay the import cost.
-      const { initializeApp, cert } = await import('firebase-admin/app');
-      const { getFirestore } = await import('firebase-admin/firestore');
-
-      const app = initializeApp(
-        { credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)) },
-        'price-sync'
-      );
-      await getFirestore(app).collection('pricing').doc('latest').set({
-        ...next,
-        generatedBy: 'scripts/sync-prices.mjs'
-      });
-      console.log('  ✅ Firestore /pricing/latest updated.');
-    } catch (err) {
-      console.warn(`  ⚠️  Firestore write skipped (${err?.message || err}).`);
-    }
-  } else {
-    console.log('  ℹ️  No FIREBASE_SERVICE_ACCOUNT_KEY. Skipping remote Firestore write (Local/Test mode).');
-  }
 
   console.log('✅ Sync finished successfully.');
 }

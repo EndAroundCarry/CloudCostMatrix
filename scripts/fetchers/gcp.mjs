@@ -1,14 +1,14 @@
-import { fetchAllPages, round, unitPriceToNumber } from './shared.mjs';
+import { fetchAllPages, round, roundStorageRate, unitPriceToNumber } from './shared.mjs';
 
 /* ------------------------------------------------------------------ */
-/* GCP — Cloud Billing Catalog API (Compute Engine)                    */
+/* GCP — Cloud Billing Catalog API                                     */
 /* ------------------------------------------------------------------ */
 
-const GCP_COMPUTE_SERVICE_ID = '6F81-5844-456A';
+// Service IDs resolved from GET https://cloudbilling.googleapis.com/v1/services
+// and matched on displayName — verified, never guessed.
+const GCP_COMPUTE_SERVICE_ID = '6F81-5844-456A'; // "Compute Engine"
+const GCP_STORAGE_SERVICE_ID = '95FF-2EF5-5EA1'; // "Cloud Storage"
 
-// The catalog holds ~33k SKUs and pages at 5,000; reading only the first page
-// (the previous behaviour) silently missed ~85% of them, including every
-// predefined machine-type SKU this fetcher needs.
 const PAGE_SIZE = 5000;
 const MAX_PAGES = 25;
 
@@ -50,6 +50,41 @@ const SKU_KIND_RE = /^(.*?)\s+(?:instance\s+)?(core|ram)\s+running/i;
 
 const REGION_RE = /^us-east1/i;
 
+/**
+ * Capacity SKUs for the us-east1 ("South Carolina") region, in priority order.
+ * GCP publishes no plain "Standard Storage South Carolina" SKU — regional
+ * Standard capacity is only listed as the Autoclass variant, at the same
+ * published rate — so HOT falls back to it.
+ */
+const STORAGE_TIER_SKUS = [
+  { tier: 'HOT', descriptions: ['Standard Storage South Carolina', 'Autoclass Standard Storage South Carolina'] },
+  { tier: 'COOL', descriptions: ['Nearline Storage South Carolina'] },
+  { tier: 'COLD', descriptions: ['Coldline Storage South Carolina'] },
+  { tier: 'ARCHIVE', descriptions: ['Archive Storage South Carolina'] }
+];
+
+/**
+ * Internet egress for the Americas group (us-central1/east1/west1 all share
+ * this SKU). GCP publishes three billable tiers — $0.12 to 1 TB, $0.11 to
+ * 10 TB, $0.08 above — which this catalog's two-rung ladder flattens to the
+ * first billable rate and the top rate.
+ */
+const EGRESS_SKU_DESCRIPTION = 'Network Internet Data Transfer Out from Americas to Americas';
+
+/**
+ * Operation rates are NOT fetched. Cloud Storage SKUs omit `unit` entirely
+ * (the API returns no billing unit for this service), and the published
+ * operation rates don't reconcile against a per-1,000 or per-10,000 reading —
+ * so there is no honest way to convert them. These stay on the seed benchmark
+ * and are called out in PROVIDER_VERIFICATION.GCP.
+ */
+const SEEDED_STORAGE_OPS = {
+  HOT: { costPer10kReads: 0.0004, costPer10kWrites: 0.005 },
+  COOL: { costPer10kReads: 0.001, costPer10kWrites: 0.01 },
+  COLD: { costPer10kReads: 0.005, costPer10kWrites: 0.013 },
+  ARCHIVE: { costPer10kReads: 0.05, costPer10kWrites: 0.03 }
+};
+
 /** Pricing for a "running in Americas" SKU is shared by us-central1/east1/west1. */
 function inUsEast1(sku) {
   return (
@@ -66,25 +101,26 @@ function resolveFamily(prefix) {
   return null;
 }
 
-const SKUS_URL =
-  `https://cloudbilling.googleapis.com/v1/services/${GCP_COMPUTE_SERVICE_ID}/skus` +
-  `?currencyCode=USD&pageSize=${PAGE_SIZE}`;
+function serviceUrl(serviceId) {
+  return `https://cloudbilling.googleapis.com/v1/services/${serviceId}/skus?currencyCode=USD&pageSize=${PAGE_SIZE}`;
+}
 
 /**
- * Walks every page of the catalog (shared token-following helper). The key
- * travels as a HEADER rather than a `?key=` query param so it can never be
+ * Walks every page of a service's catalog (shared token-following helper). The
+ * key travels as a HEADER rather than a `?key=` query param so it can never be
  * echoed into an error message (the shared fetch helpers include the URL in
  * their errors) or a CI log.
  */
-async function fetchAllSkus(apiKey) {
+async function fetchAllSkus(serviceId, apiKey) {
+  const url = serviceUrl(serviceId);
   return fetchAllPages({
-    firstUrl: SKUS_URL,
-    nextUrl: (token) => `${SKUS_URL}&pageToken=${encodeURIComponent(token)}`,
+    firstUrl: url,
+    nextUrl: (token) => `${url}&pageToken=${encodeURIComponent(token)}`,
     extract: (data) => data.skus ?? [],
     getToken: (data) => data.nextPageToken || '',
     headers: { 'X-goog-api-key': apiKey },
     maxPages: MAX_PAGES,
-    id: 'GCP catalog'
+    id: `GCP catalog ${serviceId}`
   });
 }
 
@@ -99,22 +135,57 @@ export async function fetchGcpCatalog() {
     throw new Error('No GCP_API_KEY configured — skipping live GCP catalog fetch (app uses seed/cache).');
   }
 
-  const skus = await fetchAllSkus(process.env.GCP_API_KEY);
-  const parsed = parseGcpSkus(skus);
+  const apiKey = process.env.GCP_API_KEY;
+  const computeSkus = await fetchAllSkus(GCP_COMPUTE_SERVICE_ID, apiKey);
+  const compute = parseGcpSkus(computeSkus);
 
   // Validation gate: every shape must price from a live family rate, otherwise
   // throw and let the orchestrator keep the last-good catalog. A partial list
   // would REPLACE the seed's complete envelope (mergeOverSeed) and degrade the
   // app, so partial success is a failure here.
-  if (parsed.compute.length !== SHAPES.length) {
+  if (compute.length !== SHAPES.length) {
     throw new Error(
-      `GCP catalog incomplete: priced ${parsed.compute.length}/${SHAPES.length} shapes from ${skus.length} SKUs`
+      `GCP catalog incomplete: priced ${compute.length}/${SHAPES.length} shapes from ${computeSkus.length} SKUs`
     );
   }
 
-  return parsed;
+  const storageSkus = await fetchAllSkus(GCP_STORAGE_SERVICE_ID, apiKey);
+  const storageRates = parseGcpStorage(storageSkus);
+  const missingTiers = STORAGE_TIER_SKUS.map((d) => d.tier).filter((t) => !(storageRates[t] > 0));
+  if (missingTiers.length) {
+    throw new Error(`GCP storage feed incomplete — no us-east1 capacity rate for: ${missingTiers.join(', ')}`);
+  }
+
+  const egress = parseGcpEgress(computeSkus);
+  if (!egress) throw new Error(`GCP egress SKU not found: ${EGRESS_SKU_DESCRIPTION}`);
+
+  return {
+    provider: 'GCP',
+    region: 'us-east1 (South Carolina)',
+    compute,
+    storage: Object.fromEntries(
+      STORAGE_TIER_SKUS.map(({ tier }) => [
+        tier,
+        {
+          tier,
+          costPerGbMonth: roundStorageRate(storageRates[tier]),
+          ...SEEDED_STORAGE_OPS[tier]
+        }
+      ])
+    ),
+    networking: {
+      first10TbPerGb: egress.first10TbPerGb,
+      next40TbPerGb: egress.next40TbPerGb,
+      // Not exposed by the catalog feeds this fetcher reads; carried from the
+      // seeded benchmark.
+      loadBalancerHourly: 0.025,
+      staticIpHourly: 0.004
+    },
+    kubernetes: { managementHourlyFeePerCluster: 0.1, freeFirstCluster: true }
+  };
 }
 
+/** Compute shapes only — capacity and egress are parsed by their own helpers. */
 export function parseGcpSkus(skus) {
   const rates = new Map(); // family → { core, ram }
 
@@ -163,24 +234,56 @@ export function parseGcpSkus(skus) {
     });
   }
 
+  return compute;
+}
+
+/** Per-GB-month capacity rate for each tier, keyed by tier name. */
+export function parseGcpStorage(skus) {
+  const byDescription = new Map();
+  for (const sku of skus) {
+    if (!inUsEast1(sku)) continue;
+    if (!byDescription.has(sku.description)) byDescription.set(sku.description, sku);
+  }
+
+  const out = {};
+  for (const { tier, descriptions } of STORAGE_TIER_SKUS) {
+    const sku = descriptions.map((d) => byDescription.get(d)).find(Boolean);
+    if (!sku) continue;
+    const firstTier = sku.pricingInfo?.[0]?.pricingExpression?.tieredRates?.[0];
+    const rate = unitPriceToNumber(firstTier?.unitPrice);
+    if (rate > 0) out[tier] = rate;
+  }
+  return out;
+}
+
+/**
+ * Internet egress ladder. The SKU's tiers lead with a $0 row covering the first
+ * GB, so the first *billable* rate is the one this catalog's first rung maps
+ * to; the last row is the high-volume rate.
+ */
+export function parseGcpEgress(skus) {
+  const sku = skus.find((s) => s.description === EGRESS_SKU_DESCRIPTION);
+  if (!sku) return null;
+
+  const tiers = sku.pricingInfo?.[0]?.pricingExpression?.tieredRates || [];
+  const billable = tiers
+    .map((t) => unitPriceToNumber(t.unitPrice))
+    .filter((rate) => rate > 0);
+
+  if (billable.length < 2) return null;
+
   return {
-    provider: 'GCP',
-    region: 'us-east1 (South Carolina)',
-    compute,
-    storage: {
-      HOT: { tier: 'HOT', costPerGbMonth: 0.02, costPer10kReads: 0.0004, costPer10kWrites: 0.005 },
-      COOL: { tier: 'COOL', costPerGbMonth: 0.01, costPer10kReads: 0.001, costPer10kWrites: 0.01 },
-      COLD: { tier: 'COLD', costPerGbMonth: 0.004, costPer10kReads: 0.005, costPer10kWrites: 0.013 },
-      ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: 0.0012, costPer10kReads: 0.05, costPer10kWrites: 0.03 }
-    },
-    networking: {
-      first10TbPerGb: 0.085,
-      next40TbPerGb: 0.08,
-      loadBalancerHourly: 0.025,
-      staticIpHourly: 0.004
-    },
-    kubernetes: { managementHourlyFeePerCluster: 0.1, freeFirstCluster: true }
+    first10TbPerGb: round(billable[0]),
+    next40TbPerGb: round(billable[billable.length - 1])
   };
 }
 
-export const __internal = { inUsEast1, resolveFamily, SHAPES, MAX_PAGES };
+export const __internal = {
+  inUsEast1,
+  resolveFamily,
+  SHAPES,
+  MAX_PAGES,
+  STORAGE_TIER_SKUS,
+  EGRESS_SKU_DESCRIPTION,
+  GCP_STORAGE_SERVICE_ID
+};

@@ -1,17 +1,17 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-12T20:50:08.091Z",
+    "lastSyncedAt": "2026-09-12T20:53:49.084Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-12T20:50:08.091Z",
-      "AZURE": "live@2026-09-12T20:50:08.091Z",
-      "GCP": "live@2026-09-12T20:50:08.091Z",
-      "ORACLE": "live@2026-09-12T20:50:08.091Z",
+      "AWS": "live@2026-09-12T20:53:49.084Z",
+      "AZURE": "live@2026-09-12T20:53:49.084Z",
+      "GCP": "live@2026-09-12T20:53:49.084Z",
+      "ORACLE": "live@2026-09-12T20:53:49.084Z",
       "IBM": "seed",
-      "DIGITALOCEAN": "live@2026-09-12T20:50:08.091Z",
+      "DIGITALOCEAN": "live@2026-09-12T20:53:49.084Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-09-12T20:50:08.091Z",
+      "LINODE": "live@2026-09-12T20:53:49.084Z",
       "OVHCLOUD": "seed"
     }
   },
@@ -241,7 +241,7 @@
         }
       },
       "networking": {
-        "first10TbPerGb": 0.085,
+        "first10TbPerGb": 0.12,
         "next40TbPerGb": 0.08,
         "loadBalancerHourly": 0.025,
         "staticIpHourly": 0.004

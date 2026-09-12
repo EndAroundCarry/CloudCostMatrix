@@ -63,7 +63,7 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
     method: 'LIVE_API',
     sourceUrl: 'https://cloudbilling.googleapis.com/v1/services/6F81-5844-456A/skus',
     caveats: [
-      'Compute pricing syncs live from the Cloud Billing Catalog API (us-east1). GCP bills per vCPU-hour and per GB-hour per machine family, so predefined machine types are priced by multiplying those live family rates by a static shape table — the six shapes match the benchmark catalog exactly. Object storage, networking, and Kubernetes figures still carry the seeded 2026 benchmark. Reserved and Spot rates are derived as fixed multipliers of the live on-demand rate — the Catalog API does not publish discounted rates.'
+      'Compute, object-storage capacity, and internet egress are fetched live from the Cloud Billing Catalog API (us-east1). GCP bills compute per vCPU-hour and per GB-hour per machine family, so predefined machine types are priced by multiplying those live family rates by a static shape table — the six shapes match the benchmark catalog exactly. Storage is pinned to regional (South Carolina) capacity; dual-region and multi-region rates are not modelled. Internet egress uses the Americas group rate, whose three published tiers are flattened onto this catalog\'s two-rung ladder. Object-storage operation rates, load balancer, static IP, and Kubernetes figures still carry the seeded 2026 benchmark — Cloud Storage SKUs publish no billing unit, so their operation rates cannot be converted honestly. Reserved and Spot rates are derived as fixed multipliers of the live on-demand rate.'
     ]
   },
   [CloudProvider.ORACLE]: {

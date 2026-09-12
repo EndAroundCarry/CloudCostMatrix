@@ -2,7 +2,13 @@ import { CloudProvider } from '../../models/cloud-provider.enum';
 import { LIVE_PRICING_CACHE } from './pricing-catalog.resolver';
 
 export type VerificationMethod = 'LIVE_API' | 'MANUAL_LIST_PRICE' | 'DERIVED_ESTIMATE';
-export type FreshnessTier = 'LIVE' | 'VERIFIED' | 'ESTIMATE';
+/**
+ * `LIVE_FX_CONVERTED` is deliberately its own tier rather than a flavour of
+ * `LIVE`: the figure was fetched, but a currency conversion sits between the
+ * provider's published number and the one shown, so it must never be labelled
+ * or counted as plainly live.
+ */
+export type FreshnessTier = 'LIVE' | 'LIVE_FX_CONVERTED' | 'VERIFIED' | 'ESTIMATE';
 
 export interface ProviderVerification {
   provider: CloudProvider;
@@ -51,10 +57,12 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
   },
   [CloudProvider.GCP]: {
     provider: CloudProvider.GCP,
-    lastVerifiedAt: '2026-01-15',
-    method: 'MANUAL_LIST_PRICE',
-    sourceUrl: 'https://cloud.google.com/compute/all-pricing',
-    caveats: ['Live sync requires a GCP Cloud Billing Catalog API key which this deployment does not currently have configured — pricing is a manually-reconciled benchmark, not a live feed. Reserved and Spot rates are derived multipliers, matching Azure\'s approach.']
+    lastVerifiedAt: '2026-09-12',
+    method: 'LIVE_API',
+    sourceUrl: 'https://cloudbilling.googleapis.com/v1/services/6F81-5844-456A/skus',
+    caveats: [
+      'Compute pricing syncs live from the Cloud Billing Catalog API (us-east1). GCP bills per vCPU-hour and per GB-hour per machine family, so predefined machine types are priced by multiplying those live family rates by a static shape table — the six shapes match the benchmark catalog exactly. Object storage, networking, and Kubernetes figures still carry the seeded 2026 benchmark. Reserved and Spot rates are derived as fixed multipliers of the live on-demand rate — the Catalog API does not publish discounted rates.'
+    ]
   },
   [CloudProvider.ORACLE]: {
     provider: CloudProvider.ORACLE,
@@ -110,39 +118,67 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
   }
 };
 
-/** Fuses the hand-maintained verification record with the live sync timestamp into one display-ready freshness tier. */
-export function getProviderFreshness(provider: CloudProvider): ProviderFreshness {
-  const verification = PROVIDER_VERIFICATION[provider];
-  const source = LIVE_PRICING_CACHE.meta?.sources?.[provider] ?? 'seed';
+/**
+ * Source markers written by scripts/sync-prices.mjs into `meta.sources`:
+ *
+ *   'live@<iso>'          — fetched straight from the provider, no conversion
+ *   'fx-converted@<iso>'  — fetched, then converted to USD at a live FX rate
+ *   'seed'                — not fetched at all
+ *
+ * Kept as distinct prefixes so a converted figure can't be summarised as plain
+ * "live" by `pricingLabel()` (which counts sources starting with `live`).
+ */
+export const LIVE_SOURCE_PREFIX = 'live@';
+export const FX_CONVERTED_SOURCE_PREFIX = 'fx-converted@';
 
-  if (source.startsWith('live@')) {
-    const asOf = source.slice('live@'.length);
-    const date = new Date(asOf);
-    const label = Number.isNaN(date.getTime())
-      ? 'Live'
-      : `Live · synced ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-    return { provider, tier: 'LIVE', asOf, label, sourceUrl: verification.sourceUrl, caveats: verification.caveats };
+/**
+ * Fuses a sync source marker with the hand-maintained verification record into
+ * one display-ready freshness tier. Pure, so every tier — including branches no
+ * provider currently exercises — is unit-testable without a fixture catalog.
+ */
+export function freshnessFromSource(source: string, verification: ProviderVerification): ProviderFreshness {
+  const base = {
+    provider: verification.provider,
+    sourceUrl: verification.sourceUrl,
+    caveats: verification.caveats
+  };
+
+  if (source.startsWith(FX_CONVERTED_SOURCE_PREFIX)) {
+    const asOf = source.slice(FX_CONVERTED_SOURCE_PREFIX.length);
+    return { ...base, tier: 'LIVE_FX_CONVERTED', asOf, label: `FX-converted · ${formatSyncDate(asOf)}` };
+  }
+
+  if (source.startsWith(LIVE_SOURCE_PREFIX)) {
+    const asOf = source.slice(LIVE_SOURCE_PREFIX.length);
+    return { ...base, tier: 'LIVE', asOf, label: `Live · synced ${formatSyncDate(asOf)}` };
   }
 
   if (verification.method === 'MANUAL_LIST_PRICE') {
     return {
-      provider,
+      ...base,
       tier: 'VERIFIED',
       asOf: verification.lastVerifiedAt,
-      label: `Verified ${formatDate(verification.lastVerifiedAt)}`,
-      sourceUrl: verification.sourceUrl,
-      caveats: verification.caveats
+      label: `Verified ${formatDate(verification.lastVerifiedAt)}`
     };
   }
 
   return {
-    provider,
+    ...base,
     tier: 'ESTIMATE',
     asOf: verification.lastVerifiedAt,
-    label: 'Estimate — not yet list-verified',
-    sourceUrl: verification.sourceUrl,
-    caveats: verification.caveats
+    label: 'Estimate — not yet list-verified'
   };
+}
+
+/** Fuses the hand-maintained verification record with the live sync marker for the given provider. */
+export function getProviderFreshness(provider: CloudProvider): ProviderFreshness {
+  const source = LIVE_PRICING_CACHE.meta?.sources?.[provider] ?? 'seed';
+  return freshnessFromSource(source, PROVIDER_VERIFICATION[provider]);
+}
+
+function formatSyncDate(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function formatDate(iso: string): string {

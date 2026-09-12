@@ -1,4 +1,4 @@
-import { fetchJson, round } from './shared.mjs';
+import { fetchAllPages, round, unitPriceToNumber } from './shared.mjs';
 
 /* ------------------------------------------------------------------ */
 /* GCP — Cloud Billing Catalog API (Compute Engine)                    */
@@ -66,48 +66,26 @@ function resolveFamily(prefix) {
   return null;
 }
 
-/**
- * `units` is a STRING in this API (to preserve precision), so `"0" + 0.0316`
- * previously produced the string "00.0316" instead of a number. Coerce both
- * fields explicitly.
- */
-function unitHourly(unitPrice) {
-  if (!unitPrice) return 0;
-  const value = Number(unitPrice.units ?? 0) + Number(unitPrice.nanos ?? 0) / 1e9;
-  return Number.isFinite(value) ? value : 0;
-}
-
-function computeUrl(pageToken) {
-  return (
-    `https://cloudbilling.googleapis.com/v1/services/${GCP_COMPUTE_SERVICE_ID}/skus` +
-    `?currencyCode=USD&pageSize=${PAGE_SIZE}` +
-    (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '')
-  );
-}
+const SKUS_URL =
+  `https://cloudbilling.googleapis.com/v1/services/${GCP_COMPUTE_SERVICE_ID}/skus` +
+  `?currencyCode=USD&pageSize=${PAGE_SIZE}`;
 
 /**
- * Walks every page of the catalog. The key travels as a HEADER rather than a
- * `?key=` query param so it can never be echoed into an error message (the
- * shared fetch helpers include the URL in their errors) or a CI log.
+ * Walks every page of the catalog (shared token-following helper). The key
+ * travels as a HEADER rather than a `?key=` query param so it can never be
+ * echoed into an error message (the shared fetch helpers include the URL in
+ * their errors) or a CI log.
  */
 async function fetchAllSkus(apiKey) {
-  const all = [];
-  const seenTokens = new Set();
-  let pageToken = '';
-
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const data = await fetchJson(computeUrl(pageToken), { 'X-goog-api-key': apiKey });
-    all.push(...(data.skus || []));
-
-    pageToken = data.nextPageToken || '';
-    if (!pageToken) return all;
-
-    // Guard against a feed that loops forever on the same token.
-    if (seenTokens.has(pageToken)) throw new Error('GCP catalog pagination returned a repeated pageToken');
-    seenTokens.add(pageToken);
-  }
-
-  throw new Error(`GCP catalog exceeded ${MAX_PAGES} pages — refusing to sync a partial catalog`);
+  return fetchAllPages({
+    firstUrl: SKUS_URL,
+    nextUrl: (token) => `${SKUS_URL}&pageToken=${encodeURIComponent(token)}`,
+    extract: (data) => data.skus ?? [],
+    getToken: (data) => data.nextPageToken || '',
+    headers: { 'X-goog-api-key': apiKey },
+    maxPages: MAX_PAGES,
+    id: 'GCP catalog'
+  });
 }
 
 /**
@@ -154,7 +132,7 @@ export function parseGcpSkus(skus) {
     if (!family) continue;
 
     const kind = /^core$/i.test(match[2]) ? 'core' : 'ram';
-    const rate = unitHourly(sku.pricingInfo?.[0]?.pricingExpression?.tieredRates?.[0]?.unitPrice);
+    const rate = unitPriceToNumber(sku.pricingInfo?.[0]?.pricingExpression?.tieredRates?.[0]?.unitPrice);
     if (!(rate > 0)) continue;
 
     const entry = rates.get(family) ?? {};
@@ -205,4 +183,4 @@ export function parseGcpSkus(skus) {
   };
 }
 
-export const __internal = { inUsEast1, resolveFamily, unitHourly, SHAPES, MAX_PAGES };
+export const __internal = { inUsEast1, resolveFamily, SHAPES, MAX_PAGES };

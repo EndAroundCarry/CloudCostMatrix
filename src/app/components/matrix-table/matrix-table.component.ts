@@ -177,6 +177,7 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
               <span class="text-sm font-bold text-white flex-1 truncate">{{ meta.shortName }}</span>
               <span class="hidden md:inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide cursor-help"
                     [class.text-emerald-400]="freshness(row.provider).tier === 'LIVE'"
+                    [class.text-violet-400]="freshness(row.provider).tier === 'LIVE_FX_CONVERTED'"
                     [class.text-blue-400]="freshness(row.provider).tier === 'VERIFIED'"
                     [class.text-amber-400]="freshness(row.provider).tier === 'ESTIMATE'"
                     [matTooltip]="freshness(row.provider).caveats.join(' ')">
@@ -232,6 +233,7 @@ export function getMinCostForCategory(rows: ProviderRow[], cat: ServiceCategory)
                         {{ meta.shortName }}
                         <span class="w-1.5 h-1.5 rounded-full cursor-help"
                               [class.bg-emerald-400]="freshness(row.provider).tier === 'LIVE'"
+                              [class.bg-violet-400]="freshness(row.provider).tier === 'LIVE_FX_CONVERTED'"
                               [class.bg-blue-400]="freshness(row.provider).tier === 'VERIFIED'"
                               [class.bg-amber-400]="freshness(row.provider).tier === 'ESTIMATE'"
                               [matTooltip]="freshness(row.provider).label + ' — ' + freshness(row.provider).caveats.join(' ')"></span>

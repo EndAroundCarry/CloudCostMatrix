@@ -81,6 +81,7 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
                   <td class="py-3 px-4">
                     <span class="font-bold"
                           [class.text-emerald-400]="f.tier === 'LIVE'"
+                          [class.text-violet-400]="f.tier === 'LIVE_FX_CONVERTED'"
                           [class.text-blue-400]="f.tier === 'VERIFIED'"
                           [class.text-amber-400]="f.tier === 'ESTIMATE'">
                       {{ f.label }}

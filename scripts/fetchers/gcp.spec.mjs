@@ -1,14 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-const { mockFetchJson } = vi.hoisted(() => ({ mockFetchJson: vi.fn() }));
-
-vi.mock('./shared.mjs', async (importOriginal) => {
-  const actual = await importOriginal();
-  return { ...actual, fetchJson: mockFetchJson };
-});
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const { fetchGcpCatalog, parseGcpSkus, __internal } = await import('./gcp.mjs');
-const { unitHourly, resolveFamily } = __internal;
+const { resolveFamily } = __internal;
 
 /**
  * Shaped exactly like the live Cloud Billing Catalog API, including the traps
@@ -34,20 +27,30 @@ const C2_RAM = sku('Compute optimized Ram', '0', 4555000);
 
 const COMPLETE = [E2_CORE, E2_RAM, N2_CORE, N2_RAM, C2_CORE, C2_RAM];
 
+const jsonResponse = (body) => ({
+  ok: true,
+  status: 200,
+  statusText: 'OK',
+  text: async () => JSON.stringify(body)
+});
+
+// The fetcher pages through shared.mjs's fetchAllPages, which calls the module-
+// internal fetchJson — so a `vi.mock('./shared.mjs')` would NOT intercept it.
+// Stubbing the global fetch exercises the real helper chain instead.
+let mockFetch;
+
 beforeEach(() => {
-  mockFetchJson.mockReset();
+  mockFetch = vi.fn();
+  vi.stubGlobal('fetch', mockFetch);
   process.env.GCP_API_KEY = 'test-key';
 });
 
-describe('gcp fetcher — unit coercion', () => {
-  it('adds units + nanos numerically instead of concatenating the string units', () => {
-    // "0" + 0.031611 would string-concat to "00.031611".
-    expect(unitHourly({ units: '0', nanos: 31611000 })).toBeCloseTo(0.031611, 9);
-    // The 10x bug: "1" + 0.5 must be 1.5, not "10.5".
-    expect(unitHourly({ units: '1', nanos: 500000000 })).toBeCloseTo(1.5, 9);
-    expect(typeof unitHourly({ units: '0', nanos: 31611000 })).toBe('number');
-  });
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
+
+// The string-`units` coercion trap now lives in shared.mjs and is covered by
+// shared.spec.mjs, since Azure/IBM money objects have the same shape.
 
 describe('gcp fetcher — SKU filtering', () => {
   it('accepts the generic "Compute optimized" prefix, which carries the C2 family rate', () => {
@@ -74,7 +77,7 @@ describe('gcp fetcher — SKU filtering', () => {
 
 describe('gcp fetcher — shape derivation', () => {
   it('derives all six seed shapes from live family rates', async () => {
-    mockFetchJson.mockResolvedValue({ skus: COMPLETE });
+    mockFetch.mockResolvedValue(jsonResponse({ skus: COMPLETE }));
     const catalog = await fetchGcpCatalog();
 
     expect(catalog.compute).toHaveLength(6);
@@ -92,14 +95,14 @@ describe('gcp fetcher — shape derivation', () => {
   });
 
   it('spans the 2 → 32 vCPU envelope every other provider catalog spans', async () => {
-    mockFetchJson.mockResolvedValue({ skus: COMPLETE });
+    mockFetch.mockResolvedValue(jsonResponse({ skus: COMPLETE }));
     const catalog = await fetchGcpCatalog();
     expect(Math.min(...catalog.compute.map((c) => c.vCpu))).toBe(2);
     expect(Math.max(...catalog.compute.map((c) => c.vCpu))).toBe(32);
   });
 
   it('keeps every compute row monotonic: spot ≤ 3yr ≤ 1yr ≤ on-demand', async () => {
-    mockFetchJson.mockResolvedValue({ skus: COMPLETE });
+    mockFetch.mockResolvedValue(jsonResponse({ skus: COMPLETE }));
     const catalog = await fetchGcpCatalog();
     for (const row of catalog.compute) {
       expect(row.hourlySpotLinux).toBeLessThanOrEqual(row.hourly3YrReservedLinux);
@@ -111,26 +114,25 @@ describe('gcp fetcher — shape derivation', () => {
 
 describe('gcp fetcher — pagination and guards', () => {
   it('follows nextPageToken instead of reading only the first page', async () => {
-    mockFetchJson
-      .mockResolvedValueOnce({ skus: [E2_CORE, E2_RAM], nextPageToken: 'page-2' })
-      .mockResolvedValueOnce({ skus: [N2_CORE, N2_RAM, C2_CORE, C2_RAM] });
+    mockFetch
+      .mockResolvedValueOnce(jsonResponse({ skus: [E2_CORE, E2_RAM], nextPageToken: 'page-2' }))
+      .mockResolvedValueOnce(jsonResponse({ skus: [N2_CORE, N2_RAM, C2_CORE, C2_RAM] }));
 
     const catalog = await fetchGcpCatalog();
-    expect(mockFetchJson).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
     expect(catalog.compute).toHaveLength(6);
   });
 
   it('throws when a required family is missing, so the orchestrator keeps the seed', async () => {
-    mockFetchJson.mockResolvedValue({ skus: [E2_CORE, E2_RAM] });
+    mockFetch.mockResolvedValue(jsonResponse({ skus: [E2_CORE, E2_RAM] }));
     await expect(fetchGcpCatalog()).rejects.toThrow(/incomplete/);
   });
 
   it('throws rather than syncing a partial catalog when pagination never terminates', async () => {
     let n = 0;
-    mockFetchJson.mockImplementation(async () => ({
-      skus: COMPLETE,
-      nextPageToken: `unique-${++n}`
-    }));
+    mockFetch.mockImplementation(async () =>
+      jsonResponse({ skus: COMPLETE, nextPageToken: `unique-${++n}` })
+    );
     await expect(fetchGcpCatalog()).rejects.toThrow(/exceeded/);
   });
 
@@ -140,12 +142,12 @@ describe('gcp fetcher — pagination and guards', () => {
   });
 
   it('sends the API key as a header, never in the URL (it would leak into error messages)', async () => {
-    mockFetchJson.mockResolvedValue({ skus: COMPLETE });
+    mockFetch.mockResolvedValue(jsonResponse({ skus: COMPLETE }));
     await fetchGcpCatalog();
 
-    const [url, headers] = mockFetchJson.mock.calls[0];
+    const [url, init] = mockFetch.mock.calls[0];
     expect(url).not.toContain('key=');
     expect(url).not.toContain('test-key');
-    expect(headers['X-goog-api-key']).toBe('test-key');
+    expect(init.headers['X-goog-api-key']).toBe('test-key');
   });
 });

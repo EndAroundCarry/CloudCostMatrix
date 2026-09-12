@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ALL_PROVIDERS, CloudProvider } from '../../models/cloud-provider.enum';
-import { PROVIDER_VERIFICATION, getProviderFreshness } from './provider-verification';
+import { PROVIDER_VERIFICATION, freshnessFromSource, getProviderFreshness } from './provider-verification';
 
 describe('PROVIDER_VERIFICATION', () => {
   it('has a complete, well-formed record for every provider', () => {
@@ -19,12 +19,13 @@ describe('PROVIDER_VERIFICATION', () => {
 
 describe('getProviderFreshness', () => {
   it('reports LIVE exactly for providers whose live-cache source starts with "live@"', () => {
-    // AWS, Azure, Oracle, Linode, and DigitalOcean have live fetchers wired up
-    // today (see scripts/fetchers/). This reads whatever is actually committed
+    // AWS, Azure, GCP, Oracle, Linode, and DigitalOcean have live fetchers wired
+    // up today (see scripts/fetchers/). This reads whatever is actually committed
     // in live-pricing-cache.json, so it reflects the last real sync, not a fixture.
     for (const p of [
       CloudProvider.AWS,
       CloudProvider.AZURE,
+      CloudProvider.GCP,
       CloudProvider.ORACLE,
       CloudProvider.LINODE,
       CloudProvider.DIGITALOCEAN
@@ -45,6 +46,46 @@ describe('getProviderFreshness', () => {
       const f = getProviderFreshness(p);
       expect(f.label).toBeTruthy();
       expect(f.sourceUrl.startsWith('https://')).toBe(true);
+    }
+  });
+});
+
+describe('freshnessFromSource — tier mapping', () => {
+  const record = PROVIDER_VERIFICATION[CloudProvider.OVHCLOUD];
+
+  it('maps an fx-converted source to LIVE_FX_CONVERTED, never to LIVE', () => {
+    const f = freshnessFromSource('fx-converted@2026-09-12T04:00:00.000Z', record);
+    expect(f.tier).toBe('LIVE_FX_CONVERTED');
+    expect(f.tier).not.toBe('LIVE');
+    expect(f.label).toContain('FX-converted');
+    expect(f.asOf).toBe('2026-09-12T04:00:00.000Z');
+  });
+
+  it('maps a plain live source to LIVE', () => {
+    const f = freshnessFromSource('live@2026-09-12T04:00:00.000Z', record);
+    expect(f.tier).toBe('LIVE');
+    expect(f.label).toContain('Live');
+  });
+
+  it('a bare "live" prefix cannot be forged by an fx-converted marker', () => {
+    // Guards the header badge's counting rule, which matches sources starting
+    // with "live" — an fx-converted provider must never inflate that count.
+    const f = freshnessFromSource('fx-converted@2026-09-12T04:00:00.000Z', record);
+    expect(f.tier.startsWith('LIVE')).toBe(true);
+    expect(f.tier).not.toBe('LIVE');
+  });
+
+  it('falls back to the record method for seed sources, and to ESTIMATE for anything unknown', () => {
+    expect(freshnessFromSource('seed', record).tier).toBe('ESTIMATE');
+    expect(freshnessFromSource('', PROVIDER_VERIFICATION[CloudProvider.AWS]).tier).toBe('ESTIMATE');
+  });
+
+  it('still carries the record source URL and caveats on every tier', () => {
+    for (const source of ['seed', 'live@2026-09-12T04:00:00.000Z', 'fx-converted@2026-09-12T04:00:00.000Z']) {
+      const f = freshnessFromSource(source, record);
+      expect(f.sourceUrl).toBe(record.sourceUrl);
+      expect(f.caveats).toBe(record.caveats);
+      expect(f.provider).toBe(CloudProvider.OVHCLOUD);
     }
   });
 });

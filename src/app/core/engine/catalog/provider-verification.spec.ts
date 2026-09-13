@@ -37,7 +37,7 @@ describe('getProviderFreshness', () => {
   });
 
   it('never reports LIVE for the providers with no live (or FX-converted) fetcher configured', () => {
-    for (const p of [CloudProvider.ALIBABA]) {
+    for (const p of [CloudProvider.ALIBABA, CloudProvider.VULTR]) {
       expect(getProviderFreshness(p).tier).not.toBe('LIVE');
       expect(getProviderFreshness(p).tier).not.toBe('LIVE_FX_CONVERTED');
     }

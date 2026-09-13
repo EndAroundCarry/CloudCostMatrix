@@ -408,5 +408,44 @@ export const BENCHMARK_CATALOGS: Record<CloudProvider, ProviderPricingCatalog> =
       managementHourlyFeePerCluster: 0.00, // No paid control-plane tier at all
       freeFirstCluster: true
     }
+  },
+
+  [CloudProvider.VULTR]: {
+    provider: CloudProvider.VULTR,
+    region: 'ewr (New Jersey)',
+    compute: [
+      { family: 'Cloud Compute (Regular)', name: 'vc2-2c-4gb', vCpu: 2, ramGb: 4, hourlyOnDemandLinux: 0.027, hourly1YrReservedLinux: 0.027, hourly3YrReservedLinux: 0.027, hourlySpotLinux: 0.027, windowsHourlySurcharge: 0.008 }, // flat rate — no reserved/spot pricing, gated by PROVIDER_CAPABILITIES
+      { family: 'Cloud Compute (High Frequency)', name: 'vhf-2c-4gb', vCpu: 2, ramGb: 4, hourlyOnDemandLinux: 0.033, hourly1YrReservedLinux: 0.033, hourly3YrReservedLinux: 0.033, hourlySpotLinux: 0.033, windowsHourlySurcharge: 0.008 },
+      { family: 'Optimized (General Purpose)', name: 'voc-g-4c-16gb', vCpu: 4, ramGb: 16, hourlyOnDemandLinux: 0.164, hourly1YrReservedLinux: 0.164, hourly3YrReservedLinux: 0.164, hourlySpotLinux: 0.164, windowsHourlySurcharge: 0.016 },
+      { family: 'Optimized (CPU Optimized)', name: 'voc-c-8c-16gb', vCpu: 8, ramGb: 16, hourlyOnDemandLinux: 0.219, hourly1YrReservedLinux: 0.219, hourly3YrReservedLinux: 0.219, hourlySpotLinux: 0.219, windowsHourlySurcharge: 0.032 },
+      { family: 'Optimized (General Purpose)', name: 'voc-g-16c-64gb', vCpu: 16, ramGb: 64, hourlyOnDemandLinux: 0.658, hourly1YrReservedLinux: 0.658, hourly3YrReservedLinux: 0.658, hourlySpotLinux: 0.658, windowsHourlySurcharge: 0.064 },
+      { family: 'Optimized (Memory Optimized)', name: 'voc-m-16c-128gb', vCpu: 16, ramGb: 128, hourlyOnDemandLinux: 0.877, hourly1YrReservedLinux: 0.877, hourly3YrReservedLinux: 0.877, hourlySpotLinux: 0.877, windowsHourlySurcharge: 0.064 },
+      { family: 'Optimized (General Purpose)', name: 'voc-g-32c-128gb', vCpu: 32, ramGb: 128, hourlyOnDemandLinux: 1.315, hourly1YrReservedLinux: 1.315, hourly3YrReservedLinux: 1.315, hourlySpotLinux: 1.315, windowsHourlySurcharge: 0.128 }
+    ],
+    storage: {
+      HOT: { tier: 'HOT', costPerGbMonth: 0.0176, costPer10kReads: 0.004, costPer10kWrites: 0.05, minimumMonthlyFee: 18 },
+      COOL: { tier: 'COOL', costPerGbMonth: 0.0176, costPer10kReads: 0.01, costPer10kWrites: 0.10, minimumMonthlyFee: 18 }, // UNSUPPORTED — single storage class, cloned from HOT, gated by PROVIDER_CAPABILITIES
+      COLD: { tier: 'COLD', costPerGbMonth: 0.0176, costPer10kReads: 0.05, costPer10kWrites: 0.13, minimumMonthlyFee: 18 }, // UNSUPPORTED — cloned from HOT
+      ARCHIVE: { tier: 'ARCHIVE', costPerGbMonth: 0.0176, costPer10kReads: 0.50, costPer10kWrites: 0.30, minimumMonthlyFee: 18 } // UNSUPPORTED — cloned from HOT
+    },
+    database: [
+      { name: 'vultr-pg-1c-4gb', vCpu: 1, ramGb: 4, hourlyPostgres: 0.134, hourlyMySql: 0.134, hourlySqlServer: 0.134, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 }, // sqlServer UNSUPPORTED — cloned, gated by PROVIDER_CAPABILITIES
+      { name: 'vultr-pg-2c-8gb', vCpu: 2, ramGb: 8, hourlyPostgres: 0.268, hourlyMySql: 0.268, hourlySqlServer: 0.268, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'vultr-pg-4c-16gb', vCpu: 4, ramGb: 16, hourlyPostgres: 0.536, hourlyMySql: 0.536, hourlySqlServer: 0.536, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 },
+      { name: 'vultr-pg-8c-32gb', vCpu: 8, ramGb: 32, hourlyPostgres: 1.071, hourlyMySql: 1.071, hourlySqlServer: 1.071, storagePerGbMonth: 0.10, multiAzMultiplier: 2.0 }
+    ],
+    networking: {
+      first10TbPerGb: 0.01,
+      next40TbPerGb: 0.01,
+      loadBalancerHourly: 0.0137, // $10/mo load balancer
+      staticIpHourly: 0.004,
+      bundledEgressGbPerInstance: 2048,
+      overageEgressPerGb: 0.01,
+      egressPolicyNote: 'Each instance bundles a monthly transfer allowance (0.5–15 TB depending on plan); overage is billed at $0.01/GB in North America and Europe.'
+    },
+    kubernetes: {
+      managementHourlyFeePerCluster: 0.00, // Vultr Kubernetes Engine control plane is always free
+      freeFirstCluster: true
+    }
   }
 };

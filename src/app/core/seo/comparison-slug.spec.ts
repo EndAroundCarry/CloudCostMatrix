@@ -55,10 +55,10 @@ describe('comparison-slug', () => {
     expect(parsed?.canonicalSlug).toBe(slug);
   });
 
-  it('enumerates exactly the 36 unordered pairs for 9 providers, all forward-ordered', () => {
+  it('enumerates exactly the 45 unordered pairs for 10 providers, all forward-ordered', () => {
     const slugs = allPairSlugs();
-    expect(slugs).toHaveLength(36); // C(9,2)
-    expect(new Set(slugs).size).toBe(36); // no duplicates
+    expect(slugs).toHaveLength(45); // C(10,2)
+    expect(new Set(slugs).size).toBe(45); // no duplicates
     for (const slug of slugs) {
       const parsed = parsePairSlug(slug);
       expect(parsed?.isReversed).toBe(false);

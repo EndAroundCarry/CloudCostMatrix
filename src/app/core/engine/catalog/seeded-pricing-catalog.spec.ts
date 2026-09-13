@@ -5,8 +5,8 @@ import { EFFECTIVE_CATALOGS } from './pricing-catalog.resolver';
 import { CostCalculatorEngine } from '../cost-calculator.engine';
 
 describe('BENCHMARK_CATALOGS sanity', () => {
-  it('has exactly 9 provider catalogs, one per CloudProvider member', () => {
-    expect(Object.keys(BENCHMARK_CATALOGS)).toHaveLength(9);
+  it('has exactly 10 provider catalogs, one per CloudProvider member', () => {
+    expect(Object.keys(BENCHMARK_CATALOGS)).toHaveLength(10);
     for (const p of ALL_PROVIDERS) expect(BENCHMARK_CATALOGS[p]).toBeDefined();
   });
 
@@ -38,9 +38,10 @@ describe('BENCHMARK_CATALOGS sanity', () => {
   });
 
   it('keeps HOT strictly more expensive than ARCHIVE for every provider with real tiering', () => {
-    // DigitalOcean and Linode have a single storage class (all 4 tiers clone the
-    // same rate, gated off by PROVIDER_CAPABILITIES) — excluded deliberately.
-    const singleTierProviders = new Set([CloudProvider.DIGITALOCEAN, CloudProvider.LINODE]);
+    // DigitalOcean, Linode, and Vultr each have a single storage class (all 4
+    // tiers clone the same rate, gated off by PROVIDER_CAPABILITIES) — excluded
+    // deliberately.
+    const singleTierProviders = new Set([CloudProvider.DIGITALOCEAN, CloudProvider.LINODE, CloudProvider.VULTR]);
     for (const provider of ALL_PROVIDERS) {
       if (singleTierProviders.has(provider)) continue;
       const storage = BENCHMARK_CATALOGS[provider].storage;

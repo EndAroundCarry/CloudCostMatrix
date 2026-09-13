@@ -9,7 +9,8 @@ export enum CloudProvider {
   DIGITALOCEAN = 'DIGITALOCEAN',
   ALIBABA = 'ALIBABA',
   LINODE = 'LINODE',
-  OVHCLOUD = 'OVHCLOUD'
+  OVHCLOUD = 'OVHCLOUD',
+  VULTR = 'VULTR'
 }
 
 /** Every provider id the app knows about, in display/ranking priority order. */
@@ -370,6 +371,40 @@ export const PROVIDER_METAS: Record<CloudProvider, ProviderMeta> = {
       [ServiceCategory.NETWORKING]: 'Egress is unlimited and free (fair use) — there is no CDN offload to optimize here.'
     },
     pricingUrl: 'https://www.ovhcloud.com/en/public-cloud/prices/'
+  },
+  [CloudProvider.VULTR]: {
+    id: CloudProvider.VULTR,
+    name: 'Vultr',
+    shortName: 'Vultr',
+    slug: 'vultr',
+    tier: 'DEVELOPER',
+    primaryColor: '#007BFC',
+    badgeBg: 'rgba(0, 123, 252, 0.1)',
+    badgeBorder: '#007BFC',
+    icon: 'memory',
+    headline: 'Independent cloud with 33 global regions, flat hourly pricing, and no long-term contracts.',
+    services: {
+      compute: 'Vultr Cloud Compute',
+      objectStorage: 'Vultr Object Storage',
+      managedDb: 'Vultr Managed Databases',
+      kubernetes: 'Vultr Kubernetes Engine (VKE)',
+      networking: 'Vultr Data Transfer & Load Balancer',
+      cdn: 'Vultr CDN'
+    },
+    highlightNotes: [
+      '33 global data-center regions with flat hourly billing and no long-term contracts.',
+      'Vultr Kubernetes Engine ships the control plane free — you pay only for worker nodes.'
+    ],
+    optimizationTip: {
+      title: 'Vultr Flat Pricing & Free VKE Control Plane',
+      body: 'Vultr bills compute hourly with a monthly cap and no commitment tiers, so budgeting stays predictable. Every Vultr Kubernetes Engine cluster includes the control plane at no charge — only worker nodes and any attached storage or load balancers are billable.',
+      footnote: 'Pair the free control plane with High Frequency plans for the best price/performance on small clusters.'
+    },
+    savingsTips: {
+      [ServiceCategory.KUBERNETES]: 'Vultr Kubernetes Engine never bills for the control plane — only worker nodes and attached resources.',
+      [ServiceCategory.NETWORKING]: 'Every instance bundles a monthly transfer allowance (0.5–15 TB by plan); size instances so pooled usage stays inside it.'
+    },
+    pricingUrl: 'https://www.vultr.com/pricing/'
   }
 };
 

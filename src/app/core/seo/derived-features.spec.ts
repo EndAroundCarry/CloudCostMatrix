@@ -4,7 +4,7 @@ import { ALL_PROVIDERS, CloudProvider } from '../models/cloud-provider.enum';
 import { allPairSlugs, parsePairSlug } from './comparison-slug';
 
 describe('buildDerivedFeatures', () => {
-  it('produces a non-empty row for every one of the 36 unordered pairs, with no NaN/undefined/blank values', () => {
+  it('produces a non-empty row for every one of the 45 unordered pairs, with no NaN/undefined/blank values', () => {
     for (const slug of allPairSlugs()) {
       const { a, b } = parsePairSlug(slug)!;
       const rows = buildDerivedFeatures(a, b);

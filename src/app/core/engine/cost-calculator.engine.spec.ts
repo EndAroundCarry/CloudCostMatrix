@@ -60,11 +60,11 @@ describe('CostCalculatorEngine', () => {
     expect(matrix.selectedProviders).toContain(matrix.cheapestMonthlyProvider);
   });
 
-  it('exposes exactly 9 providers across the metas, capabilities, and catalog records', () => {
-    expect(ALL_PROVIDERS).toHaveLength(9);
-    expect(Object.keys(PROVIDER_METAS)).toHaveLength(9);
-    expect(Object.keys(PROVIDER_CAPABILITIES)).toHaveLength(9);
-    expect(Object.keys(BENCHMARK_CATALOGS)).toHaveLength(9);
+  it('exposes exactly 10 providers across the metas, capabilities, and catalog records', () => {
+    expect(ALL_PROVIDERS).toHaveLength(10);
+    expect(Object.keys(PROVIDER_METAS)).toHaveLength(10);
+    expect(Object.keys(PROVIDER_CAPABILITIES)).toHaveLength(10);
+    expect(Object.keys(BENCHMARK_CATALOGS)).toHaveLength(10);
   });
 
   it('never lets an unsupported storage tier, DB engine, or category win the cheapest ranking', () => {
@@ -85,7 +85,7 @@ describe('CostCalculatorEngine', () => {
       selectedProviders: [...ALL_PROVIDERS]
     };
     const sqlMatrix = CostCalculatorEngine.calculateFullMatrix(sqlConfig);
-    const noSqlServer: CloudProvider[] = [CloudProvider.ORACLE, CloudProvider.IBM, CloudProvider.DIGITALOCEAN, CloudProvider.LINODE, CloudProvider.OVHCLOUD];
+    const noSqlServer: CloudProvider[] = [CloudProvider.ORACLE, CloudProvider.IBM, CloudProvider.DIGITALOCEAN, CloudProvider.LINODE, CloudProvider.OVHCLOUD, CloudProvider.VULTR];
     for (const p of noSqlServer) {
       expect(sqlMatrix.providers[p].hasCoverageGap).toBe(true);
     }

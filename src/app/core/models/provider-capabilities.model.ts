@@ -165,5 +165,18 @@ export const PROVIDER_CAPABILITIES: Record<CloudProvider, ProviderCapabilities> 
       dbEngines: { SQL_SERVER: 'OVHcloud Public Cloud Databases covers PostgreSQL and MySQL — no managed SQL Server.' },
       commitments: { SPOT: 'OVHcloud Public Cloud has no spot/preemptible instance type.' }
     }
+  },
+  [CloudProvider.VULTR]: {
+    provider: CloudProvider.VULTR,
+    categories: { ...ALL_TRUE_CATEGORIES },
+    storageTiers: { HOT: true, COOL: false, COLD: false, ARCHIVE: false },
+    dbEngines: { POSTGRES: true, MYSQL: true, SQL_SERVER: false },
+    commitments: { ON_DEMAND: true, '1_YEAR_RESERVED': false, '3_YEAR_RESERVED': false, SPOT: false },
+    windowsOs: true,
+    notes: {
+      storageTiers: { COOL: 'Vultr Object Storage has a single storage class — no Cool/Cold/Archive tiering.', COLD: 'Vultr Object Storage has a single storage class — no Cool/Cold/Archive tiering.', ARCHIVE: 'Vultr Object Storage has a single storage class — no Cool/Cold/Archive tiering.' },
+      dbEngines: { SQL_SERVER: 'Vultr Managed Databases covers PostgreSQL, MySQL, Kafka, and Valkey — no SQL Server.' },
+      commitments: { '1_YEAR_RESERVED': 'Vultr has no reserved-instance pricing — shown at the flat hourly rate.', '3_YEAR_RESERVED': 'Vultr has no reserved-instance pricing — shown at the flat hourly rate.', SPOT: 'Vultr has no spot/preemptible instance type.' }
+    }
   }
 };

@@ -123,6 +123,16 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
       'Compute and object-storage rates sync live from OVHcloud\'s public cloud catalog in EUR (IE subsidiary). OVHcloud publishes no USD subsidiary, so every figure is converted to USD at the ECB reference rate recorded at sync time — the exact rate and date are shown with the freshness label, and this provider is labelled FX-converted, never plain live.',
       'Reserved (1-yr/3-yr) rates are derived as fixed multipliers of the live on-demand rate; OVHcloud publishes no commitment rates for these flavors via this catalog, and there is no spot tier (gated off in PROVIDER_CAPABILITIES). Object-storage operation rates are not published in a convertible billing unit and carry the seed benchmark, as does the per-instance Windows licence surcharge (OVHcloud prices Windows Server per vCore-hour on a separate SKU). Managed databases, load balancers, and static IPs are not synced and carry the seeded 2026 benchmark. Outbound internet bandwidth is unlimited and free on every Public Cloud plan.'
     ]
+  },
+  [CloudProvider.VULTR]: {
+    provider: CloudProvider.VULTR,
+    lastVerifiedAt: '2026-09-13',
+    method: 'MANUAL_LIST_PRICE',
+    sourceUrl: 'https://www.vultr.com/pricing/',
+    caveats: [
+      'Compute and managed-database rates are Vultr\'s published list prices (api.vultr.com/v2/plans and the Vultr Pricing page), reconciled by hand rather than synced live. Vultr bills compute hourly with a monthly cap and sells no reserved or spot instances, so both commitment rows clone the flat on-demand rate (gated off in PROVIDER_CAPABILITIES).',
+      'Object Storage is modelled at $18/TB-month with a 1 TB minimum (its only storage class — no Cool/Cold/Archive tiering), and operation rates use the standard benchmark ladder. Each instance bundles a monthly transfer allowance that genuinely varies by plan (0.5–15 TB); this catalog uses one representative 2 TB value. The per-instance Windows surcharge, load-balancer, and static-IP rates are seeded approximations. Managed-database storage is modelled per GB even though Vultr bundles disk into the plan price.'
+    ]
   }
 };
 

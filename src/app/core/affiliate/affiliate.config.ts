@@ -47,7 +47,8 @@ export const AFFILIATE_LINKS: Record<CloudProvider, AffiliateLink> = {
   [CloudProvider.DIGITALOCEAN]: { provider: CloudProvider.DIGITALOCEAN, url: null, isPaid: false, program: 'DigitalOcean Referral Program (not yet enrolled)' },
   [CloudProvider.ALIBABA]: { provider: CloudProvider.ALIBABA, url: null, isPaid: false },
   [CloudProvider.LINODE]: { provider: CloudProvider.LINODE, url: null, isPaid: false, program: 'Linode/Akamai Partner Program (not yet enrolled)' },
-  [CloudProvider.OVHCLOUD]: { provider: CloudProvider.OVHCLOUD, url: null, isPaid: false, program: 'OVHcloud Affiliate Program (not yet enrolled)' }
+  [CloudProvider.OVHCLOUD]: { provider: CloudProvider.OVHCLOUD, url: null, isPaid: false, program: 'OVHcloud Affiliate Program (not yet enrolled)' },
+  [CloudProvider.VULTR]: { provider: CloudProvider.VULTR, url: null, isPaid: false }
 };
 
 /**

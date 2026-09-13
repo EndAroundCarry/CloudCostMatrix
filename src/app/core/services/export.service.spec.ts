@@ -42,15 +42,15 @@ describe('ExportService', () => {
     expect(md).toContain('```json');
 
     // Column count follows the selection, not a hardcoded 3.
-    const nineProviderMatrix = CostCalculatorEngine.calculateFullMatrix({
+    const allProviderMatrix = CostCalculatorEngine.calculateFullMatrix({
       ...ARCHITECTURE_BLUEPRINTS[0].config,
       selectedProviders: [...ALL_PROVIDERS]
     });
-    const mdNine = service.buildMarkdownRfc(nineProviderMatrix);
-    const headerLine = mdNine.split('\n').find((l) => l.startsWith('| Service |'))!;
-    const separatorLine = mdNine.split('\n')[mdNine.split('\n').indexOf(headerLine) + 1];
-    // '| Service | AWS | ... | OVHcloud |'.split('|') → ['', ' Service ', ' AWS ', …, ' OVHcloud ', ''] = 1 + 1 + 9 + 1
-    expect(headerLine.split('|').length).toBe(12);
+    const mdAll = service.buildMarkdownRfc(allProviderMatrix);
+    const headerLine = mdAll.split('\n').find((l) => l.startsWith('| Service |'))!;
+    const separatorLine = mdAll.split('\n')[mdAll.split('\n').indexOf(headerLine) + 1];
+    // '| Service | AWS | ... | Vultr |'.split('|') → ['', ' Service ', ' AWS ', …, ' Vultr ', ''] = 1 + 1 + 10 + 1
+    expect(headerLine.split('|').length).toBe(13);
     expect(separatorLine.split('|').length).toBe(headerLine.split('|').length);
   });
 

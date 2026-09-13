@@ -13,13 +13,15 @@ A price-sync pipeline (`scripts/sync-prices.mjs`, extracted per-provider fetcher
 | Provider | Status | Source |
 |---|---|---|
 | AWS | Live (object storage) | Price List Bulk API |
-| Azure | Live (compute + egress) | Retail Prices API |
+| Azure | Live (compute, storage + egress) | Retail Prices API |
+| Google Cloud | Live (compute, storage + egress) | Cloud Billing Catalog API |
 | Oracle Cloud | Live (compute, storage, egress) | cetools price list |
 | Linode | Live (compute, database, storage) | v4 public API |
 | DigitalOcean | Live (compute + bundled egress) | Droplet pricing page |
-| GCP, IBM, Alibaba, OVHcloud | Seeded 2026 benchmark | see `/methodology` |
+| OVHcloud | Live, FX-converted (compute + object storage) | Public Cloud catalog (EUR) + ECB FX |
+| IBM, Alibaba | Seeded 2026 benchmark | see `/methodology` |
 
-Every provider row in the app shows its own **Live / Verified / Estimate** freshness badge — never a blanket claim.
+Every provider row in the app shows its own **Live / FX-converted / Verified / Estimate** freshness badge — never a blanket claim.
 
 ## Architecture
 

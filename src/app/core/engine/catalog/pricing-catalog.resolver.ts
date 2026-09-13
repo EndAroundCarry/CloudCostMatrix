@@ -3,6 +3,23 @@ import { BENCHMARK_CATALOGS, ProviderPricingCatalog } from './seeded-pricing-cat
 import * as liveCacheJson from './live-pricing-cache.json';
 
 /**
+ * A currency conversion recorded by the sync for a provider whose feed does not
+ * publish USD (currently OVHcloud only). Stored in `meta.fx` so the exact rate
+ * and its date can be rendered on /methodology instead of hiding behind a
+ * "live" badge — see provider-verification.ts.
+ */
+export interface FxConversionMeta {
+  base: string;
+  quote: string;
+  /** Units of `quote` per one `base`. */
+  rate: number;
+  /** ISO date of the reference rate (e.g. the ECB publication date). */
+  date: string;
+  /** Where the rate came from, rendered so a reader can audit it. */
+  source: string;
+}
+
+/**
  * Shape of the committed JSON artifact written by `scripts/sync-prices.mjs`.
  * When the script runs with network access it rewrites `live-pricing-cache.json`
  * in place with `mode: 'live'` + refreshed sections, which is then committed to
@@ -18,6 +35,8 @@ export interface LivePricingCacheFile {
     lastSyncedAt: string | null;
     syncedBy: string;
     sources: Record<string, string>;
+    /** Present only for providers whose feed was converted to USD at sync time. */
+    fx?: Partial<Record<CloudProvider, FxConversionMeta>>;
   };
   catalogs: Partial<Record<CloudProvider, ProviderPricingCatalog>>;
 }

@@ -205,10 +205,13 @@ export class HeaderComponent {
     if (mode === 'live') {
       const stamp = this.store.pricingLastSyncedAt();
       const date = stamp ? new Date(stamp).toUTCString() : 'unknown';
-      const liveSources = Object.entries(this.store.pricingSources())
-        .filter(([, v]) => v.startsWith('live'))
-        .map(([k]) => k);
-      return `Live pricing feed synced ${date}\nLive sources: ${liveSources.join(', ') || 'none'} · Remaining providers use the 2026 seed benchmark\nApp bundled at build-time — zero runtime cost.`;
+      const sources = Object.entries(this.store.pricingSources());
+      const liveSources = sources.filter(([, v]) => v.startsWith('live')).map(([k]) => k);
+      // 'fx-converted' is its own tier — a converted figure must never be
+      // summarised as plainly live, nor lumped in with the seed benchmark.
+      const fxSources = sources.filter(([, v]) => v.startsWith('fx-converted')).map(([k]) => k);
+      const fxLine = fxSources.length ? `\nFX-converted: ${fxSources.join(', ')} (live rates converted to USD)` : '';
+      return `Live pricing feed synced ${date}\nLive sources: ${liveSources.join(', ') || 'none'}${fxLine} · Remaining providers use the 2026 seed benchmark\nApp bundled at build-time — zero runtime cost.`;
     }
     return 'Benchmark 2026 catalog (seed). Run scripts/sync-prices.mjs to fetch live cloud price feeds.';
   }

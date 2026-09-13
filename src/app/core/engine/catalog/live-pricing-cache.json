@@ -1,18 +1,27 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-12T20:53:49.084Z",
+    "lastSyncedAt": "2026-09-13T06:13:48.524Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-12T20:53:49.084Z",
+      "AWS": "live@2026-09-13T06:13:48.524Z",
       "AZURE": "live@2026-09-12T20:53:49.084Z",
-      "GCP": "live@2026-09-12T20:53:49.084Z",
-      "ORACLE": "live@2026-09-12T20:53:49.084Z",
+      "GCP": "live@2026-09-13T06:13:48.524Z",
+      "ORACLE": "live@2026-09-13T06:13:48.524Z",
       "IBM": "seed",
-      "DIGITALOCEAN": "live@2026-09-12T20:53:49.084Z",
+      "DIGITALOCEAN": "live@2026-09-13T06:13:48.524Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-09-12T20:53:49.084Z",
-      "OVHCLOUD": "seed"
+      "LINODE": "live@2026-09-13T06:13:48.524Z",
+      "OVHCLOUD": "fx-converted@2026-09-13T06:13:48.524Z"
+    },
+    "fx": {
+      "OVHCLOUD": {
+        "base": "EUR",
+        "quote": "USD",
+        "rate": 1.1592,
+        "date": "2026-09-11",
+        "source": "https://api.frankfurter.app/latest?from=EUR&to=USD"
+      }
     }
   },
   "catalogs": {
@@ -631,6 +640,102 @@
         "freeFirstCluster": true
       }
     },
-    "OVHCLOUD": null
+    "OVHCLOUD": {
+      "provider": "OVHCLOUD",
+      "region": "BHS (Beauharnois, Canada)",
+      "compute": [
+        {
+          "family": "Balanced (b3)",
+          "name": "b3-8",
+          "vCpu": 2,
+          "ramGb": 4,
+          "hourlyOnDemandLinux": 0.0594,
+          "hourly1YrReservedLinux": 0.0445,
+          "hourly3YrReservedLinux": 0.0386,
+          "hourlySpotLinux": 0.0386,
+          "windowsHourlySurcharge": 0.0081
+        },
+        {
+          "family": "Balanced (b3)",
+          "name": "b3-16",
+          "vCpu": 2,
+          "ramGb": 8,
+          "hourlyOnDemandLinux": 0.1186,
+          "hourly1YrReservedLinux": 0.089,
+          "hourly3YrReservedLinux": 0.0771,
+          "hourlySpotLinux": 0.0771,
+          "windowsHourlySurcharge": 0.0115
+        },
+        {
+          "family": "Balanced (b3)",
+          "name": "b3-32",
+          "vCpu": 4,
+          "ramGb": 16,
+          "hourlyOnDemandLinux": 0.2372,
+          "hourly1YrReservedLinux": 0.1779,
+          "hourly3YrReservedLinux": 0.1542,
+          "hourlySpotLinux": 0.1542,
+          "windowsHourlySurcharge": 0.0323
+        },
+        {
+          "family": "Balanced (b3)",
+          "name": "b3-64",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.4743,
+          "hourly1YrReservedLinux": 0.3557,
+          "hourly3YrReservedLinux": 0.3083,
+          "hourlySpotLinux": 0.3083,
+          "windowsHourlySurcharge": 0.0922
+        },
+        {
+          "family": "Compute Optimized (c3)",
+          "name": "c3-32",
+          "vCpu": 16,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.4231,
+          "hourly1YrReservedLinux": 0.3173,
+          "hourly3YrReservedLinux": 0.275,
+          "hourlySpotLinux": 0.275,
+          "windowsHourlySurcharge": 0.1632
+        },
+        {
+          "family": "Memory Optimized (r3)",
+          "name": "r3-128",
+          "vCpu": 16,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 0.6144,
+          "hourly1YrReservedLinux": 0.4608,
+          "hourly3YrReservedLinux": 0.3994,
+          "hourlySpotLinux": 0.3994,
+          "windowsHourlySurcharge": 0.2419
+        },
+        {
+          "family": "Memory Optimized (r3)",
+          "name": "r3-256",
+          "vCpu": 32,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 1.2276,
+          "hourly1YrReservedLinux": 0.9207,
+          "hourly3YrReservedLinux": 0.7979,
+          "hourlySpotLinux": 0.7979,
+          "windowsHourlySurcharge": 0.3687
+        }
+      ],
+      "storage": {
+        "HOT": {
+          "tier": "HOT",
+          "costPerGbMonth": 0.008114,
+          "costPer10kReads": 0.004,
+          "costPer10kWrites": 0.05
+        },
+        "ARCHIVE": {
+          "tier": "ARCHIVE",
+          "costPerGbMonth": 0.002782,
+          "costPer10kReads": 0.5,
+          "costPer10kWrites": 0.3
+        }
+      }
+    }
   }
 }

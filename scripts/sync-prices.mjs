@@ -15,10 +15,14 @@
  *   - DigitalOcean: public pricing page   https://www.digitalocean.com/pricing/droplets
  *     (its /v2/sizes API is a filtered view topping out at 4 vCPU — see
  *     fetchers/digitalocean.mjs for why the page is the honest source)
+ *   - OVHcloud: public cloud catalog (EUR) https://api.ovh.com/1.0/order/catalog/public/cloud
+ *     + an ECB reference FX feed (Frankfurter). OVHcloud publishes no USD
+ *     subsidiary, so the whole provider is recorded as 'fx-converted@' — a
+ *     distinct tier from 'live@' — with the rate and date in `meta.fx`.
  *
- * The remaining 3 providers (IBM, Alibaba, OVHcloud) have no fetcher registered
- * below and are intentionally skipped — see the loop in runSync() — rather than
- * treated as a failure.
+ * The remaining 2 providers (IBM, Alibaba) have no fetcher registered below and
+ * are intentionally skipped — see the loop in runSync() — rather than treated
+ * as a failure.
  *
  * The script is intentionally resilient: when a feed is unreachable it falls
  * back to the current live cache (or the built-in seed baseline) so a network
@@ -41,13 +45,13 @@ import { fetchGcpCatalog } from './fetchers/gcp.mjs';
 import { fetchOracleCatalog } from './fetchers/oracle.mjs';
 import { fetchLinodeCatalog } from './fetchers/linode.mjs';
 import { fetchDigitalOceanCatalog } from './fetchers/digitalocean.mjs';
+import { fetchOvhcloudCatalog } from './fetchers/ovhcloud.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = path.join(__dirname, '..', 'src', 'app', 'core', 'engine', 'catalog', 'live-pricing-cache.json');
 
-// AWS/Azure/GCP/Oracle/Linode/DigitalOcean have live fetchers below. IBM,
-// Alibaba, and OVHcloud ship seed-only — IBM and Alibaba need signed requests,
-// and OVHcloud's public catalog has no USD subsidiary (only EUR/CAD/GBP) — see
+// AWS/Azure/GCP/Oracle/Linode/DigitalOcean/OVHcloud have live fetchers below.
+// IBM and Alibaba ship seed-only — both need signed requests (IAM / HMAC) — see
 // provider-verification.ts for the per-provider reasoning.
 const PROVIDERS = ['AWS', 'AZURE', 'GCP', 'ORACLE', 'IBM', 'DIGITALOCEAN', 'ALIBABA', 'LINODE', 'OVHCLOUD'];
 
@@ -60,11 +64,14 @@ function readCache() {
 }
 
 async function runSync() {
-  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP, Oracle, Linode, DigitalOcean live; 3 more seed-only)...');
+  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP, Oracle, Linode, DigitalOcean, OVHcloud live; 2 more seed-only)...');
 
   const cacheDoc = readCache();
   const syncedAt = new Date().toISOString();
   const sources = {};
+  // Carry forward any recorded conversion so a provider that fails this run
+  // keeps its previous rate alongside its previous 'fx-converted@' source.
+  const fxRates = { ...(cacheDoc.meta?.fx || {}) };
   const catalogs = {};
   let anyRefreshed = false;
 
@@ -74,7 +81,8 @@ async function runSync() {
     GCP: fetchGcpCatalog,
     ORACLE: fetchOracleCatalog,
     LINODE: fetchLinodeCatalog,
-    DIGITALOCEAN: fetchDigitalOceanCatalog
+    DIGITALOCEAN: fetchDigitalOceanCatalog,
+    OVHCLOUD: fetchOvhcloudCatalog
   };
 
   for (const provider of PROVIDERS) {
@@ -96,12 +104,23 @@ async function runSync() {
         (fresh.storage && Object.keys(fresh.storage).length > 0) ||
         (fresh.database?.length ?? 0) > 0;
       if (!hasContent) throw new Error(`${provider} feed returned no usable rows`);
+
+      // A fetcher that had to convert currency declares it here; the marker
+      // must be stripped before the catalog is written (it is not part of the
+      // ProviderPricingCatalog contract), and the provider is labelled
+      // 'fx-converted@' rather than 'live@' so it can never be counted as
+      // plainly live (see pricingLabel() in estimator.store.ts).
+      const fxConversion = fresh.fxConversion ?? null;
+      if (fxConversion) delete fresh.fxConversion;
+
       catalogs[provider] = fresh;
-      sources[provider] = `live@${syncedAt}`;
+      sources[provider] = fxConversion ? `fx-converted@${syncedAt}` : `live@${syncedAt}`;
+      if (fxConversion) fxRates[provider] = fxConversion;
       anyRefreshed = true;
       console.log(
-        `  ✅ ${provider}: ${fresh.compute?.length ?? 0} compute, ` +
-          `${fresh.storage ? Object.keys(fresh.storage).length : 0} storage tiers synced`
+        `  ${fxConversion ? '💱' : '✅'} ${provider}: ${fresh.compute?.length ?? 0} compute, ` +
+          `${fresh.storage ? Object.keys(fresh.storage).length : 0} storage tiers synced` +
+          (fxConversion ? ` (converted at ${fxConversion.rate} ${fxConversion.quote}/${fxConversion.base})` : '')
       );
     } catch (err) {
       console.warn(`  ⚠️  ${provider} sync failed (${err?.message || err}). Falling back to cache/seed.`);
@@ -115,7 +134,8 @@ async function runSync() {
       mode: anyRefreshed ? 'live' : cacheDoc.meta?.mode || 'seed',
       lastSyncedAt: anyRefreshed ? syncedAt : cacheDoc.meta?.lastSyncedAt || null,
       syncedBy: 'scripts/sync-prices.mjs',
-      sources
+      sources,
+      ...(Object.keys(fxRates).length ? { fx: fxRates } : {})
     },
     catalogs
   };

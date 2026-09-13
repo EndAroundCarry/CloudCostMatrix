@@ -1,7 +1,7 @@
 import { CloudProvider } from '../../models/cloud-provider.enum';
-import { LIVE_PRICING_CACHE } from './pricing-catalog.resolver';
+import { FxConversionMeta, LIVE_PRICING_CACHE } from './pricing-catalog.resolver';
 
-export type VerificationMethod = 'LIVE_API' | 'MANUAL_LIST_PRICE' | 'DERIVED_ESTIMATE';
+export type VerificationMethod = 'LIVE_API' | 'LIVE_API_FX_CONVERTED' | 'MANUAL_LIST_PRICE' | 'DERIVED_ESTIMATE';
 /**
  * `LIVE_FX_CONVERTED` is deliberately its own tier rather than a flavour of
  * `LIVE`: the figure was fetched, but a currency conversion sits between the
@@ -113,10 +113,13 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
   },
   [CloudProvider.OVHCLOUD]: {
     provider: CloudProvider.OVHCLOUD,
-    lastVerifiedAt: '2026-01-15',
-    method: 'DERIVED_ESTIMATE',
-    sourceUrl: 'https://www.ovhcloud.com/en/public-cloud/prices/',
-    caveats: ['Pricing is a relative-positioning estimate anchored to AWS list price. OVHcloud\'s public catalog API only publishes EUR/CAD/GBP pricing (no USD subsidiary) — a live USD feed would require layering a currency conversion under a "live" badge, which we\'d rather not do dishonestly.']
+    lastVerifiedAt: '2026-09-13',
+    method: 'LIVE_API_FX_CONVERTED',
+    sourceUrl: 'https://api.ovh.com/1.0/order/catalog/public/cloud?ovhSubsidiary=IE',
+    caveats: [
+      'Compute and object-storage rates sync live from OVHcloud\'s public cloud catalog in EUR (IE subsidiary). OVHcloud publishes no USD subsidiary, so every figure is converted to USD at the ECB reference rate recorded at sync time — the exact rate and date are shown with the freshness label, and this provider is labelled FX-converted, never plain live.',
+      'Reserved (1-yr/3-yr) rates are derived as fixed multipliers of the live on-demand rate; OVHcloud publishes no commitment rates for these flavors via this catalog, and there is no spot tier (gated off in PROVIDER_CAPABILITIES). Object-storage operation rates are not published in a convertible billing unit and carry the seed benchmark, as does the per-instance Windows licence surcharge (OVHcloud prices Windows Server per vCore-hour on a separate SKU). Managed databases, load balancers, and static IPs are not synced and carry the seeded 2026 benchmark. Outbound internet bandwidth is unlimited and free on every Public Cloud plan.'
+    ]
   }
 };
 
@@ -137,8 +140,12 @@ export const FX_CONVERTED_SOURCE_PREFIX = 'fx-converted@';
  * Fuses a sync source marker with the hand-maintained verification record into
  * one display-ready freshness tier. Pure, so every tier — including branches no
  * provider currently exercises — is unit-testable without a fixture catalog.
+ *
+ * `fx` is the conversion recorded by the last sync (see FxConversionMeta). When
+ * present it is appended to the caveats so the rate and date are rendered, not
+ * merely implied by the tier. Omitted, the caveats are the static record's.
  */
-export function freshnessFromSource(source: string, verification: ProviderVerification): ProviderFreshness {
+export function freshnessFromSource(source: string, verification: ProviderVerification, fx?: FxConversionMeta): ProviderFreshness {
   const base = {
     provider: verification.provider,
     sourceUrl: verification.sourceUrl,
@@ -147,7 +154,13 @@ export function freshnessFromSource(source: string, verification: ProviderVerifi
 
   if (source.startsWith(FX_CONVERTED_SOURCE_PREFIX)) {
     const asOf = source.slice(FX_CONVERTED_SOURCE_PREFIX.length);
-    return { ...base, tier: 'LIVE_FX_CONVERTED', asOf, label: `FX-converted · ${formatSyncDate(asOf)}` };
+    return {
+      ...base,
+      caveats: fx ? [...verification.caveats, formatFxCaveat(fx)] : verification.caveats,
+      tier: 'LIVE_FX_CONVERTED',
+      asOf,
+      label: `FX-converted · ${formatSyncDate(asOf)}`
+    };
   }
 
   if (source.startsWith(LIVE_SOURCE_PREFIX)) {
@@ -175,7 +188,12 @@ export function freshnessFromSource(source: string, verification: ProviderVerifi
 /** Fuses the hand-maintained verification record with the live sync marker for the given provider. */
 export function getProviderFreshness(provider: CloudProvider): ProviderFreshness {
   const source = LIVE_PRICING_CACHE.meta?.sources?.[provider] ?? 'seed';
-  return freshnessFromSource(source, PROVIDER_VERIFICATION[provider]);
+  const fx = LIVE_PRICING_CACHE.meta?.fx?.[provider];
+  return freshnessFromSource(source, PROVIDER_VERIFICATION[provider], fx);
+}
+
+function formatFxCaveat(fx: FxConversionMeta): string {
+  return `Converted at 1 ${fx.base} = ${fx.rate} ${fx.quote} (ECB reference rate dated ${fx.date}, via ${fx.source}).`;
 }
 
 function formatSyncDate(iso: string): string {

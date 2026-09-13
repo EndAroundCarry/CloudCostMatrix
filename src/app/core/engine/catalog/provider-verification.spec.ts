@@ -35,10 +35,18 @@ describe('getProviderFreshness', () => {
     }
   });
 
-  it('never reports LIVE for a provider with no fetcher configured', () => {
-    for (const p of [CloudProvider.IBM, CloudProvider.ALIBABA, CloudProvider.OVHCLOUD]) {
+  it('never reports LIVE for the providers with no live (or FX-converted) fetcher configured', () => {
+    for (const p of [CloudProvider.IBM, CloudProvider.ALIBABA]) {
       expect(getProviderFreshness(p).tier).not.toBe('LIVE');
+      expect(getProviderFreshness(p).tier).not.toBe('LIVE_FX_CONVERTED');
     }
+  });
+
+  it('reports OVHcloud as FX-converted — never as plain LIVE — when the committed sync converted it', () => {
+    const f = getProviderFreshness(CloudProvider.OVHCLOUD);
+    expect(f.tier).not.toBe('LIVE');
+    expect(f.tier).toBe('LIVE_FX_CONVERTED');
+    expect(f.label).toContain('FX-converted');
   });
 
   it('every freshness result carries a non-empty label and a valid source URL', () => {
@@ -87,5 +95,21 @@ describe('freshnessFromSource — tier mapping', () => {
       expect(f.caveats).toBe(record.caveats);
       expect(f.provider).toBe(CloudProvider.OVHCLOUD);
     }
+  });
+
+  it('renders the recorded FX rate and date into the caveats, not just the tier', () => {
+    const fx = {
+      base: 'EUR',
+      quote: 'USD',
+      rate: 1.1592,
+      date: '2026-09-11',
+      source: 'https://api.frankfurter.app/latest?from=EUR&to=USD'
+    };
+    const f = freshnessFromSource('fx-converted@2026-09-12T04:00:00.000Z', record, fx);
+    expect(f.tier).toBe('LIVE_FX_CONVERTED');
+    expect(f.caveats.length).toBe(record.caveats.length + 1);
+    const joined = f.caveats.join(' ');
+    expect(joined).toContain('1.1592');
+    expect(joined).toContain('2026-09-11');
   });
 });

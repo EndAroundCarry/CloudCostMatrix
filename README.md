@@ -8,7 +8,7 @@ No signup required — architectures save locally in your browser, share instant
 
 Every number is directional, not a quote — see **[/methodology](https://cloudcostmatrix.com/methodology)** for exactly how the engine calculates costs, and **[/disclosure](https://cloudcostmatrix.com/disclosure)** for the affiliate-link policy.
 
-A price-sync pipeline (`scripts/sync-prices.mjs`, extracted per-provider fetchers in `scripts/fetchers/`) pulls live rates from each provider's public pricing API on a schedule (see `.github/workflows/price-sync-cron.yml`):
+A price-sync pipeline (`scripts/sync-prices.mjs`, extracted per-provider fetchers in `scripts/fetchers/`) pulls live rates from each provider's public pricing API on a schedule **and on every push to `main`** (see `.github/workflows/price-sync-cron.yml`):
 
 | Provider | Status | Source |
 |---|---|---|
@@ -44,6 +44,8 @@ npm run verify:prerender  # smoke-test the prerendered output after a build
 ```
 
 ## Deploying
+
+Hosting is deployed automatically by `.github/workflows/price-sync-cron.yml`: every push to `main` and every scheduled price sync runs `npm run build` and `firebase deploy --only hosting` (project `cloud-cost-matrix`), using a `FIREBASE_TOKEN` repo secret. To ship from your own machine instead:
 
 ```bash
 npm run build

@@ -1,10 +1,21 @@
-name: Sync Cloud Pricing (Free Firebase Spark Tier)
+name: Sync Cloud Pricing & Deploy (Firebase Hosting)
 
 on:
   schedule:
     # Runs twice daily at 04:00 and 16:00 UTC (100% Free inside GitHub Actions allowance)
     - cron: '0 4,16 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI
+  push:
+    branches: [main]
+    # ALSO sync on every push to main, so a merged change triggers a refresh
+    # without waiting for the next schedule.
+    #
+    # No feedback loop: the bot commits with the default GITHUB_TOKEN, and
+    # GitHub does not start new workflow runs for GITHUB_TOKEN pushes. The
+    # paths-ignore is belt-and-braces — a commit that only touches the cache
+    # file (the bot's own, or a merged-in refresh) never kicks off a new sync.
+    paths-ignore:
+      - 'src/app/core/engine/catalog/live-pricing-cache.json'
 
 permissions:
   contents: write
@@ -22,13 +33,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Full history so the rebase below can reconcile a concurrent push to
+          # main that landed while the sync was running.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install sync dependencies
+      - name: Install dependencies
         run: npm ci || npm install
 
       - name: Run cloud pricing scrapers
@@ -49,8 +64,33 @@ jobs:
           git config user.name 'ccm-price-bot'
           git config user.email 'ccm-price-bot@users.noreply.github.com'
           git add src/app/core/engine/catalog/live-pricing-cache.json
+          # The sync always rewrites meta.lastSyncedAt, so this normally commits;
+          # `||` (not `&&`) keeps a no-change run from failing the step.
           git diff --staged --quiet || git commit -m "chore(pricing): sync $(date -u +%Y-%m-%dT%H:%MZ)"
+          # A push to main may have landed while we were syncing — replay our
+          # commit on top rather than being rejected as non-fast-forward.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push
 
-      # Deployment is intentionally manual: run `npm run build` then
-      # `firebase deploy --only hosting` to ship the refreshed catalog.
+      # ── Deploy ──────────────────────────────────────────────────────────
+      # The app bundles the committed catalog at BUILD time
+      # (pricing-catalog.resolver.ts imports the JSON directly), so the build
+      # must happen AFTER the sync above has written it. Runs on every main
+      # commit and every scheduled sync, so refreshed prices reach production
+      # with no manual step. Guarded to main so a dispatch from a feature
+      # branch can never ship to production.
+      - name: Build production bundle
+        if: github.ref == 'refs/heads/main'
+        run: npm run build
+
+      - name: Deploy to Firebase Hosting
+        if: github.ref == 'refs/heads/main'
+        env:
+          # Repo secret from `firebase login:ci`. firebase-tools reads it from
+          # the environment, so the token never appears on the command line or
+          # in the step's log.
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: npx --yes firebase-tools@15 deploy --only hosting
+
+      # Local equivalent, if you ever need to ship from your machine:
+      #   npm run build && firebase deploy --only hosting

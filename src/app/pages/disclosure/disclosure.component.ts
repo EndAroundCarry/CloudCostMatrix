@@ -60,7 +60,7 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
           </ul>
         } @else {
           <p class="text-sm text-slate-400 m-0">
-            CloudCostMatrix does not currently have any active affiliate or referral relationships with any of the 9
+            CloudCostMatrix does not currently have any active affiliate or referral relationships with any of the 10
             providers it compares. Every "Visit provider" link on the site currently points to that provider's plain,
             non-commission pricing page.
           </p>

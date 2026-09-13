@@ -35,11 +35,11 @@ export const GUIDE_PAGES: Record<string, GuidePageData> = {
     slug: 'cheapest-cloud-egress-pricing',
     slugTitle: 'Cheapest Cloud Egress Pricing',
     tabLabel: 'Cheapest Egress',
-    headline: 'Which Cloud Provider Is Cheapest for Egress? All 9 Ranked (2026)',
+    headline: 'Which Cloud Provider Is Cheapest for Egress? All 10 Ranked (2026)',
     summary:
-      'Outbound data transfer is the cloud bill line item that scales with success rather than with headcount — and it is the one most comparisons leave out, because it does not fit neatly into a per-instance price table. This guide ranks all nine providers in the catalog by what the same outbound workload actually costs, using the live pricing engine rather than a hand-copied rate sheet.',
+      'Outbound data transfer is the cloud bill line item that scales with success rather than with headcount — and it is the one most comparisons leave out, because it does not fit neatly into a per-instance price table. This guide ranks all ten providers in the catalog by what the same outbound workload actually costs, using the live pricing engine rather than a hand-copied rate sheet.',
     metaDescription:
-      'Cloud egress pricing ranked across 9 providers — OVHcloud unlimited bandwidth, Oracle 10 TB free, AWS and Azure metered transfer. See the real monthly cost for a 20 TB workload.',
+      'Cloud egress pricing ranked across 10 providers — OVHcloud unlimited bandwidth, Oracle 10 TB free, AWS and Azure metered transfer. See the real monthly cost for a 20 TB workload.',
     keywords: [
       'cheapest cloud egress pricing',
       'cloud data transfer cost comparison',
@@ -83,11 +83,11 @@ export const GUIDE_PAGES: Record<string, GuidePageData> = {
     slug: 'cheapest-cloud-provider-for-startups',
     slugTitle: 'Cheapest Cloud Provider for Startups',
     tabLabel: 'Cheapest for Startups',
-    headline: 'The Cheapest Cloud Provider for a Startup Workload: 9 Providers Ranked (2026)',
+    headline: 'The Cheapest Cloud Provider for a Startup Workload: 10 Providers Ranked (2026)',
     summary:
-      'A pre-seed team does not need a hyperscaler\'s catalog — it needs the smallest bill that will not become a migration project in eighteen months. This guide ranks all nine providers on the cost of an entry-level Linux instance, then lays out the non-price factors that actually decide the answer: egress shape, managed-database availability, Kubernetes control-plane fees, and how much of the catalog you will realistically outgrow.',
+      'A pre-seed team does not need a hyperscaler\'s catalog — it needs the smallest bill that will not become a migration project in eighteen months. This guide ranks all ten providers on the cost of an entry-level Linux instance, then lays out the non-price factors that actually decide the answer: egress shape, managed-database availability, Kubernetes control-plane fees, and how much of the catalog you will realistically outgrow.',
     metaDescription:
-      'Cloud pricing for startups compared across 9 providers. Cheapest entry-level Linux instances plus egress, managed database, and Kubernetes fees that decide the real bill.',
+      'Cloud pricing for startups compared across 10 providers. Cheapest entry-level Linux instances plus egress, managed database, and Kubernetes fees that decide the real bill.',
     keywords: [
       'cheapest cloud provider for startups',
       'cloud hosting for startups comparison',
@@ -184,7 +184,7 @@ export const GUIDE_PAGES: Record<string, GuidePageData> = {
     summary:
       'Having an EU region and being an EU provider are different things, and for many organisations that distinction — not price — is the deciding factor. This guide lays out which providers in the catalog are EU-headquartered versus US-headquartered with EU regions, then ranks the same providers on entry-level compute cost so the compliance shortlist can be priced without switching tools.',
     metaDescription:
-      'EU cloud providers compared: which of 9 providers are EU-domiciled vs US-headquartered with EU regions, plus a live cost ranking for GDPR-conscious workloads.',
+      'EU cloud providers compared: which of 10 providers are EU-domiciled vs US-headquartered with EU regions, plus a live cost ranking for GDPR-conscious workloads.',
     keywords: [
       'EU cloud providers',
       'GDPR data residency cloud',

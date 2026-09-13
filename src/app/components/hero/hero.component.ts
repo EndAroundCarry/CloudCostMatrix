@@ -30,12 +30,12 @@ import { ARCHITECTURE_BLUEPRINTS, ArchitectureBlueprint } from '../../core/model
           Compare <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500">AWS</span>,
           <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-500">Azure</span>,
           <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-400">GCP</span>
-          & 6 More Cloud Infrastructure Costs
+          & 7 More Cloud Infrastructure Costs
         </h1>
 
         <!-- Subheading -->
         <p class="mt-4 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal">
-          Real-time Total Cost of Ownership (TCO) estimator across 9 providers — the big 3 plus Oracle, IBM, DigitalOcean, Alibaba, Linode, and OVHcloud — for Compute, Storage, Managed Databases, and Egress with instant commit discounts.
+          Real-time Total Cost of Ownership (TCO) estimator across 10 providers — the big 3 plus Oracle, IBM, DigitalOcean, Alibaba, Linode, OVHcloud, and Vultr — for Compute, Storage, Managed Databases, and Egress with instant commit discounts.
         </p>
 
         <!-- Presets Selection Bar -->

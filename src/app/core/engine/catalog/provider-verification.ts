@@ -127,11 +127,11 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
   [CloudProvider.VULTR]: {
     provider: CloudProvider.VULTR,
     lastVerifiedAt: '2026-09-13',
-    method: 'MANUAL_LIST_PRICE',
-    sourceUrl: 'https://www.vultr.com/pricing/',
+    method: 'LIVE_API',
+    sourceUrl: 'https://api.vultr.com/v2/plans',
     caveats: [
-      'Compute and managed-database rates are Vultr\'s published list prices (api.vultr.com/v2/plans and the Vultr Pricing page), reconciled by hand rather than synced live. Vultr bills compute hourly with a monthly cap and sells no reserved or spot instances, so both commitment rows clone the flat on-demand rate (gated off in PROVIDER_CAPABILITIES).',
-      'Object Storage is modelled at $18/TB-month with a 1 TB minimum (its only storage class — no Cool/Cold/Archive tiering), and operation rates use the standard benchmark ladder. Each instance bundles a monthly transfer allowance that genuinely varies by plan (0.5–15 TB); this catalog uses one representative 2 TB value. The per-instance Windows surcharge, load-balancer, and static-IP rates are seeded approximations. Managed-database storage is modelled per GB even though Vultr bundles disk into the plan price.'
+      'Compute pricing syncs live from Vultr\'s public v2 plans API for the Cloud Compute (Regular/High Frequency/High Performance) and Optimized Cloud Compute families, across a 2–32 vCPU envelope. Vultr bills hourly with a 672-hour monthly cap, so each shape\'s steady-state rate is derived from its listed monthly price (monthly / 730) rather than the capped hourly meter — using the raw hourly rate would understate a full month.',
+      'Vultr sells no reserved or spot instances, so both commitment rows clone the flat on-demand rate (gated off in PROVIDER_CAPABILITIES). The managed-database plans endpoint requires an API token, so database, object storage, networking, and Kubernetes carry the seeded benchmark: object storage at $18/TB-month with a 1 TB minimum and a single storage class, a representative 2 TB per-instance transfer bundle (plans range 0.5–15 TB), and approximated Windows/load-balancer/static-IP rates.'
     ]
   }
 };

@@ -1,6 +1,6 @@
 # CloudCostMatrix
 
-A free, real-time multi-cloud infrastructure cost estimator — compare Compute, Storage, Managed Database, Networking/Egress, and Kubernetes pricing side-by-side across **9 cloud providers**: AWS, Microsoft Azure, Google Cloud, Oracle Cloud Infrastructure, IBM Cloud, DigitalOcean, Alibaba Cloud, Linode (Akamai), and OVHcloud.
+A free, real-time multi-cloud infrastructure cost estimator — compare Compute, Storage, Managed Database, Networking/Egress, and Kubernetes pricing side-by-side across **10 cloud providers**: AWS, Microsoft Azure, Google Cloud, Oracle Cloud Infrastructure, IBM Cloud, DigitalOcean, Alibaba Cloud, Linode (Akamai), OVHcloud, and Vultr.
 
 No signup required — architectures save locally in your browser, share instantly via a compressed URL, and the whole pricing catalog is compiled into the app at build time (zero runtime API cost, zero backend).
 
@@ -20,6 +20,7 @@ A price-sync pipeline (`scripts/sync-prices.mjs`, extracted per-provider fetcher
 | DigitalOcean | Live (compute + bundled egress) | Droplet pricing page |
 | OVHcloud | Live, FX-converted (compute + object storage) | Public Cloud catalog (EUR) + ECB FX |
 | IBM | Live (compute, composed from component rates) | Global Catalog API |
+| Vultr | Live (compute) | v2 plans API |
 | Alibaba | Seeded 2026 benchmark | see `/methodology` |
 
 Every provider row in the app shows its own **Live / FX-converted / Verified / Estimate** freshness badge — never a blanket claim.

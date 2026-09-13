@@ -208,7 +208,7 @@ export class ExportService {
       .join('');
 
     const w = matrix.providers[matrix.cheapestMonthlyProvider];
-    const liveSources = ['AWS', 'AZURE', 'GCP', 'ORACLE', 'IBM', 'DIGITALOCEAN', 'ALIBABA', 'LINODE', 'OVHCLOUD']
+    const liveSources = ['AWS', 'AZURE', 'GCP', 'ORACLE', 'IBM', 'DIGITALOCEAN', 'ALIBABA', 'LINODE', 'OVHCLOUD', 'VULTR']
       .filter((p) => providers.map(String).includes(p))
       .map((p) => PROVIDER_METAS[p as CloudProvider].shortName);
     return `

@@ -106,7 +106,7 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
             <div class="rounded-xl bg-slate-800/40 p-5 border border-slate-700/40 text-center">
               <div class="w-10 h-10 mx-auto rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-extrabold mb-3">3</div>
               <h3 class="text-sm font-bold text-white m-0 mb-2">Compare & Share Results</h3>
-              <p class="text-xs text-slate-300 leading-relaxed m-0">View the side-by-side TCO matrix across up to 9 cloud providers — AWS, Azure, GCP, and 6 more. Export as CSV, print as PDF, or share via instant URL — no signup required.</p>
+              <p class="text-xs text-slate-300 leading-relaxed m-0">View the side-by-side TCO matrix across up to 10 cloud providers — AWS, Azure, GCP, and 7 more. Export as CSV, print as PDF, or share via instant URL — no signup required.</p>
             </div>
           </div>
         </section>
@@ -170,7 +170,7 @@ export class HomeComponent implements OnInit {
     },
     {
       question: 'How fresh is the cloud pricing data?',
-      answer: 'CloudCostMatrix runs an automated price-sync pipeline against each provider\'s official public pricing API on a schedule — currently AWS (S3 storage tiers), Azure (Retail Prices API), Oracle Cloud (cetools price list), and Linode (v4 API). The header badge reports exactly how many of the 9 providers are currently live-synced rather than a single blanket claim, and each row in the comparison table shows its own Live / Verified / Estimate status with a source link. Zero runtime API cost either way, since the catalog is compiled into the app at build time.'
+      answer: 'CloudCostMatrix runs an automated price-sync pipeline against each provider\'s official public pricing API on a schedule — currently AWS (S3 storage tiers), Azure (Retail Prices API), Oracle Cloud (cetools price list), and Linode (v4 API). The header badge reports exactly how many of the 10 providers are currently live-synced rather than a single blanket claim, and each row in the comparison table shows its own Live / Verified / Estimate status with a source link. Zero runtime API cost either way, since the catalog is compiled into the app at build time.'
     }
   ];
 

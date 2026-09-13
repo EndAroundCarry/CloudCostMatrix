@@ -72,7 +72,7 @@ import { AffiliateDisclosureComponent } from '../../components/affiliate-disclos
         <div>
           <h2 id="ranking-heading" class="text-lg sm:text-xl font-bold text-white tracking-tight m-0 flex items-center gap-2">
             <mat-icon class="text-emerald-400">payments</mat-icon>
-            <span>All 9 providers by {{ metricLabel }}</span>
+            <span>All 10 providers by {{ metricLabel }}</span>
           </h2>
           <p class="text-xs text-slate-400 mt-2 m-0 leading-relaxed">{{ metricCaption }}</p>
         </div>

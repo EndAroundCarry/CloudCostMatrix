@@ -1,18 +1,19 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-13T12:44:49.575Z",
+    "lastSyncedAt": "2026-09-13T21:23:06.085Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-13T12:44:49.575Z",
-      "AZURE": "live@2026-09-13T12:44:49.575Z",
-      "GCP": "live@2026-09-13T12:44:49.575Z",
-      "ORACLE": "live@2026-09-13T12:44:49.575Z",
-      "IBM": "live@2026-09-13T12:44:49.575Z",
-      "DIGITALOCEAN": "live@2026-09-13T12:44:49.575Z",
+      "AWS": "live@2026-09-13T21:23:06.085Z",
+      "AZURE": "live@2026-09-13T21:23:06.085Z",
+      "GCP": "live@2026-09-13T21:23:06.085Z",
+      "ORACLE": "live@2026-09-13T21:23:06.085Z",
+      "IBM": "live@2026-09-13T21:23:06.085Z",
+      "DIGITALOCEAN": "live@2026-09-13T21:23:06.085Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-09-13T12:44:49.575Z",
-      "OVHCLOUD": "fx-converted@2026-09-13T12:44:49.575Z"
+      "LINODE": "live@2026-09-13T21:23:06.085Z",
+      "OVHCLOUD": "fx-converted@2026-09-13T21:23:06.085Z",
+      "VULTR": "live@2026-09-13T21:23:06.085Z"
     },
     "fx": {
       "OVHCLOUD": {
@@ -818,6 +819,89 @@
           "costPer10kWrites": 0.3
         }
       }
+    },
+    "VULTR": {
+      "provider": "VULTR",
+      "region": "ewr (New Jersey)",
+      "compute": [
+        {
+          "family": "Cloud Compute (Regular)",
+          "name": "vc2-2c-4gb",
+          "vCpu": 2,
+          "ramGb": 4,
+          "hourlyOnDemandLinux": 0.0274,
+          "hourly1YrReservedLinux": 0.0274,
+          "hourly3YrReservedLinux": 0.0274,
+          "hourlySpotLinux": 0.0274,
+          "windowsHourlySurcharge": 0.008
+        },
+        {
+          "family": "Optimized Cloud Compute",
+          "name": "voc-g-2c-8gb-50s-amd",
+          "vCpu": 2,
+          "ramGb": 8,
+          "hourlyOnDemandLinux": 0.0822,
+          "hourly1YrReservedLinux": 0.0822,
+          "hourly3YrReservedLinux": 0.0822,
+          "hourlySpotLinux": 0.0822,
+          "windowsHourlySurcharge": 0.008
+        },
+        {
+          "family": "Cloud Compute (High Frequency)",
+          "name": "vhf-4c-16gb",
+          "vCpu": 4,
+          "ramGb": 16,
+          "hourlyOnDemandLinux": 0.1315,
+          "hourly1YrReservedLinux": 0.1315,
+          "hourly3YrReservedLinux": 0.1315,
+          "hourlySpotLinux": 0.1315,
+          "windowsHourlySurcharge": 0.016
+        },
+        {
+          "family": "Cloud Compute (Regular)",
+          "name": "vc2-8c-32gb",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.2192,
+          "hourly1YrReservedLinux": 0.2192,
+          "hourly3YrReservedLinux": 0.2192,
+          "hourlySpotLinux": 0.2192,
+          "windowsHourlySurcharge": 0.032
+        },
+        {
+          "family": "Optimized Cloud Compute",
+          "name": "voc-c-16c-32gb-300s-amd",
+          "vCpu": 16,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.4384,
+          "hourly1YrReservedLinux": 0.4384,
+          "hourly3YrReservedLinux": 0.4384,
+          "hourlySpotLinux": 0.4384,
+          "windowsHourlySurcharge": 0.064
+        },
+        {
+          "family": "Optimized Cloud Compute",
+          "name": "voc-m-16c-128gb-800s-amd",
+          "vCpu": 16,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 0.8767,
+          "hourly1YrReservedLinux": 0.8767,
+          "hourly3YrReservedLinux": 0.8767,
+          "hourlySpotLinux": 0.8767,
+          "windowsHourlySurcharge": 0.064
+        },
+        {
+          "family": "Optimized Cloud Compute",
+          "name": "voc-g-32c-128gb-640s-amd",
+          "vCpu": 32,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 1.3151,
+          "hourly1YrReservedLinux": 1.3151,
+          "hourly3YrReservedLinux": 1.3151,
+          "hourlySpotLinux": 1.3151,
+          "windowsHourlySurcharge": 0.128
+        }
+      ]
     }
   }
 }

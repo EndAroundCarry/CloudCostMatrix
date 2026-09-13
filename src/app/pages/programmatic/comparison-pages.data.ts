@@ -402,6 +402,106 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
         answer: 'No — Linode\'s catalog is deliberately narrower: compute, object storage, managed databases (PostgreSQL/MySQL), and Kubernetes (LKE). AWS spans hundreds of services across every infrastructure and platform category. For teams whose needs fit Linode\'s core catalog, that focus translates into simpler pricing and operations; for anything requiring AWS-specific managed services, there\'s no substitute.'
       }
     ]
+  },
+
+  'digitalocean-vs-vultr': {
+    slug: 'digitalocean-vs-vultr',
+    slugTitle: 'DigitalOcean vs Vultr',
+    tabLabel: 'DigitalOcean vs Vultr',
+    headline: 'DigitalOcean vs Vultr: Two Flat-Rate Developer Clouds Compared (2026)',
+    summary: 'Both clouds target the same audience — developers who want predictable, flat hourly pricing without reserved-instance math — and both include a managed-Kubernetes control plane at no charge. Vultr counters DigitalOcean\'s larger community and marketplace with a wider global footprint, a broader instance catalog spanning shared to dedicated and GPU, and Windows support the Droplet lineup lacks. This page compares them on published infrastructure pricing.',
+    metaDescription: 'DigitalOcean vs Vultr pricing compared: Droplets vs Vultr Cloud Compute, object storage, managed databases, DOKS vs VKE control-plane fees, and bandwidth overage rates. Free TCO calculator.',
+    keywords: ['DigitalOcean vs Vultr', 'Vultr vs DigitalOcean', 'Droplet vs Vultr Cloud Compute', 'Vultr pricing 2026', 'developer cloud comparison', 'DOKS vs VKE', 'cheap cloud server pricing 2026'],
+    providerA: CloudProvider.DIGITALOCEAN,
+    providerB: CloudProvider.VULTR,
+    editorialFeatures: [
+      { feature: 'Global Region Footprint', category: 'Platform', providerAVal: 'Regions across North America, Europe, and Asia-Pacific', providerBVal: '33 published cloud data-center regions worldwide', winner: 'B' },
+      { feature: 'Instance Lineup Breadth', category: 'Compute', providerAVal: 'Basic plus CPU-, General-Purpose-, and Memory-Optimized Droplets', providerBVal: 'Shared, High Frequency/High Performance, dedicated Optimized, GPU, and bare metal', winner: 'B' },
+      { feature: 'Windows Server Licensing', category: 'Compute', providerAVal: 'Not offered on Droplets', providerBVal: 'Windows Server available on Cloud Compute', winner: 'B' },
+      { feature: 'Per-GB Bandwidth Overage', category: 'Networking', providerAVal: '$0.01/GB once the pooled Droplet bundle is exhausted', providerBVal: '$0.01/GB in North America/Europe once the instance bundle is exhausted', winner: 'TIE' },
+      { feature: 'Community & Documentation', category: 'Ecosystem', providerAVal: 'Large tutorial library and active community forum', providerBVal: 'Solid documentation, smaller community footprint', winner: 'A' }
+    ],
+    faqs: [
+      {
+        question: 'Is DigitalOcean or Vultr cheaper?',
+        answer: 'Both price compute flat and hourly with no reserved-instance layer, so the headline rates are close for comparable shapes. The differences show up in catalog breadth and footprint: Vultr spans a wider range of sizes and regions (including dedicated and GPU shapes), while DigitalOcean concentrates on a smaller, simpler lineup. Run the live calculator above with your own vCPU/RAM shape and bandwidth volume for an exact answer.'
+      },
+      {
+        question: 'How do the managed Kubernetes control-plane fees compare?',
+        answer: 'Neither DigitalOcean Kubernetes (DOKS) nor Vultr Kubernetes Engine (VKE) charges for the control plane — both include it on every cluster, so the only Kubernetes cost is the underlying worker-node compute plus any attached storage or load balancers. That is materially cheaper than AWS EKS, which bills a per-cluster control-plane fee from the first cluster.'
+      },
+      {
+        question: 'How does object storage compare?',
+        answer: 'Both providers offer a single object-storage class rather than the hot/cool/cold/archive tiering a hyperscaler sells — DigitalOcean Spaces and Vultr Object Storage each publish one capacity rate, so there is no lifecycle tiering to model on either side. See the live matrix above for the current per-GB figures.'
+      },
+      {
+        question: 'Does either provider offer Windows or GPU instances?',
+        answer: 'Vultr sells Windows Server on its Cloud Compute plans and a broad Cloud GPU lineup (NVIDIA and AMD), while DigitalOcean\'s Droplet lineup is Linux-only with no GPU shapes. For Windows or GPU-dependent workloads, Vultr is the option of the two.'
+      }
+    ]
+  },
+  'linode-vs-vultr': {
+    slug: 'linode-vs-vultr',
+    slugTitle: 'Linode vs Vultr',
+    tabLabel: 'Linode vs Vultr',
+    headline: 'Linode (Akamai) vs Vultr: Independent Developer Clouds Head-to-Head (2026)',
+    summary: 'Linode — now backed by Akamai\'s global network — and Vultr both compete on flat, predictable compute pricing, a free Kubernetes control plane, and no reserved-instance complexity. Linode publishes the lowest bandwidth overage rate in this comparison; Vultr answers with a much larger region footprint and a catalog that extends further into dedicated, GPU, and bare-metal territory.',
+    metaDescription: 'Linode vs Vultr pricing compared: flat compute, object storage, managed databases, LKE vs VKE, Akamai\'s low bandwidth overage rate against Vultr\'s 33 global regions.',
+    keywords: ['Linode vs Vultr', 'Vultr vs Linode', 'LKE vs VKE', 'Akamai cloud pricing', 'Vultr pricing 2026', 'cheap cloud server comparison', 'developer cloud pricing'],
+    providerA: CloudProvider.LINODE,
+    providerB: CloudProvider.VULTR,
+    editorialFeatures: [
+      { feature: 'Backing Network', category: 'Platform', providerAVal: 'Akamai global edge/CDN network', providerBVal: 'Own global backbone across 33 regions', winner: 'TIE' },
+      { feature: 'Per-GB Bandwidth Overage', category: 'Networking', providerAVal: '$0.005/GB — the lowest rate in this comparison', providerBVal: '$0.01/GB in North America/Europe', winner: 'A' },
+      { feature: 'Global Region Footprint', category: 'Platform', providerAVal: 'Smaller, established footprint', providerBVal: '33 published cloud data-center regions worldwide', winner: 'B' },
+      { feature: 'Instance Lineup Breadth', category: 'Compute', providerAVal: 'Shared, dedicated, and high-memory compute', providerBVal: 'Shared, High Frequency/High Performance, dedicated Optimized, GPU, and bare metal', winner: 'B' }
+    ],
+    faqs: [
+      {
+        question: 'Is Linode or Vultr cheaper?',
+        answer: 'For comparable shared-CPU shapes the two are close — both price flat, hourly, and without a reserved-instance layer. The clearest published difference is bandwidth overage: Linode\'s per-GB rate once an instance\'s pooled transfer allowance is exhausted is the lowest of any provider in this comparison, which matters most for transfer-heavy workloads. Use the live calculator above for your own shape and traffic volume.'
+      },
+      {
+        question: 'How does Akamai\'s ownership of Linode affect the comparison?',
+        answer: 'Since Akamai acquired Linode in 2022, Linode instances run on Akamai\'s infrastructure and can route through Akamai\'s global edge network, while keeping the flat, predictable pricing model Linode was known for. The acquisition\'s effect shows up more in network reach than in the pricing structure itself, so it does not materially change a like-for-like compute comparison.'
+      },
+      {
+        question: 'Do both offer a free managed-Kubernetes control plane?',
+        answer: 'Yes — Linode Kubernetes Engine (LKE) and Vultr Kubernetes Engine (VKE) both include the control plane at no charge on every cluster, so only worker nodes and attached storage or load balancers are billable. Neither charges the per-cluster control-plane fee that AWS EKS does.'
+      }
+    ]
+  },
+  'ovhcloud-vs-vultr': {
+    slug: 'ovhcloud-vs-vultr',
+    slugTitle: 'OVHcloud vs Vultr',
+    tabLabel: 'OVHcloud vs Vultr',
+    headline: 'OVHcloud vs Vultr: EU-Sovereign Cloud vs the Independent Global Challenger (2026)',
+    summary: 'OVHcloud and Vultr both undercut the hyperscalers on flat, commitment-free pricing, but they optimise for different things: OVHcloud is EU-headquartered with unlimited free egress and EU data residency by default, while Vultr offers a far wider global footprint with a low, metered $0.01/GB overage. This page compares them purely on published infrastructure pricing.',
+    metaDescription: 'OVHcloud vs Vultr pricing compared: unlimited EU egress vs Vultr\'s low metered overage, EU data residency vs 33 global regions, compute, storage, and managed Kubernetes.',
+    keywords: ['OVHcloud vs Vultr', 'Vultr vs OVHcloud', 'unlimited egress vs metered', 'EU cloud data residency', 'Vultr pricing 2026', 'cheapest bandwidth cloud provider'],
+    providerA: CloudProvider.OVHCLOUD,
+    providerB: CloudProvider.VULTR,
+    referenceConfig: egressHeavyConfig(51200, 'High-Bandwidth EU Service (50 TB/mo)'),
+    editorialFeatures: [
+      { feature: 'Data Residency', category: 'Compliance', providerAVal: 'EU-headquartered, EU-domiciled regions by default', providerBVal: 'US-headquartered; EU regions available but not EU-domiciled', winner: 'A' },
+      { feature: 'Egress Model', category: 'Networking', providerAVal: 'Unlimited and free under a fair-use policy — no metered line item', providerBVal: 'Bundled per-instance allowance with a low $0.01/GB overage', winner: 'A' },
+      { feature: 'Global Region Footprint', category: 'Platform', providerAVal: 'EU-centric footprint with North America and APAC regions', providerBVal: '33 published cloud data-center regions worldwide', winner: 'B' },
+      { feature: 'Managed Kubernetes Control Plane', category: 'Kubernetes', providerAVal: 'Free on every Public Cloud plan', providerBVal: 'VKE control plane free on every cluster', winner: 'TIE' }
+    ],
+    faqs: [
+      {
+        question: 'Which is cheaper for a bandwidth-heavy workload — OVHcloud or Vultr?',
+        answer: 'OVHcloud\'s published Public Cloud policy is unlimited outbound bandwidth under a fair-use policy, so egress never appears as a variable line item. Vultr bundles a per-instance transfer allowance (varying by plan) and bills a low $0.01/GB overage beyond it. At high transfer volumes the egress line alone can exceed compute, which favours OVHcloud; at moderate volumes the two are much closer. The calculator above models a 50 TB/month workload.'
+      },
+      {
+        question: 'Does the choice matter for GDPR / EU data residency?',
+        answer: 'For organizations with EU data-residency requirements, OVHcloud\'s EU headquarters and EU-domiciled default regions can simplify compliance in ways a US-headquartered provider\'s EU region does not fully address. Vultr offers EU regions (including Frankfurt, Amsterdam, London, Paris, Madrid, and Warsaw) but is a US-headquartered company. Verify against your specific regulatory obligations — that is a legal question, not a pricing one.'
+      },
+      {
+        question: 'How do the two compare on global reach and instance choice?',
+        answer: 'Vultr spans 33 published regions and a broad catalog including shared, high-frequency/high-performance, dedicated Optimized, GPU, and bare-metal shapes, whereas OVHcloud\'s footprint is more EU-centric with a narrower instance lineup. For teams needing many regions or GPU/bare-metal options, Vultr has the wider reach; for EU-sovereign, low-egress workloads, OVHcloud is the stronger fit.'
+      }
+    ]
   }
 };
 

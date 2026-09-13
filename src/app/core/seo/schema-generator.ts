@@ -13,7 +13,7 @@ export class SchemaGenerator {
       'applicationCategory': 'BusinessApplication',
       'operatingSystem': 'All',
       'browserRequirements': 'Requires JavaScript',
-      'description': 'Free, real-time multi-cloud infrastructure cost estimator comparing 9 providers — AWS, Microsoft Azure, Google Cloud, Oracle Cloud, IBM Cloud, DigitalOcean, Alibaba Cloud, Linode, and OVHcloud — side-by-side for Compute, Storage, Database, Kubernetes, and Egress. Save unlimited architectures, diff migration scenarios, and export team-ready reports.',
+      'description': 'Free, real-time multi-cloud infrastructure cost estimator comparing 10 providers — AWS, Microsoft Azure, Google Cloud, Oracle Cloud, IBM Cloud, DigitalOcean, Alibaba Cloud, Linode, OVHcloud, and Vultr — side-by-side for Compute, Storage, Database, Kubernetes, and Egress. Save unlimited architectures, diff migration scenarios, and export team-ready reports.',
       'offers': {
         '@type': 'Offer',
         'price': '0',
@@ -28,7 +28,7 @@ export class SchemaGenerator {
         'Guest-first saved architecture library with rename, duplicate & branch — no signup required',
         'Architecture A vs B scenario diffing with monthly / 3-year TCO deltas and migration ROI',
         'Visual cost topology heatmap that highlights budget hotspots in real time',
-        'Automated live price sync from official AWS, Azure, Oracle Cloud, and Linode pricing APIs, with a per-provider Live/Verified/Estimate freshness badge for all 9 providers',
+        'Automated live price sync from official AWS, Azure, Oracle Cloud, and Linode pricing APIs, with a per-provider Live/Verified/Estimate freshness badge for all 10 providers',
         'Instant zero-database URL sharing with LZ-String compression',
         'Team exports: Slack/Teams summary, Markdown RFC table, and executive PDF print brief',
         'Exportable CSV and printable PDF comparison reports'

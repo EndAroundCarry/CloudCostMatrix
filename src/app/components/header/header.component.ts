@@ -53,7 +53,7 @@ import {
                 {{ store.pricingLabel() }}
               </span>
             </div>
-            <p class="text-xs text-slate-400 hidden sm:block m-0 whitespace-nowrap">9-Provider Multi-Cloud TCO Estimator</p>
+            <p class="text-xs text-slate-400 hidden sm:block m-0 whitespace-nowrap">10-Provider Multi-Cloud TCO Estimator</p>
           </div>
         </a>
 

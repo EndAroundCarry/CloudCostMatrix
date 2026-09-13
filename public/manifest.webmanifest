@@ -1,7 +1,7 @@
 {
   "name": "CloudCostMatrix — Multi-Cloud Cost Estimator",
   "short_name": "CloudCostMatrix",
-  "description": "Free multi-cloud infrastructure cost estimator comparing Compute, Storage, Database, Kubernetes, and Egress across 9 providers.",
+  "description": "Free multi-cloud infrastructure cost estimator comparing Compute, Storage, Database, Kubernetes, and Egress across 10 providers.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

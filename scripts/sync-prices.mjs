@@ -22,6 +22,10 @@
  *   - IBM:    Global Catalog API           https://globalcatalog.cloud.ibm.com (needs IBM_CLOUD_API_KEY)
  *     The catalog publishes no per-profile VPC price, so compute is composed
  *     from the live vCPU-hour and GB-hour component rates — see fetchers/ibm.mjs.
+ *   - Vultr:  public v2 plans API           https://api.vultr.com/v2/plans
+ *     Compute only: the managed-database plans endpoint needs an API token, so
+ *     storage/database/networking/kubernetes carry the seed benchmark — see
+ *     fetchers/vultr.mjs.
  *
  * The remaining provider (Alibaba) has no fetcher registered below and is
  * intentionally skipped — see the loop in runSync() — rather than treated as a
@@ -50,14 +54,15 @@ import { fetchLinodeCatalog } from './fetchers/linode.mjs';
 import { fetchDigitalOceanCatalog } from './fetchers/digitalocean.mjs';
 import { fetchOvhcloudCatalog } from './fetchers/ovhcloud.mjs';
 import { fetchIbmCatalog } from './fetchers/ibm.mjs';
+import { fetchVultrCatalog } from './fetchers/vultr.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = path.join(__dirname, '..', 'src', 'app', 'core', 'engine', 'catalog', 'live-pricing-cache.json');
 
-// AWS/Azure/GCP/Oracle/Linode/DigitalOcean/OVHcloud/IBM have live fetchers below.
-// Alibaba ships seed-only — it needs signed (HMAC) requests — see
+// AWS/Azure/GCP/Oracle/Linode/DigitalOcean/OVHcloud/IBM/Vultr have live fetchers
+// below. Alibaba ships seed-only — it needs signed (HMAC) requests — see
 // provider-verification.ts for the per-provider reasoning.
-const PROVIDERS = ['AWS', 'AZURE', 'GCP', 'ORACLE', 'IBM', 'DIGITALOCEAN', 'ALIBABA', 'LINODE', 'OVHCLOUD'];
+const PROVIDERS = ['AWS', 'AZURE', 'GCP', 'ORACLE', 'IBM', 'DIGITALOCEAN', 'ALIBABA', 'LINODE', 'OVHCLOUD', 'VULTR'];
 
 function readCache() {
   try {
@@ -68,7 +73,7 @@ function readCache() {
 }
 
 async function runSync() {
-  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP, Oracle, Linode, DigitalOcean, OVHcloud, IBM live; 1 more seed-only)...');
+  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP, Oracle, Linode, DigitalOcean, OVHcloud, IBM, Vultr live; 1 seed-only)...');
 
   const cacheDoc = readCache();
   const syncedAt = new Date().toISOString();
@@ -87,7 +92,8 @@ async function runSync() {
     LINODE: fetchLinodeCatalog,
     DIGITALOCEAN: fetchDigitalOceanCatalog,
     OVHCLOUD: fetchOvhcloudCatalog,
-    IBM: fetchIbmCatalog
+    IBM: fetchIbmCatalog,
+    VULTR: fetchVultrCatalog
   };
 
   for (const provider of PROVIDERS) {

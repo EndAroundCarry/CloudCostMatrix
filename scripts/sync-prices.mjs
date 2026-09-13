@@ -22,10 +22,10 @@
  *   - IBM:    Global Catalog API           https://globalcatalog.cloud.ibm.com (needs IBM_CLOUD_API_KEY)
  *     The catalog publishes no per-profile VPC price, so compute is composed
  *     from the live vCPU-hour and GB-hour component rates — see fetchers/ibm.mjs.
- *   - Vultr:  public v2 plans API           https://api.vultr.com/v2/plans
- *     Compute only: the managed-database plans endpoint needs an API token, so
- *     storage/database/networking/kubernetes carry the seed benchmark — see
- *     fetchers/vultr.mjs.
+ *   - Vultr:  v2 plans API (compute, open)  https://api.vultr.com/v2/plans
+ *     plus the authenticated v2 databases/plans feed (needs VULTR_API_KEY) for
+ *     managed databases. Object storage, networking, and Kubernetes expose no
+ *     pricing endpoint and carry the seed benchmark — see fetchers/vultr.mjs.
  *
  * The remaining provider (Alibaba) has no fetcher registered below and is
  * intentionally skipped — see the loop in runSync() — rather than treated as a

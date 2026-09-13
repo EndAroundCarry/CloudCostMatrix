@@ -20,7 +20,7 @@ A price-sync pipeline (`scripts/sync-prices.mjs`, extracted per-provider fetcher
 | DigitalOcean | Live (compute + bundled egress) | Droplet pricing page |
 | OVHcloud | Live, FX-converted (compute + object storage) | Public Cloud catalog (EUR) + ECB FX |
 | IBM | Live (compute, composed from component rates) | Global Catalog API |
-| Vultr | Live (compute) | v2 plans API |
+| Vultr | Live (compute, managed database) | v2 plans + databases plans API |
 | Alibaba | Seeded 2026 benchmark | see `/methodology` |
 
 Every provider row in the app shows its own **Live / FX-converted / Verified / Estimate** freshness badge — never a blanket claim.

@@ -48,10 +48,14 @@ jobs:
 
       - name: Run cloud pricing scrapers
         env:
-          # Repo secrets. Without these the GCP/IBM fetchers throw by design and
-          # those providers stay on the seeded benchmark (see scripts/fetchers/).
+          # Repo secrets. Without GCP/IBM the respective fetcher throws by
+          # design and that provider stays on the seeded benchmark. Vultr is
+          # different: without VULTR_API_KEY its compute still syncs live from
+          # the open plans endpoint, and only the managed-database section
+          # stays seeded (see scripts/fetchers/vultr.mjs).
           GCP_API_KEY: ${{ secrets.GCP_API_KEY }}
           IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
+          VULTR_API_KEY: ${{ secrets.VULTR_API_KEY }}
         run: node scripts/sync-prices.mjs
 
       # Every sync rewrites meta.lastSyncedAt / meta.sources, so the file always

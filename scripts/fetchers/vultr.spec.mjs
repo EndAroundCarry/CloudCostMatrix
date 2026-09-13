@@ -41,17 +41,44 @@ const PLAN_ROWS = [
   { id: 'vc2-1c-0.5gb-free', type: 'vc2', vcpu_count: 1, ram: 512, monthly_cost: 0, hourly_cost: 0, gpu_brand: 'none', deploy_ondemand: true }
 ];
 
-const state = vi.hoisted(() => ({ plans: [] }));
+// Managed-database plans (api.vultr.com/v2/databases/plans). PostgreSQL and
+// MySQL share identical shape pricing; a Kafka plan is present to prove the
+// engine filter excludes non-relational engines.
+const DB_ROWS = [
+  { id: 'vultr-dbaas-postgres-30s-amd-1c-4gb', engine: 'pg', vcpus: 1, ram: 4096, disk: 30, monthly_cost: 90, hourly_cost: 0.134 },
+  { id: 'vultr-dbaas-postgres-50s-amd-2c-8gb', engine: 'pg', vcpus: 2, ram: 8192, disk: 50, monthly_cost: 180, hourly_cost: 0.268 },
+  { id: 'vultr-dbaas-postgres-80s-amd-4c-16gb', engine: 'pg', vcpus: 4, ram: 16384, disk: 80, monthly_cost: 360, hourly_cost: 0.536 },
+  { id: 'vultr-dbaas-postgres-160s-amd-8c-32gb', engine: 'pg', vcpus: 8, ram: 32768, disk: 160, monthly_cost: 720, hourly_cost: 1.071 },
+  { id: 'vultr-dbaas-postgres-320s-amd-16c-64gb', engine: 'pg', vcpus: 16, ram: 65536, disk: 320, monthly_cost: 1440, hourly_cost: 2.143 },
+  { id: 'vultr-dbaas-mysql-30s-amd-1c-4gb', engine: 'mysql', vcpus: 1, ram: 4096, disk: 30, monthly_cost: 90, hourly_cost: 0.134 },
+  { id: 'vultr-dbaas-kafka-3b-600gb', engine: 'kafka', vcpus: 3, ram: 8192, disk: 600, monthly_cost: 475, hourly_cost: 0.707 }
+];
+
+const state = vi.hoisted(() => ({ plans: [], dbPlans: null, dbFails: false, calls: [] }));
 
 vi.mock('./shared.mjs', async (importOriginal) => {
   const actual = await importOriginal();
-  return { ...actual, fetchJson: vi.fn(() => Promise.resolve({ plans: state.plans })) };
+  return {
+    ...actual,
+    fetchJson: vi.fn((url, opts) => {
+      state.calls.push({ url, opts });
+      if (url.includes('/databases/plans')) {
+        if (state.dbFails) return Promise.reject(new Error('HTTP 500 Internal Server Error'));
+        return Promise.resolve(state.dbPlans);
+      }
+      return Promise.resolve({ plans: state.plans });
+    })
+  };
 });
 
 const { fetchVultrCatalog } = await import('./vultr.mjs');
 
 beforeEach(() => {
   state.plans = PLAN_ROWS.map((p) => ({ ...p }));
+  state.dbPlans = { plans: DB_ROWS.map((p) => ({ ...p })) };
+  state.dbFails = false;
+  state.calls = [];
+  delete process.env.VULTR_API_KEY;
 });
 
 describe('vultr fetcher — effective hourly rate', () => {
@@ -99,6 +126,57 @@ describe('vultr fetcher — exclusions', () => {
       expect(row.name.includes('free')).toBe(false);
       expect(row.hourlyOnDemandLinux).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('vultr fetcher — managed databases', () => {
+  it('does not call the database endpoint and omits the section when no key is set', async () => {
+    const catalog = await fetchVultrCatalog();
+    expect(catalog.database).toBeUndefined();
+    expect(state.calls.some((c) => c.url.includes('/databases/plans'))).toBe(false);
+    expect(catalog.compute).toHaveLength(7); // compute is unaffected
+  });
+
+  it('syncs 4 distinct database rows from monthly_cost/730 when the key is set', async () => {
+    process.env.VULTR_API_KEY = 'test-key';
+    const catalog = await fetchVultrCatalog();
+    expect(catalog.database).toHaveLength(4);
+    expect(new Set(catalog.database.map((d) => d.name)).size).toBe(4);
+    const row = catalog.database.find((d) => d.vCpu === 1);
+    expect(row?.name).toBe('vultr-dbaas-postgres-30s-amd-1c-4gb');
+    expect(row?.ramGb).toBe(4);
+    expect(row?.hourlyPostgres).toBeCloseTo(90 / 730, 4);
+    expect(row?.hourlyMySql).toBe(row?.hourlyPostgres); // Vultr prices both identically
+    expect(row?.hourlySqlServer).toBe(row?.hourlyPostgres); // cloned, gated off
+  });
+
+  it('sends the API key as a Bearer token', async () => {
+    process.env.VULTR_API_KEY = 'test-key';
+    await fetchVultrCatalog();
+    const call = state.calls.find((c) => c.url.includes('/databases/plans'));
+    expect(call?.opts?.Authorization).toBe('Bearer test-key');
+  });
+
+  it('excludes non-relational engines (kafka)', async () => {
+    process.env.VULTR_API_KEY = 'test-key';
+    const catalog = await fetchVultrCatalog();
+    expect(catalog.database.every((d) => !d.name.includes('kafka'))).toBe(true);
+  });
+
+  it('degrades to the seed (no database section) when the DB fetch fails, keeping compute live', async () => {
+    process.env.VULTR_API_KEY = 'test-key';
+    state.dbFails = true;
+    const catalog = await fetchVultrCatalog();
+    expect(catalog.database).toBeUndefined();
+    expect(catalog.compute).toHaveLength(7);
+  });
+
+  it('degrades to the seed when the DB response is malformed', async () => {
+    process.env.VULTR_API_KEY = 'test-key';
+    state.dbPlans = {};
+    const catalog = await fetchVultrCatalog();
+    expect(catalog.database).toBeUndefined();
+    expect(catalog.compute).toHaveLength(7);
   });
 });
 

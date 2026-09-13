@@ -19,10 +19,13 @@
  *     + an ECB reference FX feed (Frankfurter). OVHcloud publishes no USD
  *     subsidiary, so the whole provider is recorded as 'fx-converted@' — a
  *     distinct tier from 'live@' — with the rate and date in `meta.fx`.
+ *   - IBM:    Global Catalog API           https://globalcatalog.cloud.ibm.com (needs IBM_CLOUD_API_KEY)
+ *     The catalog publishes no per-profile VPC price, so compute is composed
+ *     from the live vCPU-hour and GB-hour component rates — see fetchers/ibm.mjs.
  *
- * The remaining 2 providers (IBM, Alibaba) have no fetcher registered below and
- * are intentionally skipped — see the loop in runSync() — rather than treated
- * as a failure.
+ * The remaining provider (Alibaba) has no fetcher registered below and is
+ * intentionally skipped — see the loop in runSync() — rather than treated as a
+ * failure.
  *
  * The script is intentionally resilient: when a feed is unreachable it falls
  * back to the current live cache (or the built-in seed baseline) so a network
@@ -46,12 +49,13 @@ import { fetchOracleCatalog } from './fetchers/oracle.mjs';
 import { fetchLinodeCatalog } from './fetchers/linode.mjs';
 import { fetchDigitalOceanCatalog } from './fetchers/digitalocean.mjs';
 import { fetchOvhcloudCatalog } from './fetchers/ovhcloud.mjs';
+import { fetchIbmCatalog } from './fetchers/ibm.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CACHE_PATH = path.join(__dirname, '..', 'src', 'app', 'core', 'engine', 'catalog', 'live-pricing-cache.json');
 
-// AWS/Azure/GCP/Oracle/Linode/DigitalOcean/OVHcloud have live fetchers below.
-// IBM and Alibaba ship seed-only — both need signed requests (IAM / HMAC) — see
+// AWS/Azure/GCP/Oracle/Linode/DigitalOcean/OVHcloud/IBM have live fetchers below.
+// Alibaba ships seed-only — it needs signed (HMAC) requests — see
 // provider-verification.ts for the per-provider reasoning.
 const PROVIDERS = ['AWS', 'AZURE', 'GCP', 'ORACLE', 'IBM', 'DIGITALOCEAN', 'ALIBABA', 'LINODE', 'OVHCLOUD'];
 
@@ -64,7 +68,7 @@ function readCache() {
 }
 
 async function runSync() {
-  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP, Oracle, Linode, DigitalOcean, OVHcloud live; 2 more seed-only)...');
+  console.log('🚀 Starting cloud pricing sync (AWS, Azure, GCP, Oracle, Linode, DigitalOcean, OVHcloud, IBM live; 1 more seed-only)...');
 
   const cacheDoc = readCache();
   const syncedAt = new Date().toISOString();
@@ -82,7 +86,8 @@ async function runSync() {
     ORACLE: fetchOracleCatalog,
     LINODE: fetchLinodeCatalog,
     DIGITALOCEAN: fetchDigitalOceanCatalog,
-    OVHCLOUD: fetchOvhcloudCatalog
+    OVHCLOUD: fetchOvhcloudCatalog,
+    IBM: fetchIbmCatalog
   };
 
   for (const provider of PROVIDERS) {

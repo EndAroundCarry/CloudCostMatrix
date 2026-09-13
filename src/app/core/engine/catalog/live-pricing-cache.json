@@ -1,18 +1,18 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-09-13T06:13:48.524Z",
+    "lastSyncedAt": "2026-09-13T12:44:49.575Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-09-13T06:13:48.524Z",
-      "AZURE": "live@2026-09-12T20:53:49.084Z",
-      "GCP": "live@2026-09-13T06:13:48.524Z",
-      "ORACLE": "live@2026-09-13T06:13:48.524Z",
-      "IBM": "seed",
-      "DIGITALOCEAN": "live@2026-09-13T06:13:48.524Z",
+      "AWS": "live@2026-09-13T12:44:49.575Z",
+      "AZURE": "live@2026-09-13T12:44:49.575Z",
+      "GCP": "live@2026-09-13T12:44:49.575Z",
+      "ORACLE": "live@2026-09-13T12:44:49.575Z",
+      "IBM": "live@2026-09-13T12:44:49.575Z",
+      "DIGITALOCEAN": "live@2026-09-13T12:44:49.575Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-09-13T06:13:48.524Z",
-      "OVHCLOUD": "fx-converted@2026-09-13T06:13:48.524Z"
+      "LINODE": "live@2026-09-13T12:44:49.575Z",
+      "OVHCLOUD": "fx-converted@2026-09-13T12:44:49.575Z"
     },
     "fx": {
       "OVHCLOUD": {
@@ -382,7 +382,89 @@
         "freeFirstCluster": true
       }
     },
-    "IBM": null,
+    "IBM": {
+      "provider": "IBM",
+      "region": "us-east (Washington DC)",
+      "compute": [
+        {
+          "family": "Compute (cx2)",
+          "name": "cx2-2x4",
+          "vCpu": 2,
+          "ramGb": 4,
+          "hourlyOnDemandLinux": 0.0738,
+          "hourly1YrReservedLinux": 0.0554,
+          "hourly3YrReservedLinux": 0.0443,
+          "hourlySpotLinux": 0.0443,
+          "windowsHourlySurcharge": 0.0177
+        },
+        {
+          "family": "Balanced (bx2)",
+          "name": "bx2-2x8",
+          "vCpu": 2,
+          "ramGb": 8,
+          "hourlyOnDemandLinux": 0.0916,
+          "hourly1YrReservedLinux": 0.0687,
+          "hourly3YrReservedLinux": 0.055,
+          "hourlySpotLinux": 0.055,
+          "windowsHourlySurcharge": 0.0252
+        },
+        {
+          "family": "Balanced (bx2)",
+          "name": "bx2-4x16",
+          "vCpu": 4,
+          "ramGb": 16,
+          "hourlyOnDemandLinux": 0.1832,
+          "hourly1YrReservedLinux": 0.1374,
+          "hourly3YrReservedLinux": 0.1099,
+          "hourlySpotLinux": 0.1099,
+          "windowsHourlySurcharge": 0.0706
+        },
+        {
+          "family": "Balanced (bx2)",
+          "name": "bx2-8x32",
+          "vCpu": 8,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.3664,
+          "hourly1YrReservedLinux": 0.2748,
+          "hourly3YrReservedLinux": 0.2198,
+          "hourlySpotLinux": 0.2198,
+          "windowsHourlySurcharge": 0.2016
+        },
+        {
+          "family": "Compute (cx2)",
+          "name": "cx2-16x32",
+          "vCpu": 16,
+          "ramGb": 32,
+          "hourlyOnDemandLinux": 0.5903,
+          "hourly1YrReservedLinux": 0.4427,
+          "hourly3YrReservedLinux": 0.3542,
+          "hourlySpotLinux": 0.3542,
+          "windowsHourlySurcharge": 0.357
+        },
+        {
+          "family": "Memory (mx2)",
+          "name": "mx2-16x128",
+          "vCpu": 16,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 1.0181,
+          "hourly1YrReservedLinux": 0.7636,
+          "hourly3YrReservedLinux": 0.6109,
+          "hourlySpotLinux": 0.6109,
+          "windowsHourlySurcharge": 0.5292
+        },
+        {
+          "family": "Balanced (bx2)",
+          "name": "bx2-32x128",
+          "vCpu": 32,
+          "ramGb": 128,
+          "hourlyOnDemandLinux": 1.4657,
+          "hourly1YrReservedLinux": 1.0993,
+          "hourly3YrReservedLinux": 0.8794,
+          "hourlySpotLinux": 0.8794,
+          "windowsHourlySurcharge": 0.8064
+        }
+      ]
+    },
     "DIGITALOCEAN": {
       "provider": "DIGITALOCEAN",
       "region": "NYC3 (New York)",

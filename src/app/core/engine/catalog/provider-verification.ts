@@ -77,10 +77,13 @@ export const PROVIDER_VERIFICATION: Record<CloudProvider, ProviderVerification> 
   },
   [CloudProvider.IBM]: {
     provider: CloudProvider.IBM,
-    lastVerifiedAt: '2026-01-15',
-    method: 'DERIVED_ESTIMATE',
-    sourceUrl: 'https://www.ibm.com/cloud/pricing',
-    caveats: ['Pricing is a relative-positioning estimate anchored to AWS list price. IBM Cloud pricing requires the Global Catalog API with IAM authentication to fetch live — not yet wired up.']
+    lastVerifiedAt: '2026-09-13',
+    method: 'LIVE_API',
+    sourceUrl: 'https://globalcatalog.cloud.ibm.com/api/v1/is.instance',
+    caveats: [
+      'Compute pricing syncs live from IBM Cloud\'s Global Catalog. IBM publishes no per-profile VPC list price — the profile entries carry no pricing and the Gen3 plan base metric is zero — so each profile rate is composed from the live vCPU-hour and GB-hour component rates IBM actually bills VPC servers against (the Standard Gen 2 / advanced-vsi plan): vCpu × vCPU-hour + GB × GB-hour. The composition is ours even though the rates are IBM\'s.',
+      'The shape names were corrected to IBM\'s real profiles: the benchmark labelled the 2 vCPU/4 GB and 32 vCPU/128 GB points "bx2-2x4" and "mx2-32x128", neither of which exists (bx2 is 1:4 and mx2 is 1:8); they are now cx2-2x4 and bx2-32x128. Reserved (1-yr/3-yr) rates are derived as fixed multipliers of the live on-demand rate; there is no spot tier (gated off in PROVIDER_CAPABILITIES). The Windows licence surcharge, managed databases, object storage, Kubernetes, load balancer, and static IP pricing all carry the seeded 2026 benchmark.'
+    ]
   },
   [CloudProvider.DIGITALOCEAN]: {
     provider: CloudProvider.DIGITALOCEAN,

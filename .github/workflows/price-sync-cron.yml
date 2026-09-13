@@ -33,9 +33,10 @@ jobs:
 
       - name: Run cloud pricing scrapers
         env:
-          # Repo secret. Without this the GCP fetcher throws by design and GCP
-          # stays on the seeded benchmark (see scripts/fetchers/gcp.mjs).
+          # Repo secrets. Without these the GCP/IBM fetchers throw by design and
+          # those providers stay on the seeded benchmark (see scripts/fetchers/).
           GCP_API_KEY: ${{ secrets.GCP_API_KEY }}
+          IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
         run: node scripts/sync-prices.mjs
 
       # Without this step the freshly-written live-pricing-cache.json only ever

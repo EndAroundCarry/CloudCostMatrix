@@ -54,6 +54,21 @@ jobs:
           IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
         run: node scripts/sync-prices.mjs
 
+      # Every sync rewrites meta.lastSyncedAt / meta.sources, so the file always
+      # differs and a plain `git diff` can't tell a real price move from a
+      # timestamp bump. Compare the provider CATALOGS themselves and expose the
+      # answer to the deploy steps below. Must run BEFORE the commit step, so
+      # HEAD still holds the pre-sync catalog.
+      - name: Detect price movement
+        id: prices
+        run: |
+          git show HEAD:src/app/core/engine/catalog/live-pricing-cache.json > "$RUNNER_TEMP/prev-cache.json" 2>/dev/null \
+            || echo '{}' > "$RUNNER_TEMP/prev-cache.json"
+          node scripts/cache-content-diff.mjs \
+            "$RUNNER_TEMP/prev-cache.json" \
+            src/app/core/engine/catalog/live-pricing-cache.json \
+            >> "$GITHUB_OUTPUT"
+
       # Without this step the freshly-written live-pricing-cache.json only ever
       # exists inside this ephemeral runner — every prior run of this workflow
       # has quietly discarded its own output. The app bundles the *committed*
@@ -75,16 +90,19 @@ jobs:
       # ── Deploy ──────────────────────────────────────────────────────────
       # The app bundles the committed catalog at BUILD time
       # (pricing-catalog.resolver.ts imports the JSON directly), so the build
-      # must happen AFTER the sync above has written it. Runs on every main
-      # commit and every scheduled sync, so refreshed prices reach production
-      # with no manual step. Guarded to main so a dispatch from a feature
-      # branch can never ship to production.
+      # must happen AFTER the sync above has written it.
+      #
+      # Guarded to main so a dispatch from a feature branch can never ship to
+      # production. A PUSH run always deploys (you merged something); a
+      # SCHEDULED run deploys only when a provider's numbers actually moved, so
+      # the twice-daily timestamp-only sync no longer rebuilds and redeploys the
+      # whole site for nothing.
       - name: Build production bundle
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || steps.prices.outputs.changed == 'true') }}
         run: npm run build
 
       - name: Deploy to Firebase Hosting
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || steps.prices.outputs.changed == 'true') }}
         env:
           # Repo secret from `firebase login:ci`. firebase-tools reads it from
           # the environment, so the token never appears on the command line or

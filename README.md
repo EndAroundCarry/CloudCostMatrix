@@ -45,7 +45,7 @@ npm run verify:prerender  # smoke-test the prerendered output after a build
 
 ## Deploying
 
-Hosting is deployed automatically by `.github/workflows/price-sync-cron.yml`: every push to `main` and every scheduled price sync runs `npm run build` and `firebase deploy --only hosting` (project `cloud-cost-matrix`), using a `FIREBASE_TOKEN` repo secret. To ship from your own machine instead:
+Hosting is deployed automatically by `.github/workflows/price-sync-cron.yml`: every push to `main` runs `npm run build` and `firebase deploy --only hosting` (project `cloud-cost-matrix`), using a `FIREBASE_TOKEN` repo secret. Scheduled syncs deploy too, but only when a provider's prices actually moved — a timestamp-only sync skips the rebuild (`scripts/cache-content-diff.mjs`). To ship from your own machine instead:
 
 ```bash
 npm run build

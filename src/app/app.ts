@@ -54,6 +54,7 @@ import { EstimatorStore } from './state/estimator.store';
             <a routerLink="/compare/aws-vs-gcp" class="hover:text-white transition-colors">AWS vs GCP</a>
             <a routerLink="/compare/oracle-vs-aws" class="hover:text-white transition-colors">Oracle vs AWS</a>
             <a routerLink="/compare/digitalocean-vs-linode" class="hover:text-white transition-colors">DigitalOcean vs Linode</a>
+            <a routerLink="/compare/digitalocean-vs-vultr" class="hover:text-white transition-colors">DigitalOcean vs Vultr</a>
             <span class="text-slate-500 font-bold">Blueprints:</span>
             <a routerLink="/blueprints/saas-starter-mvp" class="hover:text-white transition-colors">SaaS MVP</a>
             <a routerLink="/blueprints/ecommerce-high-traffic" class="hover:text-white transition-colors">E-Commerce</a>

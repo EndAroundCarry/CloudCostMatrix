@@ -5,7 +5,28 @@ import { CostCalculatorEngine } from '../engine/cost-calculator.engine';
 
 export type FeatureWinner = 'A' | 'B' | 'TIE';
 
+/**
+ * Stable identity for each derived row — lets consumers (the derived comparison
+ * FAQ builder, specs) read a specific fact without matching on display copy,
+ * which is free to be reworded.
+ */
+export type DerivedFeatureId =
+  | 'EGRESS_10TB'
+  | 'FREE_EGRESS'
+  | 'HOT_STORAGE'
+  | 'ARCHIVE_STORAGE'
+  | 'STORAGE_TIERS'
+  | 'K8S_CONTROL_PLANE'
+  | 'CHEAPEST_4X16'
+  | 'RESERVED_3YR'
+  | 'SPOT'
+  | 'SQL_SERVER'
+  | 'WINDOWS'
+  | 'LOAD_BALANCER'
+  | 'STATIC_IP';
+
 export interface DerivedFeatureRow {
+  id: DerivedFeatureId;
   feature: string;
   category: string;
   providerAVal: string;
@@ -44,6 +65,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
   const egressRateA = egressCostA / 10240;
   const egressRateB = egressCostB / 10240;
   rows.push({
+    id: 'EGRESS_10TB',
     feature: 'Internet egress (10 TB/mo)',
     category: 'Networking',
     providerAVal: fmtEgress(catA.networking.unlimitedEgress, egressCostA, egressRateA),
@@ -56,6 +78,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
   const freeA = catA.networking.unlimitedEgress ? Infinity : (catA.networking.freeEgressGbPerMonth ?? 0);
   const freeB = catB.networking.unlimitedEgress ? Infinity : (catB.networking.freeEgressGbPerMonth ?? 0);
   rows.push({
+    id: 'FREE_EGRESS',
     feature: 'Free egress allowance',
     category: 'Networking',
     providerAVal: fmtFreeAllowance(catA.networking.unlimitedEgress, catA.networking.freeEgressGbPerMonth),
@@ -66,6 +89,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
 
   // --- Hot object storage -------------------------------------------------------
   rows.push({
+    id: 'HOT_STORAGE',
     feature: 'Hot object storage ($/GB-mo)',
     category: 'Storage',
     providerAVal: `$${catA.storage.HOT.costPerGbMonth.toFixed(4)}/GB-mo`,
@@ -76,6 +100,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
 
   // --- Archive storage (capability-gated) --------------------------------------
   rows.push(capabilityGatedPriceRow({
+    id: 'ARCHIVE_STORAGE',
     feature: 'Archive storage ($/GB-mo)',
     category: 'Storage',
     offeredA: capA.storageTiers.ARCHIVE,
@@ -89,6 +114,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
   const tierCountA = Object.values(capA.storageTiers).filter(Boolean).length;
   const tierCountB = Object.values(capB.storageTiers).filter(Boolean).length;
   rows.push({
+    id: 'STORAGE_TIERS',
     feature: 'Object storage tiers offered',
     category: 'Storage',
     providerAVal: `${tierCountA} tier${tierCountA === 1 ? '' : 's'}`,
@@ -101,6 +127,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
   const k8sFeeA = catA.kubernetes.freeFirstCluster ? 0 : catA.kubernetes.managementHourlyFeePerCluster * 730;
   const k8sFeeB = catB.kubernetes.freeFirstCluster ? 0 : catB.kubernetes.managementHourlyFeePerCluster * 730;
   rows.push({
+    id: 'K8S_CONTROL_PLANE',
     feature: 'Managed Kubernetes control plane (1st cluster)',
     category: 'Kubernetes',
     providerAVal: fmtK8sFee(k8sFeeA, catA.kubernetes.freeFirstCluster),
@@ -114,6 +141,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
   const computeA = CostCalculatorEngine.calculateCompute(spec4x16, a);
   const computeB = CostCalculatorEngine.calculateCompute(spec4x16, b);
   rows.push({
+    id: 'CHEAPEST_4X16',
     feature: 'Cheapest 4 vCPU / 16 GB Linux instance',
     category: 'Compute',
     providerAVal: `$${computeA.monthlyCost.toFixed(2)}/mo (${computeA.instanceTypeOrTier})`,
@@ -131,6 +159,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
     ? 1 - CostCalculatorEngine.calculateCompute(reserved3yrSpec, b).monthlyCost / computeB.monthlyCost
     : null;
   rows.push(capabilityGatedPriceRow({
+    id: 'RESERVED_3YR',
     feature: 'Deepest 3-year reserved discount',
     category: 'Compute',
     offeredA: discountA != null,
@@ -147,6 +176,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
   const spotRatioA = spotA != null ? spotA / (EFFECTIVE_CATALOGS[a].compute[0]?.hourlyOnDemandLinux || 1) : null;
   const spotRatioB = spotB != null ? spotB / (EFFECTIVE_CATALOGS[b].compute[0]?.hourlyOnDemandLinux || 1) : null;
   rows.push(capabilityGatedPriceRow({
+    id: 'SPOT',
     feature: 'Spot / preemptible instances',
     category: 'Compute',
     offeredA: spotRatioA != null,
@@ -158,6 +188,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
 
   // --- Managed SQL Server --------------------------------------------------------
   rows.push({
+    id: 'SQL_SERVER',
     feature: 'Managed SQL Server',
     category: 'Database',
     providerAVal: capA.dbEngines.SQL_SERVER ? 'Offered' : (capA.notes.dbEngines?.SQL_SERVER ?? 'Not offered'),
@@ -168,6 +199,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
 
   // --- Windows Server licensing ---------------------------------------------------
   rows.push({
+    id: 'WINDOWS',
     feature: 'Windows Server on compute',
     category: 'Compute',
     providerAVal: capA.windowsOs ? 'Offered' : (capA.notes.windowsOs ?? 'Not offered'),
@@ -180,6 +212,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
   const lbA = catA.networking.loadBalancerHourly * 730;
   const lbB = catB.networking.loadBalancerHourly * 730;
   rows.push({
+    id: 'LOAD_BALANCER',
     feature: 'Load balancer',
     category: 'Networking',
     providerAVal: `$${lbA.toFixed(2)}/mo`,
@@ -192,6 +225,7 @@ export function buildDerivedFeatures(a: CloudProvider, b: CloudProvider): Derive
   const ipA = catA.networking.staticIpHourly * 730;
   const ipB = catB.networking.staticIpHourly * 730;
   rows.push({
+    id: 'STATIC_IP',
     feature: 'Static IPv4 address',
     category: 'Networking',
     providerAVal: ipA === 0 ? 'Free' : `$${ipA.toFixed(2)}/mo`,
@@ -227,6 +261,7 @@ function boolWins(a: boolean, b: boolean): FeatureWinner {
 }
 
 function capabilityGatedPriceRow(opts: {
+  id: DerivedFeatureId;
   feature: string;
   category: string;
   offeredA: boolean;
@@ -237,7 +272,7 @@ function capabilityGatedPriceRow(opts: {
   /** Default: lower value wins (a price). Set true for percentages/discounts where more is better. */
   higherIsBetter?: boolean;
 }): DerivedFeatureRow {
-  const { feature, category, offeredA, offeredB, valueA, valueB, fmt, higherIsBetter } = opts;
+  const { id, feature, category, offeredA, offeredB, valueA, valueB, fmt, higherIsBetter } = opts;
   const providerAVal = offeredA ? fmt(valueA) : 'Not offered';
   const providerBVal = offeredB ? fmt(valueB) : 'Not offered';
   let winner: FeatureWinner;
@@ -245,7 +280,7 @@ function capabilityGatedPriceRow(opts: {
   else if (!offeredA) winner = 'B';
   else if (!offeredB) winner = 'A';
   else winner = higherIsBetter ? higherWins(valueA, valueB) : lowerWins(valueA, valueB);
-  return { feature, category, providerAVal, providerBVal, winner, source: 'CAPABILITY' };
+  return { id, feature, category, providerAVal, providerBVal, winner, source: 'CAPABILITY' };
 }
 
 function fmtEgress(unlimited: boolean | undefined, monthlyCost: number, rate: number): string {

@@ -1,6 +1,7 @@
 import { ArchitectureEstimateConfig } from '../../core/models/pricing.model';
-import { CloudProvider } from '../../core/models/cloud-provider.enum';
+import { ALL_PROVIDERS, CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
 import { ARCHITECTURE_BLUEPRINTS } from '../../core/models/blueprints.model';
+import { canonicalPairSlug } from '../../core/seo/comparison-slug';
 
 /** A hand-authored, qualitative row that genuinely isn't derivable from the catalogs. */
 export interface EditorialFeatureRow {
@@ -58,7 +59,7 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     tabLabel: 'AWS vs Azure',
     headline: 'AWS vs Azure: Detailed Cloud Infrastructure Pricing & TCO Comparison (2026)',
     summary: 'A comprehensive, line-by-line comparison of Amazon Web Services (AWS) and Microsoft Azure across Compute (EC2 vs Azure Virtual Machines), Object Storage (S3 vs Azure Blob), Managed Databases (RDS/Aurora vs Azure SQL Database), Networking egress fees, and managed Kubernetes (EKS vs AKS).',
-    metaDescription: 'Compare AWS vs Azure pricing in 2026. Side-by-side cost analysis of EC2 vs Azure VMs, S3 vs Blob Storage, RDS vs Azure SQL, EKS vs AKS, and data egress. Free TCO calculator.',
+    metaDescription: 'Compare AWS vs Azure pricing in 2026: EC2 vs Azure VMs, S3 vs Blob Storage, RDS vs Azure SQL, EKS vs AKS and data egress, scored side-by-side by one engine.',
     keywords: ['AWS vs Azure', 'AWS vs Azure pricing', 'EC2 vs Azure VM', 'S3 vs Azure Blob', 'RDS vs Azure SQL', 'EKS vs AKS', 'cloud cost comparison 2026'],
     providerA: CloudProvider.AWS,
     providerB: CloudProvider.AZURE,
@@ -207,7 +208,7 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     tabLabel: 'Oracle vs AWS Egress',
     headline: 'Oracle Cloud vs AWS: The Egress Bandwidth Cost Comparison Nobody Else Runs (2026)',
     summary: 'Every hyperscaler charges for outbound data transfer — except one. Oracle Cloud Infrastructure includes 10 TB of free egress every month on every tenancy; AWS starts billing from the first gigabyte. For content-serving, API-heavy, or backup-and-restore workloads, this single policy difference can be the largest line item in the whole comparison.',
-    metaDescription: 'Oracle Cloud vs AWS egress pricing compared: OCI\'s 10 TB/month free tier vs AWS\'s $0.09/GB from byte one. See the real monthly cost difference for high-bandwidth workloads.',
+    metaDescription: 'Oracle Cloud vs AWS egress pricing: OCI\'s 10 TB/month free allowance vs AWS\'s $0.09/GB from byte one — the monthly cost for bandwidth-heavy workloads.',
     keywords: ['Oracle Cloud vs AWS', 'OCI egress pricing', 'AWS data transfer cost', 'cloud egress pricing 2026', 'Oracle free egress', 'cheapest cloud for bandwidth'],
     providerA: CloudProvider.ORACLE,
     providerB: CloudProvider.AWS,
@@ -267,7 +268,7 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     tabLabel: 'DigitalOcean vs Linode',
     headline: 'DigitalOcean vs Linode (Akamai): The Developer Cloud Head-to-Head (2026)',
     summary: 'The two most established "boring, predictable, cheap" clouds for indie developers and small teams — DigitalOcean Droplets vs Linode Compute Instances (now part of Akamai). Both skip reserved-instance complexity entirely and price everything flat. The differences show up in storage tiering, bandwidth overage rates, and managed Kubernetes.',
-    metaDescription: 'DigitalOcean vs Linode pricing compared: Droplets vs Linode Compute Instances, object storage, managed databases, DOKS vs LKE, and bandwidth overage rates. Free TCO calculator.',
+    metaDescription: 'DigitalOcean vs Linode pricing: Droplets vs Compute Instances, object storage, managed databases, DOKS vs LKE and bandwidth overage rates.',
     keywords: ['DigitalOcean vs Linode', 'Droplet pricing', 'Linode pricing', 'Akamai cloud pricing', 'developer cloud comparison', 'cheap VPS pricing 2026', 'DOKS vs LKE'],
     providerA: CloudProvider.DIGITALOCEAN,
     providerB: CloudProvider.LINODE,
@@ -325,7 +326,7 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     tabLabel: 'Oracle vs AWS',
     headline: 'Oracle Cloud Infrastructure vs AWS: The Full Pricing Comparison (2026)',
     summary: 'Oracle Cloud Infrastructure is the least-covered hyperscaler in most cost comparisons, despite competing directly on every service category AWS offers — compute, storage, managed databases, Kubernetes, and networking. This page runs the full side-by-side across all five, using OCI\'s published Ampere Arm and free-egress pricing against AWS\'s catalog.',
-    metaDescription: 'Oracle Cloud Infrastructure (OCI) vs AWS pricing compared across Compute, Storage, Database, Kubernetes, and Egress. Ampere Arm pricing, 10 TB free egress, and full TCO breakdown.',
+    metaDescription: 'Oracle Cloud vs AWS pricing across compute, storage, database, Kubernetes and egress — Ampere Arm pricing, the free egress allowance and full TCO.',
     keywords: ['Oracle Cloud vs AWS', 'OCI vs AWS pricing', 'Oracle Cloud Infrastructure pricing 2026', 'Ampere Arm pricing', 'OCI cost comparison', 'AWS alternative pricing'],
     providerA: CloudProvider.ORACLE,
     providerB: CloudProvider.AWS,
@@ -410,7 +411,7 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
     tabLabel: 'DigitalOcean vs Vultr',
     headline: 'DigitalOcean vs Vultr: Two Flat-Rate Developer Clouds Compared (2026)',
     summary: 'Both clouds target the same audience — developers who want predictable, flat hourly pricing without reserved-instance math — and both include a managed-Kubernetes control plane at no charge. Vultr counters DigitalOcean\'s larger community and marketplace with a wider global footprint, a broader instance catalog spanning shared to dedicated and GPU, and Windows support the Droplet lineup lacks. This page compares them on published infrastructure pricing.',
-    metaDescription: 'DigitalOcean vs Vultr pricing compared: Droplets vs Vultr Cloud Compute, object storage, managed databases, DOKS vs VKE control-plane fees, and bandwidth overage rates. Free TCO calculator.',
+    metaDescription: 'DigitalOcean vs Vultr pricing: Droplets vs Cloud Compute, object storage, managed databases, DOKS vs VKE control-plane fees and egress rates.',
     keywords: ['DigitalOcean vs Vultr', 'Vultr vs DigitalOcean', 'Droplet vs Vultr Cloud Compute', 'Vultr pricing 2026', 'developer cloud comparison', 'DOKS vs VKE', 'cheap cloud server pricing 2026'],
     providerA: CloudProvider.DIGITALOCEAN,
     providerB: CloudProvider.VULTR,
@@ -502,6 +503,301 @@ export const COMPARISON_PAGES: Record<string, ComparisonPageData> = {
         answer: 'Vultr spans 33 published regions and a broad catalog including shared, high-frequency/high-performance, dedicated Optimized, GPU, and bare-metal shapes, whereas OVHcloud\'s footprint is more EU-centric with a narrower instance lineup. For teams needing many regions or GPU/bare-metal options, Vultr has the wider reach; for EU-sovereign, low-egress workloads, OVHcloud is the stronger fit.'
       }
     ]
+  },
+
+  // ------------------------------------------------------------------
+  // Pair coverage — the pairs that previously had no authored page. Same
+  // convention as the budget-cloud block above: every price-bearing row is
+  // computed by buildDerivedFeatures() against the live catalogs, so only the
+  // qualitative rows and the prose are authored here.
+  // ------------------------------------------------------------------
+
+  'azure-vs-oracle': {
+    slug: 'azure-vs-oracle',
+    slugTitle: 'Azure vs Oracle Cloud',
+    tabLabel: 'Azure vs Oracle',
+    headline: 'Azure vs Oracle Cloud: Where the Hyperscaler Premium Actually Shows Up (2026)',
+    summary: 'Microsoft Azure and Oracle Cloud Infrastructure sell the same five primitives with very different economics. Azure competes on enterprise integration and licence portability; Oracle competes on list price and on a standing free monthly egress allowance that no other hyperscaler in this catalog matches. This comparison scores both against one reference workload, so the premium — or the absence of it — is a number rather than an argument.',
+    metaDescription: 'Azure vs Oracle Cloud pricing compared: Azure VMs vs OCI compute, Blob vs Object Storage, AKS vs OKE, and the egress allowance that changes the total.',
+    keywords: ['Azure vs Oracle Cloud', 'OCI vs Azure pricing', 'OKE vs AKS cost', 'Oracle Cloud free egress', 'cloud cost comparison 2026'],
+    providerA: CloudProvider.AZURE,
+    providerB: CloudProvider.ORACLE,
+    editorialFeatures: [
+      { feature: 'Licence portability', category: 'Licensing', providerAVal: 'Azure Hybrid Benefit applies existing Windows Server / SQL Server licences (up to 40%)', providerBVal: 'BYOL on compute only — no managed SQL Server', winner: 'A' },
+      { feature: 'Kubernetes control plane', category: 'Kubernetes', providerAVal: 'Free on the AKS standard tier', providerBVal: 'Free on OKE Basic clusters', winner: 'TIE' },
+      { feature: 'Enterprise ecosystem', category: 'Platform', providerAVal: 'Deep Microsoft 365, Entra ID and Windows Server integration', providerBVal: 'Oracle Database and ERP estates, with a strong autonomous-database story', winner: 'A' },
+      { feature: 'Commercial model', category: 'Billing', providerAVal: 'Enterprise Agreements routinely carry Azure commitments', providerBVal: 'Straightforward list pricing with an open-ended Always Free tier', winner: 'B' }
+    ],
+    faqs: [
+      {
+        question: 'Is Oracle Cloud cheaper than Azure?',
+        answer: 'On published list prices for compute, Oracle Cloud Infrastructure is generally the cheaper of the two, and Ampere arm64 shapes widen that gap on price/performance. The difference that is harder to argue away is egress: Oracle includes a large free monthly transfer allowance on every tenancy, while Azure meters internet egress from the first gigabyte. Azure has one compensating lever that can be worth more than all of that — Azure Hybrid Benefit applies existing Windows Server and SQL Server licences, which is up to 40% off the instance rate for the workloads that qualify. The reference workload totals above show what each effect is worth on a specific architecture.'
+      },
+      {
+        question: 'Do Azure and Oracle charge for managed Kubernetes control planes?',
+        answer: 'Neither charges for a first cluster in the configuration modelled here: AKS is free on the standard tier, and OKE Basic clusters never bill for the control plane. That removes a fixed monthly cost that EKS and GKE both charge from the first cluster, and it matters most early on and to anyone running staging alongside production.'
+      },
+      {
+        question: 'What is the largest single cost difference between Azure and Oracle Cloud?',
+        answer: 'For data-heavy workloads it is outbound bandwidth, and it is not close. A workload that ships tens of terabytes a month outward pays Oracle nothing for that transfer and pays Azure for every gigabyte, which can exceed the entire compute line item. For workloads that do not move much data outward, the difference shifts back to compute and licensing — which is exactly why the totals here are computed rather than summarised in one sentence.'
+      },
+      {
+        question: 'Which should an organisation already standardized on Microsoft choose?',
+        answer: 'Azure, in most cases — identity, Windows and SQL Server licensing, existing Enterprise Agreement commitments, and operational familiarity are all real costs that a cheaper list price does not offset. Oracle Cloud becomes the better answer when the workload profile is dominated by egress, when Oracle Database or ERP is already in the estate, or when a new greenfield service is being priced without any Microsoft-specific dependency. Both pages here price the same architecture, so the comparison is at least an apples-to-apples starting point.'
+      }
+    ]
+  },
+
+  'gcp-vs-oracle': {
+    slug: 'gcp-vs-oracle',
+    slugTitle: 'GCP vs Oracle Cloud',
+    tabLabel: 'GCP vs Oracle',
+    headline: 'Google Cloud vs Oracle Cloud: Two Opposite Theories of Discounting (2026)',
+    summary: 'Google Cloud discounts automatically as instances run longer and lets you buy exactly the vCPU and memory ratio you need. Oracle Cloud discounts structurally instead — the cheapest hyperscaler list prices in this catalog, plus a standing free monthly egress allowance on every tenancy. Both give away the first Kubernetes control plane, and both are scored here against one reference workload.',
+    metaDescription: 'Google Cloud vs Oracle Cloud pricing compared: Compute Engine vs OCI compute, GKE vs OKE, storage tiers and the free egress allowance, one engine, one workload.',
+    keywords: ['GCP vs Oracle Cloud', 'Google Cloud vs OCI pricing', 'GKE vs OKE cost', 'Oracle free egress vs GCP', 'cloud cost comparison 2026'],
+    providerA: CloudProvider.GCP,
+    providerB: CloudProvider.ORACLE,
+    editorialFeatures: [
+      { feature: 'Discount mechanism', category: 'Compute', providerAVal: 'Automatic sustained-use discounts, no commitment required', providerBVal: 'Deep reserved-instance discounts, but only by committing', winner: 'A' },
+      { feature: 'Machine sizing', category: 'Compute', providerAVal: 'Custom vCPU and memory ratios', providerBVal: 'Fixed shapes, including Ampere arm64', winner: 'A' },
+      { feature: 'Managed SQL Server', category: 'Database', providerAVal: 'Cloud SQL for SQL Server available', providerBVal: 'Not offered as a managed service — BYOL on compute only', winner: 'A' },
+      { feature: 'Egress policy', category: 'Networking', providerAVal: 'Metered from the first gigabyte, with a CDN offload path', providerBVal: 'Standing free monthly allowance on every tenancy', winner: 'B' }
+    ],
+    faqs: [
+      {
+        question: 'Is Oracle Cloud cheaper than Google Cloud?',
+        answer: 'On compute list prices, usually yes — Oracle Cloud Infrastructure prices at the bottom of the four hyperscalers in this catalog, and its Ampere arm64 shapes are the cheapest arm64 capacity here. Google Cloud closes part of the gap automatically through sustained-use discounts, which apply without any commitment and reward always-on workloads. The decisive difference for data-heavy workloads is egress: Oracle gives away a large monthly transfer allowance where Google Cloud meters from the first gigabyte.'
+      },
+      {
+        question: 'How do GKE and OKE control-plane fees compare?',
+        answer: 'Both waive the fee for a first cluster — GKE on a zonal cluster, OKE on Basic clusters — so a small deployment pays nothing for cluster management on either side. The comparison diverges as you scale out: additional clusters are billed on both platforms, and OKE offers no spot tier, so fault-tolerant batch work has no interruption-discount path on Oracle Cloud.'
+      },
+      {
+        question: 'Which is better for data and analytics workloads?',
+        answer: 'Google Cloud, and it is not particularly close: BigQuery, Dataflow and the surrounding tooling are the reason many data teams choose it, and the pricing engine here models the infrastructure those jobs run on rather than the query costs themselves. Oracle counters with Autonomous Database and a deeply integrated Oracle stack, which is compelling when your data already lives in Oracle. Note that this comparison scores infrastructure, not managed analytics service pricing — check each provider\u2019s own calculators for the service layer.'
+      },
+      {
+        question: 'Do sustained-use discounts or reserved instances save more?',
+        answer: 'They solve different problems. Sustained-use discounts require nothing from you and apply automatically to always-on instances, which makes them the better fit for variable or hard-to-forecast fleets. Reserved and committed pricing is deeper where it applies, but only pays off if the capacity really stays in use for the commitment term — and on Oracle Cloud specifically, the deepest discounts are the longest commitments. The commitment selector in the live calculator below lets you price both against your own utilisation rather than a rule of thumb.'
+      }
+    ]
+  },
+
+  'aws-vs-ibm': {
+    slug: 'aws-vs-ibm',
+    slugTitle: 'AWS vs IBM Cloud',
+    tabLabel: 'AWS vs IBM',
+    headline: 'AWS vs IBM Cloud: Catalog Breadth Against Hybrid Integration (2026)',
+    summary: 'AWS and IBM Cloud rarely appear on the same shortlist, which is exactly what makes the cost comparison worth running: AWS competes on catalog breadth and discount machinery, IBM on hybrid-cloud parity and a managed Kubernetes service that never bills for the control plane. Both are priced here against the same reference workload.',
+    metaDescription: 'AWS vs IBM Cloud pricing compared: EC2 vs VPC Virtual Servers, S3 vs Cloud Object Storage, EKS vs IKS control-plane fees and egress, computed live.',
+    keywords: ['AWS vs IBM Cloud', 'IBM Cloud vs AWS pricing', 'IKS vs EKS cost', 'IBM Cloud Kubernetes pricing', 'hybrid cloud cost comparison 2026'],
+    providerA: CloudProvider.AWS,
+    providerB: CloudProvider.IBM,
+    editorialFeatures: [
+      { feature: 'Kubernetes control plane', category: 'Kubernetes', providerAVal: 'Billed per cluster, from the first cluster', providerBVal: 'Never billed, on any tier, including multi-zone', winner: 'B' },
+      { feature: 'Spot / preemptible tier', category: 'Compute', providerAVal: 'Spot instances with a two-minute interruption warning', providerBVal: 'No spot or preemptible tier at all', winner: 'A' },
+      { feature: 'Hybrid and on-premises parity', category: 'Platform', providerAVal: 'Outposts and EKS Anywhere for edge and on-prem', providerBVal: 'The same OpenShift and Kubernetes stack on-prem and in IBM Cloud', winner: 'B' },
+      { feature: 'Managed SQL Server', category: 'Database', providerAVal: 'RDS for SQL Server', providerBVal: 'Not offered — IBM Cloud Databases covers PostgreSQL, MySQL and Db2', winner: 'A' }
+    ],
+    faqs: [
+      {
+        question: 'Is IBM Cloud cheaper than AWS?',
+        answer: 'On compute list prices IBM generally lands between AWS and the developer clouds, and the reference workload totals above show where that puts a specific architecture. IBM\u2019s strongest structural advantage is a fee it does not charge: the managed Kubernetes control plane is free on every tier, including multi-zone clusters, where AWS bills per cluster from the first one. AWS counters with a deeper discount ladder — Savings Plans and Spot — that IBM partially lacks.'
+      },
+      {
+        question: 'Does IBM Cloud have spot or preemptible instances?',
+        answer: 'No. IBM Cloud Virtual Servers offers on-demand, one-year and three-year reserved pricing, but no interruption-based tier. That removes a discount path AWS, Azure, Google Cloud, Oracle and Alibaba all offer for fault-tolerant work, so batch and rendering workloads that would normally ride spot capacity have no equivalent on IBM Cloud — a gap worth pricing explicitly before shortlisting it.'
+      },
+      {
+        question: 'What does IBM Cloud do better than AWS?',
+        answer: 'Two things stand out in this comparison. The first is hybrid parity: the same Red Hat OpenShift and Kubernetes tooling runs on-premises and in IBM Cloud data centres, which is a real operational saving when a platform team has to run both. The second is the free Kubernetes control plane on every tier — for a fleet of clusters that is a fixed monthly cost that simply does not exist.'
+      },
+      {
+        question: 'Which should a regulated enterprise choose?',
+        answer: 'Both are credible, and the deciding factor is usually the platform rather than the bill: IBM Cloud for organizations already running OpenShift or Db2 and needing the same stack on-premises, AWS for organizations that need the widest managed-service catalog, the deepest discount machinery, or a specific service IBM does not offer. The workload totals here are the starting point, not the verdict — governance, support and contract terms typically dominate the final number.'
+      }
+    ]
+  },
+
+  'digitalocean-vs-azure': {
+    slug: 'digitalocean-vs-azure',
+    slugTitle: 'DigitalOcean vs Azure',
+    tabLabel: 'DigitalOcean vs Azure',
+    headline: 'DigitalOcean vs Azure: Flat Developer Pricing Against Enterprise Economics (2026)',
+    summary: 'DigitalOcean sells one flat rate per size with transfer bundled per Droplet; Azure sells a ladder of on-demand, reserved, spot and licence-ported prices inside the broadest enterprise ecosystem here. The gap between them is smallest for small, steady workloads and widest once Windows licensing, compliance, or catalog breadth enters the picture — so both are priced here on the same reference architecture.',
+    metaDescription: 'DigitalOcean vs Azure pricing compared: Droplets vs Azure VMs, Spaces vs Blob Storage, DOKS vs AKS and egress, computed by one engine on one workload.',
+    keywords: ['DigitalOcean vs Azure', 'Droplet vs Azure VM pricing', 'DOKS vs AKS cost', 'DigitalOcean vs Azure cloud cost', 'cloud cost comparison 2026'],
+    providerA: CloudProvider.DIGITALOCEAN,
+    providerB: CloudProvider.AZURE,
+    editorialFeatures: [
+      { feature: 'Commitment options', category: 'Compute', providerAVal: 'None — flat rates, no reserved layer', providerBVal: 'Reserved instances, savings plans and spot', winner: 'B' },
+      { feature: 'Windows Server licensing', category: 'Licensing', providerAVal: 'Not sold on Droplets', providerBVal: 'Hourly Windows licence or Azure Hybrid Benefit for existing licences', winner: 'B' },
+      { feature: 'Kubernetes control plane', category: 'Kubernetes', providerAVal: 'Free on every cluster', providerBVal: 'Free on the standard tier', winner: 'TIE' },
+      { feature: 'Region and compliance footprint', category: 'Platform', providerAVal: 'A handful of developer-centric regions', providerBVal: 'Global footprint with compliance-scoped regions and certifications', winner: 'B' }
+    ],
+    faqs: [
+      {
+        question: 'Is DigitalOcean cheaper than Azure?',
+        answer: 'For small and mid-size Linux workloads, generally yes — and the gap is widest at entry level, where the flat Droplet rate and bundled per-instance transfer both work in DigitalOcean\u2019s favour. The picture changes as soon as the workload needs something DigitalOcean does not sell: Windows Server licensing, managed SQL Server, a wide choice of specialized instance types, or compliance coverage in a specific jurisdiction. At that point the correct comparison is between Azure and the other hyperscalers, not against a developer cloud.'
+      },
+      {
+        question: 'How do DOKS and AKS control-plane fees compare?',
+        answer: 'Both are free for the configurations modelled here — DOKS control planes carry no charge on any cluster, and AKS is free on the standard tier. That removes the per-cluster management fee that EKS and GKE both charge from the first cluster, and it makes both platforms comparatively cheap to run as multiple small clusters rather than one large one.'
+      },
+      {
+        question: 'What is the egress difference between DigitalOcean and Azure?',
+        answer: 'DigitalOcean bundles a monthly transfer allowance with each Droplet, pooled at the account level, with a published overage rate beyond it. Azure meters internet egress from the first gigabyte and instead prices a CDN path as the mitigation. Which is cheaper depends entirely on volume and shape: bundled allowances reward a small number of larger instances, while metered egress punishes data-heavy workloads that cannot be fronted by a CDN.'
+      },
+      {
+        question: 'When does Azure start to pay off over DigitalOcean?',
+        answer: 'Three triggers, in practice: Windows or SQL Server workloads where Azure Hybrid Benefit or an hourly licence is required at all; enterprise requirements — compliance certifications, private networking, identity integration — that a developer cloud does not carry; and scale, where reserved and spot pricing on Azure starts to beat a flat rate that has no discount layer. If none of those apply, the flat rate is usually the better deal.'
+      }
+    ]
+  },
+
+  'digitalocean-vs-gcp': {
+    slug: 'digitalocean-vs-gcp',
+    slugTitle: 'DigitalOcean vs GCP',
+    tabLabel: 'DigitalOcean vs GCP',
+    headline: 'DigitalOcean vs Google Cloud: Small-Team Simplicity Against Automatic Discounts (2026)',
+    summary: 'Google Cloud rewards steady utilisation automatically and sells custom machine shapes; DigitalOcean charges one flat rate and bundles transfer with each Droplet. Which one wins depends almost entirely on how predictable the workload is — so both are scored here on the same reference architecture rather than on rate cards.',
+    metaDescription: 'DigitalOcean vs Google Cloud pricing compared: Droplets vs Compute Engine, Spaces vs Cloud Storage, DOKS vs GKE and egress, computed on one workload.',
+    keywords: ['DigitalOcean vs GCP', 'Droplet vs Compute Engine pricing', 'DigitalOcean vs Google Cloud cost', 'DOKS vs GKE', 'cloud cost comparison 2026'],
+    providerA: CloudProvider.DIGITALOCEAN,
+    providerB: CloudProvider.GCP,
+    editorialFeatures: [
+      { feature: 'Automatic discounts', category: 'Compute', providerAVal: 'None — the flat rate is the rate', providerBVal: 'Sustained-use discounts applied without any commitment', winner: 'B' },
+      { feature: 'Machine sizing', category: 'Compute', providerAVal: 'Fixed Droplet sizes', providerBVal: 'Custom vCPU and memory ratios', winner: 'B' },
+      { feature: 'Bundled transfer', category: 'Networking', providerAVal: 'Transfer bundled per Droplet and pooled account-wide', providerBVal: 'Metered egress with CDN offload as the mitigation', winner: 'A' },
+      { feature: 'Cost governance', category: 'Platform', providerAVal: 'Deliberately small catalog — few ways to overspend', providerBVal: 'Very large catalog that needs policy and budgets to stay controlled', winner: 'A' }
+    ],
+    faqs: [
+      {
+        question: 'Is DigitalOcean cheaper than Google Cloud?',
+        answer: 'At entry level, usually — a flat Droplet rate with bundled transfer is hard to beat on small, steady workloads, and there is no minimum commitment to reach it. Google Cloud closes the gap as utilisation becomes steady, because sustained-use discounts apply automatically, and it can pass DigitalOcean on large workloads where custom machine shapes avoid paying for unused vCPU or memory. The workload totals above show which side of that crossover a specific architecture sits on.'
+      },
+      {
+        question: 'How do DOKS and GKE compare on cost?',
+        answer: 'Both give away a first control plane — DOKS on every cluster, GKE on a zonal cluster — so neither charges a management fee before there is any workload to run. Beyond the first cluster the models converge on billing per cluster, and the real cost driver becomes the worker nodes, which are ordinary compute on both platforms.'
+      },
+      {
+        question: 'Which is better for a team without a cloud engineer?',
+        answer: 'DigitalOcean, on operational grounds rather than price. A deliberately small catalog with flat pricing is far harder to overspend on accidentally, and there is no commitment layer or automatic-discount machinery to reason about. Google Cloud is the better choice when the team will actually use what it is paying for — managed Kubernetes at scale, the data stack, or custom machine sizing — because those are where the extra catalog earns its complexity.'
+      },
+      {
+        question: 'How does egress differ between DigitalOcean and Google Cloud?',
+        answer: 'DigitalOcean bundles transfer per Droplet and pools it account-wide, so a fleet of instances carries a meaningful free allowance and a published overage rate beyond it. Google Cloud meters internet egress from the first gigabyte, with a free tier on some internal paths and CDN offload as the standard mitigation. For content-heavy workloads, price the actual transfer volume — this is the line item most likely to decide the comparison.'
+      }
+    ]
+  },
+
+  'linode-vs-azure': {
+    slug: 'linode-vs-azure',
+    slugTitle: 'Linode vs Azure',
+    tabLabel: 'Linode vs Azure',
+    headline: 'Linode vs Azure: Bandwidth Economics Against Enterprise Reach (2026)',
+    summary: 'Linode (Akamai) competes on bandwidth — transfer pooled across the account, with the lowest overage rate in this catalog — while Azure competes on reach, compliance and licence portability. For workloads that ship data outward the bandwidth term can settle the comparison on its own, which is why both are priced here on the same reference architecture.',
+    metaDescription: 'Linode vs Azure pricing compared: Linode instances vs Azure VMs, Object Storage vs Blob, LKE vs AKS and pooled bandwidth, computed by one engine.',
+    keywords: ['Linode vs Azure', 'Akamai Linode vs Azure pricing', 'LKE vs AKS cost', 'cloud bandwidth pricing comparison', 'cloud cost comparison 2026'],
+    providerA: CloudProvider.LINODE,
+    providerB: CloudProvider.AZURE,
+    editorialFeatures: [
+      { feature: 'Bandwidth model', category: 'Networking', providerAVal: 'Pooled account-wide allowance, lowest overage rate in the catalog', providerBVal: 'Metered egress from the first gigabyte, CDN offload as mitigation', winner: 'A' },
+      { feature: 'Commitment discounts', category: 'Compute', providerAVal: 'None', providerBVal: 'Reserved instances, spot and Azure Hybrid Benefit', winner: 'B' },
+      { feature: 'Managed database engines', category: 'Database', providerAVal: 'PostgreSQL and MySQL only', providerBVal: 'PostgreSQL, MySQL and SQL Server', winner: 'B' },
+      { feature: 'Compliance portfolio', category: 'Compliance', providerAVal: 'Developer-cloud compliance posture', providerBVal: 'Broadest certification and region portfolio in this comparison', winner: 'B' }
+    ],
+    faqs: [
+      {
+        question: 'Is Linode cheaper than Azure?',
+        answer: 'On compute, Linode generally prices below Azure, and the flat rate has no commitment requirement attached to it. The larger difference is bandwidth: Linode pools transfer across the whole account and publishes the lowest overage rate in this catalog, while Azure meters internet egress from the first gigabyte. On a compute-only workload the gap is modest; on a data-heavy one it can be the whole comparison.'
+      },
+      {
+        question: 'Does Linode offer reserved or spot instances?',
+        answer: 'Neither. Linode prices on-demand only — no reserved tier, no spot or preemptible market — so there is no commitment discount to weigh and no interruption-priced capacity to exploit. That keeps budgeting simple, but it means Linode cannot match the deep three-year pricing Azure, AWS and Alibaba all publish, which matters once a workload is large enough that commitment discounts would apply.'
+      },
+      {
+        question: 'How do LKE and AKS control-plane fees compare?',
+        answer: 'Both are free for a first cluster: Linode Kubernetes Engine never bills for the control plane, on any tier including high-availability clusters, and AKS is free on the standard tier. For a platform running several small clusters rather than one large one, that removes a fixed monthly cost that EKS and GKE both charge from the first cluster.'
+      },
+      {
+        question: 'When should an EU team pick Azure over Linode?',
+        answer: 'When the requirement is contractual rather than technical: EU data boundaries, specific certifications, private connectivity, or an existing Microsoft Enterprise Agreement. Linode — now part of Akamai — offers EU regions, but it is US-headquartered, so an EU data-residency analysis has to account for corporate control and legal process, not just where the servers sit. That distinction is covered in more detail in the EU residency guide.'
+      }
+    ]
+  },
+
+  'ovhcloud-vs-azure': {
+    slug: 'ovhcloud-vs-azure',
+    slugTitle: 'OVHcloud vs Azure',
+    tabLabel: 'OVHcloud vs Azure',
+    headline: 'OVHcloud vs Azure: EU Sovereignty Against Enterprise Integration (2026)',
+    summary: 'OVHcloud is the only EU-headquartered provider in this catalog and the only one that includes unlimited outbound bandwidth as standard. Azure is the opposite proposition: US-headquartered, with EU regions, an EU data boundary, and the broadest enterprise stack here. This page prices both against one workload — and keeps the residency question separate from the cost one, because they have different answers.',
+    metaDescription: 'OVHcloud vs Azure pricing compared: OVHcloud instances vs Azure VMs, object storage, Kubernetes and unlimited egress, plus the EU residency trade-offs.',
+    keywords: ['OVHcloud vs Azure', 'EU cloud provider vs Azure', 'OVHcloud pricing comparison', 'GDPR cloud hosting cost', 'cloud cost comparison 2026'],
+    providerA: CloudProvider.OVHCLOUD,
+    providerB: CloudProvider.AZURE,
+    editorialFeatures: [
+      { feature: 'Corporate domicile', category: 'Compliance', providerAVal: 'EU-headquartered (France)', providerBVal: 'US-headquartered, with EU regions and an EU data boundary', winner: 'A' },
+      { feature: 'Outbound bandwidth', category: 'Networking', providerAVal: 'Unlimited and free on every plan (fair use)', providerBVal: 'Metered from the first gigabyte', winner: 'A' },
+      { feature: 'Managed service breadth', category: 'Platform', providerAVal: 'Narrower catalog and fewer managed engines', providerBVal: 'Very broad catalog including managed SQL Server', winner: 'B' },
+      { feature: 'Currency of record', category: 'Billing', providerAVal: 'EUR list prices, shown here FX-converted at the ECB reference rate', providerBVal: 'USD list prices', winner: 'TIE' }
+    ],
+    faqs: [
+      {
+        question: 'Is OVHcloud cheaper than Azure?',
+        answer: 'On compute it prices at the developer-cloud end of the catalog rather than the hyperscaler end, and on bandwidth the comparison stops being close: outbound transfer is unlimited and free on every OVHcloud Public Cloud plan, where Azure meters from the first gigabyte. Two caveats belong in the same sentence — OVHcloud publishes in EUR, and the figures here are converted at the ECB reference rate recorded at sync time, which is why this provider carries an FX-converted label rather than a plain live one.'
+      },
+      {
+        question: 'Does an EU-headquartered provider settle GDPR compliance?',
+        answer: 'It removes a class of question rather than answering all of them. Being EU-headquartered means corporate control, support access and legal process sit inside the EU, which is the part that a US provider\u2019s EU region does not change. It does not by itself determine whether your processing is lawful — contracts, sub-processors, data categories and your regulator all still matter. What it can do is make the analysis shorter. This is a pricing site, not legal advice; confirm the current position with the providers themselves.'
+      },
+      {
+        question: 'What does Azure offer that OVHcloud does not?',
+        answer: 'Breadth, and the enterprise machinery around it: managed SQL Server, a much larger catalog of specialized instance types, identity integration with Entra ID, the widest compliance certification portfolio in this comparison, and hybrid tooling for on-premises estates. If any of those are hard requirements, Azure is the answer regardless of the price delta — the honest comparison is then between Azure and the other hyperscalers.'
+      },
+      {
+        question: 'Which is better for a data-heavy European workload?',
+        answer: 'If the workload ships large volumes outward and does not depend on Microsoft-specific services, OVHcloud\u2019s unlimited egress plus EU domicile is a hard combination to beat, and it removes work as well as cost — there is no CDN offload to justify. If the workload depends on managed services OVHcloud does not offer, or on hyperscaler-grade compliance artifacts, the savings rarely justify rebuilding the stack.'
+      }
+    ]
+  },
+
+  'aws-vs-alibaba': {
+    slug: 'aws-vs-alibaba',
+    slugTitle: 'AWS vs Alibaba Cloud',
+    tabLabel: 'AWS vs Alibaba',
+    headline: 'AWS vs Alibaba Cloud: The West\u2019s Default Against Asia-Pacific Pricing (2026)',
+    summary: 'AWS and Alibaba Cloud overlap on the core primitives and diverge nearly everywhere else. AWS brings the deepest catalog and the most flexible discount instruments in this comparison; Alibaba brings the steepest three-year reserved discounts and the strongest footprint across Asia-Pacific. Both are scored here against the same reference workload.',
+    metaDescription: 'AWS vs Alibaba Cloud pricing compared: EC2 vs ECS, S3 vs OSS, EKS vs ACK and egress — including Alibaba\u2019s deeper reserved-instance discounts.',
+    keywords: ['AWS vs Alibaba Cloud', 'ECS vs EC2 pricing', 'Alibaba Cloud vs AWS cost', 'Asia Pacific cloud pricing', 'cloud cost comparison 2026'],
+    providerA: CloudProvider.AWS,
+    providerB: CloudProvider.ALIBABA,
+    editorialFeatures: [
+      { feature: 'Commitment structure', category: 'Compute', providerAVal: 'Savings Plans flex across instance families, regions and services', providerBVal: 'Reserved instances tied to specific configurations', winner: 'A' },
+      { feature: 'Regional strength', category: 'Platform', providerAVal: 'Broadest global footprint', providerBVal: 'Deepest Asia-Pacific coverage and network paths', winner: 'B' },
+      { feature: 'Pricing provenance', category: 'Transparency', providerAVal: 'Object storage synced live from the published price list API', providerBVal: 'Reconciled benchmark — the pricing API requires signed requests', winner: 'A' },
+      { feature: 'Managed SQL Server', category: 'Database', providerAVal: 'RDS for SQL Server', providerBVal: 'ApsaraDB RDS for SQL Server', winner: 'TIE' }
+    ],
+    faqs: [
+      {
+        question: 'Is Alibaba Cloud cheaper than AWS?',
+        answer: 'At list prices it generally undercuts AWS, and on three-year commitments the gap widens further — Alibaba\u2019s reserved-instance discounts are the steepest in this catalog, up to roughly 60% off on-demand, though they are tied to specific configurations rather than the broader flexibility AWS Savings Plans allow. One honest caveat on the numbers here: Alibaba Cloud is the only provider in the catalog still priced from a reconciled benchmark rather than a live sync, because its pricing API requires signed requests. Check the freshness badge before treating a small gap as decisive.'
+      },
+      {
+        question: 'When does Alibaba Cloud make sense for a non-Asian company?',
+        answer: 'When the users are in Asia-Pacific. Latency and network paths to mainland China, Hong Kong, Singapore and Japan are the reason most western teams consider it at all, and no amount of global footprint on AWS substitutes for being physically close to the audience. It is also the only challenger in this catalog that sells managed SQL Server alongside PostgreSQL and MySQL, which occasionally matters for porting an existing estate without re-platforming.'
+      },
+      {
+        question: 'How do the discount instruments compare?',
+        answer: 'Differently in kind, not just in depth. AWS Savings Plans apply flexibly across instance families, regions and even services such as Fargate and Lambda, which makes them usable before your architecture has settled. Alibaba\u2019s reserved instances are configuration-specific but deeper — the trade is flexibility for rate. On volatile workloads AWS\u2019s flexibility usually wins; on a fixed, well-understood fleet the deeper commitment discount can be worth more.'
+      },
+      {
+        question: 'What should be checked before migrating between them?',
+        answer: 'Four things, in this order: which managed services the workload actually depends on, because catalog overlap is partial in both directions; data-residency and legal-process implications, which differ materially between the two jurisdictions; the network path to your users, which is usually the reason to move at all; and the commitment terms, since the deepest discounts on both sides require locking in capacity for years. The workload totals here tell you what the infrastructure costs — they do not tell you what the migration costs.'
+      }
+    ]
   }
 };
 
@@ -512,3 +808,83 @@ export const COMPARISON_TABS: { slug: string; label: string }[] = COMPARISON_SLU
   slug,
   label: COMPARISON_PAGES[slug].tabLabel
 }));
+
+// ---------------------------------------------------------------------------
+// Pair coverage — which URL of the 45 pair pages is the indexable one.
+// ---------------------------------------------------------------------------
+
+/** Order-independent key for a provider pair, so `aws-vs-oracle` and `oracle-vs-aws` collide. */
+function pairKey(a: CloudProvider, b: CloudProvider): string {
+  return [PROVIDER_METAS[a].slug, PROVIDER_METAS[b].slug].sort().join('|');
+}
+
+/**
+ * Curated pages that cover exactly one provider pair, keyed order-independently.
+ * Topical (`…-egress`) and three-provider curated pages are absent by design:
+ * they own their URL without claiming a pair's canonical slot.
+ */
+const CURATED_PAIR_SLUGS: Map<string, string> = (() => {
+  const map = new Map<string, string>();
+  for (const page of Object.values(COMPARISON_PAGES)) {
+    if (page.providerA && page.providerB) map.set(pairKey(page.providerA, page.providerB), page.slug);
+  }
+  return map;
+})();
+
+/**
+ * The single indexable `/compare/:slug` for a provider pair: the curated page
+ * when one exists (in whichever order it was authored — several are deliberately
+ * reverse-ordered), otherwise the canonical forward slug.
+ *
+ * Every other ordering of the same pair is still prerendered, but `noindex` +
+ * canonical to this URL — so a pair can never split its ranking across two
+ * competing pages, and adding a curated page later silently promotes it.
+ */
+export function indexableSlugForPair(a: CloudProvider, b: CloudProvider): string {
+  return CURATED_PAIR_SLUGS.get(pairKey(a, b)) ?? canonicalPairSlug(a, b);
+}
+
+/**
+ * Internal-link targets for a comparison page: the curated pages featuring
+ * either provider first (richest content), then the other pairs involving them
+ * at their own indexable URLs. Never links back to the page it is rendered on.
+ */
+export function relatedComparisons(
+  a: CloudProvider,
+  b: CloudProvider,
+  currentSlug: string,
+  limit = 8
+): { slug: string; label: string }[] {
+  const out: { slug: string; label: string }[] = [];
+  const seen = new Set<string>([currentSlug]);
+
+  const push = (slug: string, label: string) => {
+    if (seen.has(slug) || out.length >= limit) return;
+    seen.add(slug);
+    out.push({ slug, label });
+  };
+
+  for (const page of Object.values(COMPARISON_PAGES)) {
+    if ([page.providerA, page.providerB].includes(a) || [page.providerA, page.providerB].includes(b)) {
+      push(page.slug, page.tabLabel);
+    }
+  }
+
+  for (const other of ALL_PROVIDERS) {
+    if (other === a || other === b) continue;
+    pushPair(other, a);
+    pushPair(other, b);
+  }
+
+  function pushPair(x: CloudProvider, y: CloudProvider): void {
+    const slug = indexableSlugForPair(x, y);
+    const curated = COMPARISON_PAGES[slug];
+    // Name the target the way the target itself is titled, not the way this
+    // page happens to hold the provider order.
+    const [first, second] =
+      ALL_PROVIDERS.indexOf(x) <= ALL_PROVIDERS.indexOf(y) ? [x, y] : [y, x];
+    push(slug, curated ? curated.tabLabel : `${PROVIDER_METAS[first].shortName} vs ${PROVIDER_METAS[second].shortName}`);
+  }
+
+  return out;
+}

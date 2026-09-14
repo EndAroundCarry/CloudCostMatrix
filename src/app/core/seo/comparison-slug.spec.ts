@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parsePairSlug, buildPairSlug, allPairSlugs } from './comparison-slug';
+import { parsePairSlug, buildPairSlug, allPairSlugs, allPairOrderings, canonicalPairSlug } from './comparison-slug';
 import { CloudProvider } from '../models/cloud-provider.enum';
 
 describe('comparison-slug', () => {
@@ -63,5 +63,27 @@ describe('comparison-slug', () => {
       const parsed = parsePairSlug(slug);
       expect(parsed?.isReversed).toBe(false);
     }
+  });
+
+  it('enumerates both orderings of every pair, half of which canonicalize forward', () => {
+    const orderings = allPairOrderings();
+    expect(orderings).toHaveLength(90); // 45 pairs × 2 orderings
+    expect(new Set(orderings).size).toBe(90); // no duplicates
+
+    const canonical = new Set(allPairSlugs());
+    let reversedCount = 0;
+    for (const slug of orderings) {
+      const parsed = parsePairSlug(slug);
+      expect(parsed, `${slug} should parse`).not.toBeNull();
+      // every ordering resolves to one of the 45 canonical URLs
+      expect(canonical.has(parsed!.canonicalSlug)).toBe(true);
+      if (parsed!.isReversed) reversedCount++;
+    }
+    expect(reversedCount).toBe(45);
+  });
+
+  it('canonicalPairSlug is order-independent', () => {
+    expect(canonicalPairSlug(CloudProvider.ORACLE, CloudProvider.AWS)).toBe('aws-vs-oracle');
+    expect(canonicalPairSlug(CloudProvider.AWS, CloudProvider.ORACLE)).toBe('aws-vs-oracle');
   });
 });

@@ -39,7 +39,7 @@ export const GUIDE_PAGES: Record<string, GuidePageData> = {
     summary:
       'Outbound data transfer is the cloud bill line item that scales with success rather than with headcount — and it is the one most comparisons leave out, because it does not fit neatly into a per-instance price table. This guide ranks all ten providers in the catalog by what the same outbound workload actually costs, using the live pricing engine rather than a hand-copied rate sheet.',
     metaDescription:
-      'Cloud egress pricing ranked across 10 providers — OVHcloud unlimited bandwidth, Oracle 10 TB free, AWS and Azure metered transfer. See the real monthly cost for a 20 TB workload.',
+      'Cloud egress pricing ranked across 10 providers — OVHcloud unlimited, Oracle 10 TB free, AWS and Azure metered. See the monthly cost for a 20 TB workload.',
     keywords: [
       'cheapest cloud egress pricing',
       'cloud data transfer cost comparison',
@@ -87,7 +87,7 @@ export const GUIDE_PAGES: Record<string, GuidePageData> = {
     summary:
       'A pre-seed team does not need a hyperscaler\'s catalog — it needs the smallest bill that will not become a migration project in eighteen months. This guide ranks all ten providers on the cost of an entry-level Linux instance, then lays out the non-price factors that actually decide the answer: egress shape, managed-database availability, Kubernetes control-plane fees, and how much of the catalog you will realistically outgrow.',
     metaDescription:
-      'Cloud pricing for startups compared across 10 providers. Cheapest entry-level Linux instances plus egress, managed database, and Kubernetes fees that decide the real bill.',
+      'Cloud pricing for startups across 10 providers: cheapest entry-level Linux instances, plus the egress, database and Kubernetes fees that decide the real bill.',
     keywords: [
       'cheapest cloud provider for startups',
       'cloud hosting for startups comparison',
@@ -271,6 +271,260 @@ export const GUIDE_PAGES: Record<string, GuidePageData> = {
       }
     ],
     relatedSlugs: ['ovhcloud-vs-digitalocean', 'ovhcloud-vs-aws-egress']
+  },
+
+  'cheapest-cloud-object-storage': {
+    slug: 'cheapest-cloud-object-storage',
+    slugTitle: 'Cheapest Cloud Object Storage',
+    tabLabel: 'Cheapest Object Storage',
+    headline: 'Which Cloud Has the Cheapest Object Storage? 10 Providers Ranked (2026)',
+    summary:
+      'Object storage pricing looks like one number per gigabyte and almost never is. Tiers, request and retrieval charges, monthly minimums, and per-provider storage classes all change the answer once an actual access pattern is applied. This guide ranks all ten providers on the same 10 TB hot-tier workload, computed by the live engine rather than copied from a rate sheet — then explains where that ranking breaks down.',
+    metaDescription:
+      'Cloud object storage ranked across 10 providers — S3, Blob, Cloud Storage, Spaces, OSS and more — for a 10 TB hot-tier workload, computed live.',
+    keywords: [
+      'cheapest cloud object storage',
+      'S3 vs Blob vs GCS pricing',
+      'object storage cost comparison',
+      'cloud storage pricing 2026',
+      'cheapest cloud storage per GB',
+      'object storage tier comparison'
+    ],
+    metric: 'objectStorage',
+    providerNotesCaption:
+      'Structural differences between the ten catalogs. None of these are visible in a per-GB headline rate, and each one changes what you actually pay once an access pattern is applied.',
+    providerNotes: [
+      {
+        provider: CloudProvider.DIGITALOCEAN,
+        label: 'Single storage class',
+        note: 'Spaces offers one class with no cool, cold or archive tiering, so there is no cheaper tier to move cold data into — the hot rate is the rate.'
+      },
+      {
+        provider: CloudProvider.LINODE,
+        label: 'Single storage class',
+        note: 'Linode Object Storage likewise publishes one class. Attractive at the capacity end, but there is no lifecycle policy that can move data out of it.'
+      },
+      {
+        provider: CloudProvider.OVHCLOUD,
+        label: 'Standard and Archive only',
+        note: 'Two classes rather than four — no separate cool or cold rung between standard and archive, which simplifies lifecycle rules and removes a tier to get wrong.'
+      },
+      {
+        provider: CloudProvider.ORACLE,
+        label: 'No distinct Cold tier',
+        note: 'Infrequent Access and Archive cover that range instead, so a lifecycle policy that expects a four-rung ladder has to be written for a three-rung one.'
+      },
+      {
+        provider: CloudProvider.AWS,
+        label: 'Operation charges are the variable',
+        note: 'S3 capacity is fetched live, but request and retrieval rates are carried from the reconciled benchmark — and for small-object workloads those operations, not capacity, are usually the larger line item.'
+      },
+      {
+        provider: CloudProvider.VULTR,
+        label: 'Monthly minimum applies',
+        note: 'Vultr prices object storage at a per-TB rate with a monthly minimum, so the engine charges the minimum on small buckets — a shape that makes it cheap at volume and less so for a few hundred gigabytes.'
+      }
+    ],
+    caveats: [
+      'Request, operation and retrieval charges are excluded from this ranking. They depend on object size and access frequency rather than on the rate card, and for small-object or frequently-read workloads they can outgrow the capacity line entirely — model them in the live calculator with your own operation counts.',
+      'Retrieval fees from archive-class tiers are not modelled. Archive storage is cheap to hold and expensive to read, and the break-even point depends entirely on how often you expect to restore from it.',
+      'Two providers in the catalog carry benchmark storage figures rather than live-synced rates (see the methodology page). They are ranked alongside the rest, but a gap of a few percent between them is not meaningful.'
+    ],
+    faqs: [
+      {
+        question: 'Which cloud provider has the cheapest object storage?',
+        answer: 'For hot-tier capacity at ten terabytes, the ranking above is computed live and the leaders are the providers whose per-GB rate is lowest without a monthly minimum distorting small volumes. That ordering is capacity-only: add request charges, move part of the dataset to a colder tier, or read heavily from archive and the ranking can change entirely. The useful exercise is not finding the globally cheapest rate but finding which provider is cheapest for your access pattern — which is what the calculator models and a rate table cannot.'
+      },
+      {
+        question: 'Why do per-gigabyte storage prices mislead?',
+        answer: 'Because capacity is only one of three charges and the least variable of them. Object storage bills capacity per GB-month, requests per thousand operations, and retrieval per GB moved out of colder tiers. A workload storing 50 TB of small, frequently-read objects can pay more in operations than in capacity, while a backup workload storing the same volume in archive pays almost nothing for either — same provider, same rate card, different answers. Any comparison that quotes one tier and one number is describing a workload it has not disclosed.'
+      },
+      {
+        question: 'Do storage-class tiers actually save money?',
+        answer: 'They do for data with a genuinely cold lifecycle, and they cost money when data is moved before it is ready. Tiering works on the assumption that you will not read the data often enough for the retrieval charge to exceed the capacity saving, and every provider charges retrieval from archive — some with a minimum retention period before deletion is allowed. Move data down a tier only when you can describe, honestly, how often you expect to need it back.'
+      },
+      {
+        question: 'Does the provider choice matter more than the tier choice?',
+        answer: 'Usually the tier and access pattern matter more, and the provider matters most at the extremes. If your dataset is small, every provider in this comparison is affordable and the per-GB difference is noise against compute and database costs. If you are storing hundreds of terabytes of cold data, the per-GB rate is the entire bill and the provider ranking above becomes decisive. The awkward middle is where a request-heavy workload on a cheap-capacity provider quietly becomes expensive.'
+      }
+    ],
+    relatedSlugs: ['s3-vs-azure-blob-vs-google-cloud-storage', 'digitalocean-vs-linode', 'ovhcloud-vs-aws-egress']
+  },
+
+  'cheapest-managed-postgresql': {
+    slug: 'cheapest-managed-postgresql',
+    slugTitle: 'Cheapest Managed PostgreSQL',
+    tabLabel: 'Cheapest Managed Postgres',
+    headline: 'Cheapest Managed PostgreSQL: 10 Cloud Providers Ranked (2026)',
+    summary:
+      'A managed Postgres bill is three numbers stacked: the instance rate, the storage rate, and the multiplier for a standby. Providers disagree about all three, so the same 2 vCPU / 8 GB database can land at very different monthly totals. This guide ranks all ten providers on one small production shape using the same engine as the calculator, then explains where the ranking stops being the answer.',
+    metaDescription:
+      'Managed PostgreSQL pricing ranked across 10 cloud providers — RDS, Azure Database, Cloud SQL, OCI, IBM Cloud Databases, DigitalOcean and more — 2 vCPU, 8 GB, 100 GB.',
+    keywords: [
+      'cheapest managed postgresql',
+      'managed postgres pricing comparison',
+      'RDS vs Azure Database vs Cloud SQL pricing',
+      'cloud database cost comparison 2026',
+      'managed database pricing',
+      'postgres hosting cost'
+    ],
+    metric: 'managedPostgres',
+    providerNotesCaption:
+      'What each provider does differently around the same PostgreSQL instance — the differences that survive the pricing table.',
+    providerNotes: [
+      {
+        provider: CloudProvider.AWS,
+        label: 'Two products, one label',
+        note: 'RDS and Aurora are different services with different pricing models; this comparison prices RDS-style instance shapes, which is the like-for-like option against the other providers.'
+      },
+      {
+        provider: CloudProvider.AZURE,
+        label: 'Storage and IOPS priced separately',
+        note: 'Azure Database separates instance, storage, and provisioned IOPS, so a database with a heavy write pattern can cost materially more than the shape alone suggests.'
+      },
+      {
+        provider: CloudProvider.DIGITALOCEAN,
+        label: 'Bundle-first pricing',
+        note: 'Managed Databases bundle a vCPU/RAM/disk shape into one flat rate, which is easy to budget and leaves nothing to tune — you move to the next size up instead of sizing components separately.'
+      },
+      {
+        provider: CloudProvider.LINODE,
+        label: 'Storage bundled into the instance',
+        note: 'Disk is not billed as a separate line, which makes Linode look cheaper than a per-GB comparison would suggest at small sizes — the trade is that the storage rate is not independently visible.'
+      },
+      {
+        provider: CloudProvider.IBM,
+        label: 'No SQL Server, wider engine list',
+        note: 'IBM Cloud Databases covers PostgreSQL, MySQL and Db2. If you are standardising on Postgres this is irrelevant; if you are porting a mixed estate, it changes what can stay managed.'
+      },
+      {
+        provider: CloudProvider.ALIBABA,
+        label: 'Benchmark-priced',
+        note: 'ApsaraDB RDS figures in this catalog are a reconciled benchmark rather than a live sync, because the provider\u2019s pricing API requires signed requests. Treat the position as directional.'
+      }
+    ],
+    caveats: [
+      'Multi-AZ standby pricing is not applied to this ranking. Every provider charges a multiplier for a synchronous standby — the multiplier differs, and it can move the ranking more than the base rate does. Price it in the calculator once you know whether you need the failover.',
+      'Backup retention, point-in-time recovery windows, and I/O charges beyond the provisioned capacity are not modelled here. They are real line items on a production database and they differ between providers.',
+      'Instance shapes are matched to the nearest published size rather than interpolated, so a provider with a 2 vCPU / 8 GB shape and one with a 2 vCPU / 7.5 GB shape are both compared at their own nearest fit.'
+    ],
+    faqs: [
+      {
+        question: 'Which cloud provider has the cheapest managed PostgreSQL?',
+        answer: 'For a small single-AZ instance, the developer clouds generally lead and the hyperscalers sit at the top of the table — the ranking above is computed live from published list prices, so check it rather than trusting a figure quoted anywhere, including here. The more decision-relevant question is which of those providers you can still use once the database grows: engine versions, extensions, read replicas, and failover behaviour vary more between providers than the price does.'
+      },
+      {
+        question: 'How much does a multi-AZ standby add?',
+        answer: 'It is a multiplier on the instance rate rather than a fixed surcharge, and the multiplier differs by provider — which is exactly why this guide excludes it: applying one provider\u2019s multiplier across the table would misrepresent every other row. If you need automatic failover, price the same shape with multi-AZ enabled in the calculator; the ordering can change, and for high-availability workloads it usually does.'
+      },
+      {
+        question: 'Why is managed PostgreSQL cheaper on developer clouds?',
+        answer: 'Mostly because the product is narrower. A developer cloud managed database is typically one engine version, a bundled shape, and a simple HA story; hyperscaler offerings carry more configuration surface — provisioned IOPS, performance insights, cross-region replicas, compliance certifications — and you pay for that surface whether or not you configure it. The trade-off appears later: when the workload needs a specific extension, a particular failover topology, or an accreditation the smaller provider does not hold, migration is the cost.'
+      },
+      {
+        question: 'Should the cheapest database decide where an application runs?',
+        answer: 'Rarely on its own. Compute, egress, and object storage are usually larger line items, and moving an application to chase a cheaper database means paying for a second platform. The database rate is most decisive when the dataset is small but the instance must be always-on, since that is a fixed cost that does not scale down with traffic — which is precisely the workload the ranking above measures.'
+      }
+    ],
+    relatedSlugs: ['aws-vs-azure', 'linode-vs-aws', 'digitalocean-vs-aws']
+  },
+
+  'cheapest-managed-kubernetes': {
+    slug: 'cheapest-managed-kubernetes',
+    slugTitle: 'Cheapest Managed Kubernetes',
+    tabLabel: 'Cheapest Managed Kubernetes',
+    headline: 'Cheapest Managed Kubernetes: EKS vs AKS vs GKE and 7 More, Ranked (2026)',
+    summary:
+      'A Kubernetes control-plane fee is a flat monthly cost that arrives before there is any workload to run, and the providers in this catalog treat it three different ways: billed per cluster from the first one, waived on a first or basic tier, or never charged at all. This guide ranks all ten on a single cluster with three modest worker nodes — the shape a small team actually runs — and shows how much of the total is the control plane versus the workers.',
+    metaDescription:
+      'Managed Kubernetes pricing ranked: EKS vs AKS vs GKE vs DOKS, LKE, OKE, ACK, IKS, OVHcloud and Vultr — one cluster, three worker nodes, control-plane fees included.',
+    keywords: [
+      'cheapest managed kubernetes',
+      'EKS vs AKS vs GKE pricing',
+      'kubernetes control plane cost',
+      'managed kubernetes pricing comparison 2026',
+      'DOKS vs LKE vs OKE cost',
+      'kubernetes cluster cost calculator'
+    ],
+    metric: 'kubernetes',
+    providerNotesCaption:
+      'How each provider prices cluster management, and what that means for a team running more than one cluster.',
+    providerNotes: [
+      {
+        provider: CloudProvider.AWS,
+        label: 'Charged from the first cluster',
+        note: 'EKS bills a per-cluster hourly management fee with no free first cluster, which makes it the only provider in this comparison whose control plane is a standing monthly cost on a single small cluster.'
+      },
+      {
+        provider: CloudProvider.AZURE,
+        label: 'Free on the standard tier',
+        note: 'AKS cluster management carries no charge on the standard tier, so the platform cost of running several small clusters is close to zero beyond the nodes themselves.'
+      },
+      {
+        provider: CloudProvider.GCP,
+        label: 'First zonal cluster waived',
+        note: 'GKE waives the management fee for a first zonal cluster; regional clusters and additional clusters are billed, so the free tier is a starting point rather than a permanent policy.'
+      },
+      {
+        provider: CloudProvider.ORACLE,
+        label: 'Free on Basic clusters',
+        note: 'OKE Basic clusters do not bill for the control plane. Upgrading to a supported-SLA tier changes that, so check which tier the workload requires before treating it as free.'
+      },
+      {
+        provider: CloudProvider.IBM,
+        label: 'Never charged, any tier',
+        note: 'IBM Cloud Kubernetes Service does not bill for the control plane on any tier, including multi-zone clusters — the clearest structural saving in this catalog for multi-cluster estates.'
+      },
+      {
+        provider: CloudProvider.ALIBABA,
+        label: 'Free on ACK Basic',
+        note: 'ACK Basic clusters carry no control-plane fee; the Pro tier is where the SLA and advanced features are, and where the charge begins.'
+      },
+      {
+        provider: CloudProvider.DIGITALOCEAN,
+        label: 'Free on every cluster',
+        note: 'DOKS includes the control plane on every cluster, so running separate staging and production clusters costs nothing beyond the worker Droplets.'
+      },
+      {
+        provider: CloudProvider.LINODE,
+        label: 'Free, including HA',
+        note: 'LKE does not charge for the control plane even on high-availability clusters, which is unusual — most providers make the HA tier the paid one.'
+      },
+      {
+        provider: CloudProvider.OVHCLOUD,
+        label: 'Free on every plan',
+        note: 'OVHcloud Managed Kubernetes includes the control plane at no extra charge, and its unlimited free egress removes the data-transfer line that clusters serving traffic otherwise accumulate.'
+      },
+      {
+        provider: CloudProvider.VULTR,
+        label: 'Free on VKE',
+        note: 'Vultr Kubernetes Engine ships the control plane free — you pay for worker nodes and any attached load balancer or storage.'
+      }
+    ],
+    caveats: [
+      'Worker nodes dominate the bill at scale. At one cluster with three nodes the control-plane difference is a meaningful share of the total; at ten clusters with fifty nodes it is a rounding error. Use the ranking above for the small-cluster case and the calculator for anything larger.',
+      'Control-plane policies carry conditions. Several providers make the free tier a specific cluster type — zonal, basic, or standard — and charge on the tiers above it. Check which tier your reliability requirements actually demand.',
+      'Spot and preemptible worker pools are a bigger lever than control-plane fees for fault-tolerant workloads, and they are not available everywhere: five providers in this catalog sell no interruption-priced instance type at all.'
+    ],
+    faqs: [
+      {
+        question: 'Which cloud provider has the cheapest managed Kubernetes?',
+        answer: 'For a single small cluster, the deciding factor is usually the control-plane policy rather than the node rate — nine of the ten providers in this catalog waive or never charge for a first cluster, and one bills it from the first cluster onward. That makes the ranking above mostly a story about worker-node pricing once the control plane is free, except on the one platform charging for it. The live table is recomputed from current catalogs, so it will tell you which side of the spread your own cluster size lands on.'
+      },
+      {
+        question: 'Do control-plane fees matter at scale?',
+        answer: 'They matter most when the cluster is small, which is the opposite of how teams usually think about them. A per-cluster management fee is a fixed cost: at one cluster with three nodes it can be a large share of the bill, and by the time you are running dozens of nodes it is nearly invisible. Where it stays material regardless of node count is multi-cluster estates — staging plus production plus a per-region split multiplies the fee, which is why providers that never charge for the control plane are disproportionately attractive to platform teams.'
+      },
+      {
+        question: 'Are the free control-plane tiers good enough for production?',
+        answer: 'Sometimes, and the answer depends on what the free tier excludes. Several providers make the free option a zonal or basic cluster without an uptime SLA; production workloads with real availability requirements often need the paid tier, which changes the arithmetic. The right question is not whether the control plane is free but whether the free tier meets the SLA you have promised — read that before optimising the line item.'
+      },
+      {
+        question: 'How much can spot node pools save compared to choosing a cheaper provider?',
+        answer: 'Usually more, when the workload tolerates interruption. Spot and preemptible discounts reach 60-90% off on-demand across the providers that offer them, which dwarfs the difference between two providers\u2019 on-demand node rates. The catch is availability: several providers in this catalog sell no interruption-priced capacity at all, so a fault-tolerant batch workload has a real discount to gain by picking a platform that does — and the same workload on a platform without spot is paying list price for capacity it could be renting cheaply.'
+      }
+    ],
+    relatedSlugs: ['ec2-vs-azure-vm-vs-compute-engine', 'gcp-vs-oracle', 'digitalocean-vs-linode']
   }
 };
 

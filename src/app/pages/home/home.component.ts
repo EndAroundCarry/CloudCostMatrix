@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { HeroComponent } from '../../components/hero/hero.component';
@@ -13,12 +14,14 @@ import { ProviderPickerComponent } from '../../components/provider-picker/provid
 import { EstimatorStore } from '../../state/estimator.store';
 import { SeoService } from '../../core/services/seo.service';
 import { SchemaGenerator } from '../../core/seo/schema-generator';
+import { ALL_PROVIDERS, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     MatIconModule,
     MatButtonModule,
     HeroComponent,
@@ -111,6 +114,39 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
           </div>
         </section>
 
+        <!-- Internal linking: provider directory + comparison hubs -->
+        <section class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 shadow-xl" aria-labelledby="browse-heading">
+          <h2 id="browse-heading" class="text-xl font-bold text-white tracking-tight mb-2 flex items-center gap-2 m-0">
+            <mat-icon class="text-blue-400">travel_explore</mat-icon>
+            <span>Browse Cloud Providers &amp; Comparisons</span>
+          </h2>
+          <p class="text-xs text-slate-400 mb-5 m-0 max-w-3xl">
+            Each provider page prices that provider's published list rates through the same engine as the calculator —
+            compute, storage, managed databases, Kubernetes and egress — and every comparison page is scored against
+            the same reference workload, so the numbers are comparable across the site.
+          </p>
+          <div class="flex flex-wrap gap-2 mb-5">
+            @for (provider of providers; track provider.slug) {
+              <a
+                [routerLink]="['/providers', provider.slug]"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 border border-slate-700 hover:border-slate-500 hover:text-white transition-all no-underline">
+                {{ provider.shortName }} pricing
+              </a>
+            }
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a routerLink="/compare" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/30 hover:border-blue-400 hover:text-white transition-all no-underline">
+              All head-to-head comparisons
+            </a>
+            <a routerLink="/guides" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/30 hover:border-blue-400 hover:text-white transition-all no-underline">
+              Ranked cost guides
+            </a>
+            <a routerLink="/blueprints" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/30 hover:border-blue-400 hover:text-white transition-all no-underline">
+              Architecture blueprints
+            </a>
+          </div>
+        </section>
+
         <!-- SEO: FAQ Section (targets Google "People Also Ask") -->
         <section class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 shadow-xl" aria-labelledby="faq-heading">
           <h2 id="faq-heading" class="text-xl font-bold text-white tracking-tight mb-6 flex items-center gap-2 m-0">
@@ -138,6 +174,12 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
 export class HomeComponent implements OnInit {
   protected readonly store = inject(EstimatorStore);
   private readonly seoService = inject(SeoService);
+
+  /** Feeds the "browse providers" section — one crawlable link per provider page. */
+  readonly providers = ALL_PROVIDERS.map((provider) => ({
+    slug: PROVIDER_METAS[provider].slug,
+    shortName: PROVIDER_METAS[provider].shortName
+  }));
 
   readonly faqs = [
     {
@@ -176,8 +218,8 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.seoService.updateTags({
-      title: 'CloudCostMatrix — Free AWS vs Azure vs GCP Cloud Cost Estimator (2026)',
-      description: 'Free cloud cost calculator comparing AWS, Microsoft Azure, and Google Cloud Platform pricing side-by-side. Estimate Compute (EC2, Azure VM, GCE), Storage (S3, Blob, GCS), Database (RDS, Azure SQL, Cloud SQL), Kubernetes (EKS, AKS, GKE), and Egress TCO in real-time. Save unlimited architecture scenarios, run A vs B migration diffs, and export Slack-ready summaries — no signup required.',
+      title: 'Cloud Cost Calculator — AWS vs Azure vs GCP (2026)',
+      description: 'Compare cloud pricing across AWS, Azure, Google Cloud, Oracle, IBM, DigitalOcean and 4 more — compute, storage, database, Kubernetes and egress, from list rates.',
       keywords: [
         'cloud cost calculator',
         'AWS vs Azure',
@@ -202,6 +244,7 @@ export class HomeComponent implements OnInit {
       canonicalUrl: 'https://cloudcostmatrix.com/',
       robotsMeta: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
       structuredDataJson: [
+        SchemaGenerator.generateWebSiteSchema(),
         SchemaGenerator.generateWebApplicationSchema(),
         SchemaGenerator.generateOrganizationSchema(),
         SchemaGenerator.generateFaqSchema(this.faqs),

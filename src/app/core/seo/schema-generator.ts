@@ -41,17 +41,39 @@ export class SchemaGenerator {
   }
 
   /**
+   * WebSite schema — the site entity itself, referenced by every page's
+   * `isPartOf`. Carries no `potentialAction` search box: the app has no
+   * site-search endpoint, and a fictional one is the same class of problem as
+   * a fabricated rating.
+   */
+  public static generateWebSiteSchema() {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      '@id': 'https://cloudcostmatrix.com/#website',
+      'name': 'CloudCostMatrix',
+      'url': 'https://cloudcostmatrix.com',
+      'description': 'Independent multi-cloud infrastructure cost comparison and TCO estimation platform.',
+      'inLanguage': 'en',
+      'publisher': { '@id': 'https://cloudcostmatrix.com/#organization' }
+    };
+  }
+
+  /**
    * Organization schema — establishes brand identity in Knowledge Graph.
    */
   public static generateOrganizationSchema() {
     return {
       '@context': 'https://schema.org',
       '@type': 'Organization',
+      '@id': 'https://cloudcostmatrix.com/#organization',
       'name': 'CloudCostMatrix',
       'url': 'https://cloudcostmatrix.com',
-      'logo': 'https://cloudcostmatrix.com/og-preview.png',
+      // A square 512px icon, not the 1200×630 social card: `logo` is expected to
+      // be a logo-shaped asset that a knowledge panel can crop to a square.
+      'logo': 'https://cloudcostmatrix.com/icon-512.png',
       'description': 'Independent multi-cloud infrastructure cost comparison and TCO estimation platform.',
-      'sameAs': []
+      'sameAs': ['https://github.com/EndAroundCarry/CloudCostMatrix']
     };
   }
 
@@ -90,6 +112,25 @@ export class SchemaGenerator {
   }
 
   /**
+   * ItemList schema — for pages that genuinely enumerate a set (a provider's
+   * comparison links, a hub's directory). Rendered order is the list order.
+   */
+  public static generateItemListSchema(config: { name: string; items: { name: string; url: string }[] }) {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      'name': config.name,
+      'numberOfItems': config.items.length,
+      'itemListElement': config.items.map((item, idx) => ({
+        '@type': 'ListItem',
+        'position': idx + 1,
+        'name': item.name,
+        'url': item.url
+      }))
+    };
+  }
+
+  /**
    * WebPage schema — per-page metadata for individual comparison/landing pages.
    */
   public static generateWebPageSchema(config: {
@@ -101,14 +142,13 @@ export class SchemaGenerator {
     return {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
+      '@id': `${config.url}#webpage`,
       'name': config.name,
       'description': config.description,
       'url': config.url,
-      'isPartOf': {
-        '@type': 'WebSite',
-        'name': 'CloudCostMatrix',
-        'url': 'https://cloudcostmatrix.com'
-      },
+      // Referenced by @id rather than repeated inline, so the site entity is
+      // stated once (on the home page) and every other page links to it.
+      'isPartOf': { '@id': 'https://cloudcostmatrix.com/#website' },
       // Prerendering freezes new Date() to the build machine's clock forever —
       // pass an explicit dateModified (e.g. PRICING_LAST_SYNCED_AT) wherever
       // one is meaningful. This bare fallback only fires for callers that

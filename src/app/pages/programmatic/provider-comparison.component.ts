@@ -9,7 +9,7 @@ import { SchemaGenerator } from '../../core/seo/schema-generator';
 import { EstimatorStore } from '../../state/estimator.store';
 import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
 import { ServiceCategory, SERVICE_CATEGORY_METAS } from '../../core/models/service-category.enum';
-import { ComparisonMatrixResult } from '../../core/models/pricing.model';
+import { ArchitectureEstimateConfig, ComparisonMatrixResult } from '../../core/models/pricing.model';
 import { CostCalculatorEngine } from '../../core/engine/cost-calculator.engine';
 import { MatrixTableComponent } from '../../components/matrix-table/matrix-table.component';
 import { ConfiguratorComponent } from '../../components/configurator/configurator.component';
@@ -23,9 +23,12 @@ import {
   COMPARISON_TABS,
   COMPARISON_REFERENCE_CONFIG,
   ComparisonPageData,
-  EditorialFeatureRow
+  EditorialFeatureRow,
+  indexableSlugForPair,
+  relatedComparisons
 } from './comparison-pages.data';
 import { buildDerivedFeatures, DerivedFeatureRow } from '../../core/seo/derived-features';
+import { buildDerivedComparison } from '../../core/seo/derived-comparison';
 import { parsePairSlug, buildPairSlug } from '../../core/seo/comparison-slug';
 import { PRICING_LAST_SYNCED_AT } from '../../core/engine/catalog/pricing-catalog.resolver';
 
@@ -79,7 +82,7 @@ type FeatureRow = DerivedFeatureRow | EditorialFeatureRow;
       @if (!isCurated) {
         <div class="rounded-xl border border-slate-700/60 bg-slate-900/60 px-4 py-2.5 text-[11px] text-slate-400 flex items-center gap-2">
           <mat-icon class="!text-sm text-slate-500">auto_awesome</mat-icon>
-          <span>This is a generated comparison — facts are computed live from the pricing catalogs. Browse our <a routerLink="/" class="text-blue-400 hover:text-white underline">curated comparisons</a> for editorial deep-dives.</span>
+          <span>Every figure on this page — the verdict, the scorecards, the capability matrix, and the FAQ answers — is computed from the current pricing catalogs rather than hand-typed, so it cannot silently go stale. Browse <a routerLink="/compare" class="text-blue-400 hover:text-white underline">all 45 comparisons</a> or the <a routerLink="/providers" class="text-blue-400 hover:text-white underline">provider pricing pages</a>.</span>
         </div>
       }
 
@@ -155,7 +158,9 @@ type FeatureRow = DerivedFeatureRow | EditorialFeatureRow;
                     <mat-icon class="!text-base">{{ providerMetas[provA].icon }}</mat-icon>
                   </div>
                   <div>
-                    <h3 class="text-base font-bold text-white m-0">{{ providerMetas[provA].name }}</h3>
+                    <h3 class="text-base font-bold text-white m-0">
+                      <a [routerLink]="['/providers', providerMetas[provA].slug]" class="hover:text-blue-300 transition-colors no-underline">{{ providerMetas[provA].name }}</a>
+                    </h3>
                     <span class="text-xs text-slate-400">{{ providerMetas[provA].shortName }} Benchmark</span>
                   </div>
                 </div>
@@ -197,7 +202,9 @@ type FeatureRow = DerivedFeatureRow | EditorialFeatureRow;
                     <mat-icon class="!text-base">{{ providerMetas[provB].icon }}</mat-icon>
                   </div>
                   <div>
-                    <h3 class="text-base font-bold text-white m-0">{{ providerMetas[provB].name }}</h3>
+                    <h3 class="text-base font-bold text-white m-0">
+                      <a [routerLink]="['/providers', providerMetas[provB].slug]" class="hover:text-blue-300 transition-colors no-underline">{{ providerMetas[provB].name }}</a>
+                    </h3>
                     <span class="text-xs text-slate-400">{{ providerMetas[provB].shortName }} Benchmark</span>
                   </div>
                 </div>
@@ -311,6 +318,25 @@ type FeatureRow = DerivedFeatureRow | EditorialFeatureRow;
         </div>
       </section>
 
+      <!-- Related comparisons — keeps every pair reachable from every other one -->
+      @if (relatedLinks.length > 0) {
+        <section class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 shadow-xl" aria-labelledby="related-heading">
+          <h2 id="related-heading" class="text-xl font-bold text-white tracking-tight mb-6 flex items-center gap-2 m-0">
+            <mat-icon class="text-blue-400">shuffle</mat-icon>
+            <span>Related Cloud Cost Comparisons</span>
+          </h2>
+          <div class="flex flex-wrap gap-2">
+            @for (link of relatedLinks; track link.slug) {
+              <a
+                [routerLink]="['/compare', link.slug]"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 border border-slate-700 hover:border-slate-500 hover:text-white transition-all no-underline">
+                {{ link.label }}
+              </a>
+            }
+          </div>
+        </section>
+      }
+
     </article>
   `
 })
@@ -338,6 +364,7 @@ export class ProviderComparisonComponent implements OnInit, OnDestroy {
   pageData!: ComparisonPageData;
   pageMatrix: ComparisonMatrixResult | null = null;
   features: FeatureRow[] = [];
+  relatedLinks: { slug: string; label: string }[] = [];
 
   private routeSub?: Subscription;
 
@@ -362,8 +389,12 @@ export class ProviderComparisonComponent implements OnInit, OnDestroy {
    * pointing at the junk URL — at literally any URL that didn't match.
    *
    *  1. Curated slug        → render as-authored, indexed, self-canonical.
-   *  2. Any other valid pair → render a generated page (derived facts only),
-   *     noindexed, canonical to the forward-ordered URL if reversed.
+   *  2. Any other valid pair → render a generated page whose verdict, scorecards,
+   *     capability matrix, and FAQ answers are all computed from the live
+   *     catalogs. Indexed when the requested URL is the pair's indexable slug
+   *     (see indexableSlugForPair); a reversed ordering, or one whose pair a
+   *     curated page already owns, is noindexed and canonicalizes there — so a
+   *     pair never competes against itself in search.
    *  3. Unparseable          → redirect home. No content is ever served for
    *     a URL that doesn't resolve to something real.
    */
@@ -374,6 +405,9 @@ export class ProviderComparisonComponent implements OnInit, OnDestroy {
       this.activeSlug = slug;
       this.pageData = curated;
       this.isCurated = true;
+      this.relatedLinks = curated.providerA && curated.providerB
+        ? relatedComparisons(curated.providerA, curated.providerB, slug)
+        : COMPARISON_TABS.filter((tab) => tab.slug !== slug).slice(0, 8);
       this.recomputePageMatrix();
       this.setupSeo(slug, curated, { noindex: false, canonicalSlug: slug });
       return;
@@ -381,40 +415,42 @@ export class ProviderComparisonComponent implements OnInit, OnDestroy {
 
     const parsed = parsePairSlug(slug);
     if (parsed) {
+      // The reference matrix has to exist before the copy is built: the FAQ
+      // answers quote this pair's actual totals, and the scorecards below
+      // render the same result rather than recomputing it.
+      const reference = COMPARISON_REFERENCE_CONFIG;
+      const matrix = this.computeMatrix(reference, [parsed.a, parsed.b]);
+      const features = buildDerivedFeatures(parsed.a, parsed.b);
+      const indexableSlug = indexableSlugForPair(parsed.a, parsed.b);
+
       this.activeSlug = slug;
-      this.pageData = this.buildDerivedPage(parsed.a, parsed.b);
+      this.pageData = this.buildDerivedPage(parsed.a, parsed.b, matrix, features, reference);
       this.isCurated = false;
-      this.recomputePageMatrix();
-      this.setupSeo(slug, this.pageData, { noindex: true, canonicalSlug: parsed.canonicalSlug });
+      this.pageMatrix = matrix;
+      this.features = features;
+      this.relatedLinks = relatedComparisons(parsed.a, parsed.b, indexableSlug);
+      this.setupSeo(slug, this.pageData, { noindex: slug !== indexableSlug, canonicalSlug: indexableSlug });
       return;
     }
 
     this.router.navigate(['/'], { replaceUrl: true });
   }
 
-  private buildDerivedPage(a: CloudProvider, b: CloudProvider): ComparisonPageData {
-    const metaA = PROVIDER_METAS[a];
-    const metaB = PROVIDER_METAS[b];
+  private buildDerivedPage(
+    a: CloudProvider,
+    b: CloudProvider,
+    matrix: ComparisonMatrixResult,
+    features: DerivedFeatureRow[],
+    reference: ArchitectureEstimateConfig
+  ): ComparisonPageData {
+    const content = buildDerivedComparison(a, b, matrix, features);
     return {
+      ...content,
       slug: buildPairSlug(a, b),
-      slugTitle: `${metaA.shortName} vs ${metaB.shortName}`,
-      tabLabel: `${metaA.shortName} vs ${metaB.shortName}`,
-      headline: `${metaA.name} vs ${metaB.name}: Cloud Infrastructure Cost Comparison`,
-      summary: `${metaA.headline} ${metaB.headline} Compare Compute, Storage, Managed Database, Networking, and Kubernetes pricing side-by-side, computed live from each provider's published catalog.`,
-      metaDescription: `Compare ${metaA.name} vs ${metaB.name} cloud infrastructure pricing — Compute, Storage, Database, Kubernetes, and Egress, computed live from published list prices. Free TCO calculator.`,
-      keywords: [`${metaA.shortName} vs ${metaB.shortName}`, `${metaA.name} pricing`, `${metaB.name} pricing`, 'cloud cost comparison 2026'],
+      tabLabel: content.slugTitle,
       providerA: a,
       providerB: b,
-      faqs: [
-        {
-          question: `Is ${metaA.shortName} or ${metaB.shortName} cheaper?`,
-          answer: `It depends on the workload shape and commitment terms you choose — use the live calculator above with your own vCPU, RAM, storage, and egress specs for an exact answer. At a glance: ${metaA.shortName} — ${metaA.headline} ${metaB.shortName} — ${metaB.headline}`
-        },
-        {
-          question: `What are the biggest pricing differences between ${metaA.shortName} and ${metaB.shortName}?`,
-          answer: `See the feature comparison table above for a full, catalog-computed breakdown across compute, storage, managed database, networking, and Kubernetes pricing — every row is derived live, not hand-typed, so it can't silently go stale.`
-        }
-      ]
+      referenceConfig: reference
     };
   }
 
@@ -423,11 +459,18 @@ export class ProviderComparisonComponent implements OnInit, OnDestroy {
     const selectedProviders = this.pageData.providerA && this.pageData.providerB
       ? [this.pageData.providerA, this.pageData.providerB]
       : ref.selectedProviders;
-    this.pageMatrix = CostCalculatorEngine.calculateFullMatrix({ ...ref, selectedProviders });
+    this.pageMatrix = this.computeMatrix(ref, selectedProviders);
 
     this.features = this.pageData.providerA && this.pageData.providerB
       ? [...buildDerivedFeatures(this.pageData.providerA, this.pageData.providerB), ...(this.pageData.editorialFeatures ?? [])]
       : [];
+  }
+
+  /** The one place that knows how a page-scoped matrix is built, so the derived path can score a pair before its copy exists. */
+  private computeMatrix(reference: ArchitectureEstimateConfig, selectedProviders?: CloudProvider[]): ComparisonMatrixResult {
+    return selectedProviders
+      ? CostCalculatorEngine.calculateFullMatrix({ ...reference, selectedProviders })
+      : CostCalculatorEngine.calculateFullMatrix(reference);
   }
 
   private setupSeo(requestedSlug: string, page: ComparisonPageData, opts: { noindex: boolean; canonicalSlug: string }): void {

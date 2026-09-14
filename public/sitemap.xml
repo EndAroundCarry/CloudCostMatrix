@@ -6,6 +6,11 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://cloudcostmatrix.com/blueprints</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://cloudcostmatrix.com/blueprints/ai-ml-inference-cluster</loc>
     <lastmod>2026-09-13</lastmod>
     <priority>0.8</priority>
@@ -26,84 +31,259 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cloudcostmatrix.com/compare/aws-vs-azure</loc>
+    <loc>https://cloudcostmatrix.com/compare</loc>
     <lastmod>2026-09-13</lastmod>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/alibaba-vs-linode</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/alibaba-vs-ovhcloud</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/alibaba-vs-vultr</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/aws-vs-alibaba</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/aws-vs-azure</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/aws-vs-gcp</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/aws-vs-ibm</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/aws-vs-vultr</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/azure-vs-alibaba</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/azure-vs-gcp</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/azure-vs-ibm</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/azure-vs-oracle</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/azure-vs-vultr</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/digitalocean-vs-alibaba</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/digitalocean-vs-aws</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/digitalocean-vs-azure</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/digitalocean-vs-gcp</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/digitalocean-vs-linode</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/digitalocean-vs-vultr</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/ec2-vs-azure-vm-vs-compute-engine</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/gcp-vs-alibaba</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/gcp-vs-ibm</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/gcp-vs-linode</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/gcp-vs-oracle</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/gcp-vs-ovhcloud</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/gcp-vs-vultr</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/ibm-vs-alibaba</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/ibm-vs-digitalocean</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/ibm-vs-linode</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/ibm-vs-ovhcloud</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/ibm-vs-vultr</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/linode-vs-aws</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/linode-vs-azure</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/linode-vs-ovhcloud</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/linode-vs-vultr</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/oracle-vs-alibaba</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/oracle-vs-aws</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/oracle-vs-aws-egress</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/oracle-vs-digitalocean</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/oracle-vs-ibm</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/oracle-vs-linode</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/oracle-vs-ovhcloud</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/oracle-vs-vultr</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/ovhcloud-vs-aws-egress</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/compare/ovhcloud-vs-azure</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/ovhcloud-vs-digitalocean</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/ovhcloud-vs-vultr</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/compare/s3-vs-azure-blob-vs-google-cloud-storage</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/disclosure</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.5</priority>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/guides</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/guides/cheapest-cloud-egress-pricing</loc>
@@ -111,7 +291,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cloudcostmatrix.com/guides/cheapest-cloud-object-storage</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cloudcostmatrix.com/guides/cheapest-cloud-provider-for-startups</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/guides/cheapest-managed-kubernetes</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/guides/cheapest-managed-postgresql</loc>
     <lastmod>2026-09-13</lastmod>
     <priority>0.8</priority>
   </url>
@@ -123,11 +318,66 @@
   <url>
     <loc>https://cloudcostmatrix.com/methodology</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.5</priority>
+    <priority>0.3</priority>
   </url>
   <url>
     <loc>https://cloudcostmatrix.com/privacy</loc>
     <lastmod>2026-09-13</lastmod>
-    <priority>0.5</priority>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/alibaba</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/aws</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/azure</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/digitalocean</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/gcp</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/ibm</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/linode</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/oracle</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/ovhcloud</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cloudcostmatrix.com/providers/vultr</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.8</priority>
   </url>
 </urlset>

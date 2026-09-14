@@ -23,10 +23,25 @@ import { SeoService } from '../../core/services/seo.service';
       </div>
       <h1 class="text-3xl font-extrabold text-white tracking-tight m-0">Page not found</h1>
       <p class="mt-3 text-sm text-slate-400 leading-relaxed m-0">
-        That page doesn't exist — it may have been a typo, or a comparison we haven't curated yet. Here are the ones we have:
+        That page doesn't exist — it may have been a typo, or a comparison we haven't curated yet. Here is where to go instead:
       </p>
       <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
-        @for (tab of comparisonTabs; track tab.slug) {
+        <a routerLink="/providers" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+          All 10 Cloud Providers
+        </a>
+        <a routerLink="/compare" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+          All 45 Comparisons
+        </a>
+        <a routerLink="/guides" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+          Cost Guides
+        </a>
+        <a routerLink="/blueprints" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
+          Architecture Blueprints
+        </a>
+      </div>
+      <p class="mt-6 text-xs text-slate-500 m-0">Popular comparisons:</p>
+      <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+        @for (tab of popularTabs; track tab.slug) {
           <a [routerLink]="['/compare', tab.slug]" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors no-underline border border-slate-700">
             {{ tab.label }}
           </a>
@@ -41,7 +56,8 @@ import { SeoService } from '../../core/services/seo.service';
 })
 export class NotFoundComponent implements OnInit {
   private readonly seoService = inject(SeoService);
-  readonly comparisonTabs = COMPARISON_TABS;
+  /** A handful of the most-searched pairs, so a lost visitor lands somewhere useful. */
+  readonly popularTabs = COMPARISON_TABS.slice(0, 6);
 
   ngOnInit(): void {
     this.seoService.updateTags({

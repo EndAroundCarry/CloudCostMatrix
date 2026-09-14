@@ -92,7 +92,7 @@ export class DisclosureComponent implements OnInit {
     const canonicalUrl = 'https://cloudcostmatrix.com/disclosure';
     this.seoService.updateTags({
       title: 'Affiliate Disclosure',
-      description: 'CloudCostMatrix\'s FTC-compliant affiliate disclosure: which cloud providers we have referral relationships with, and how that never affects the pricing rankings shown on the site.',
+      description: 'Our FTC-compliant affiliate disclosure: which cloud providers we have referral relationships with, and why that never affects pricing or rankings.',
       canonicalUrl,
       robotsMeta: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
       structuredDataJson: SchemaGenerator.generateBreadcrumbSchema([

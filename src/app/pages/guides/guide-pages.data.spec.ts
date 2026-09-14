@@ -1,14 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import { GUIDE_PAGES, GUIDE_SLUGS, GUIDE_TABS } from './guide-pages.data';
 import { COMPARISON_PAGES } from '../programmatic/comparison-pages.data';
+import { rankProviders, rankingLabel } from '../../core/seo/provider-rankings';
 
 describe('guide-pages.data', () => {
-  it('exposes the three content-pivot guides', () => {
+  it('exposes every published guide, in declaration order', () => {
     expect(GUIDE_SLUGS).toEqual([
       'cheapest-cloud-egress-pricing',
       'cheapest-cloud-provider-for-startups',
-      'eu-cloud-providers-gdpr-data-residency'
+      'eu-cloud-providers-gdpr-data-residency',
+      'cheapest-cloud-object-storage',
+      'cheapest-managed-postgresql',
+      'cheapest-managed-kubernetes'
     ]);
+  });
+
+  it('gives each guide a metric that actually ranks providers', () => {
+    // A guide whose metric has no implementation would render an empty table.
+    for (const slug of GUIDE_SLUGS) {
+      const rows = rankProviders(GUIDE_PAGES[slug].metric);
+      expect(rows.length, `${slug} (${GUIDE_PAGES[slug].metric})`).toBeGreaterThan(1);
+      expect(rankingLabel(GUIDE_PAGES[slug].metric).length).toBeGreaterThan(0);
+    }
   });
 
   it('keys each entry by its own slug, so routing and data can never disagree', () => {

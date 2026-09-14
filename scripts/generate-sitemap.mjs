@@ -2,6 +2,13 @@
  * Generates sitemap.xml from the actual prerendered output, so a URL can never
  * appear in the sitemap without having been prerendered — or vice versa.
  *
+ * Two filters apply, both read from what actually shipped rather than
+ * re-derived here: a route must have an index.html, and that HTML must be
+ * indexable. The second one is what keeps the reversed-ordering pair pages
+ * (prerendered so `…/azure-vs-aws` resolves, but `noindex` + canonical to the
+ * forward URL) out of the sitemap without this script duplicating the app's
+ * own indexability rules.
+ *
  * Runs after `ng build`. Replaces the previous hand-maintained sitemap, whose
  * 24 entries all claimed `lastmod 2026-09-07` with `changefreq daily`: a
  * changefreq that is obviously false and a lastmod that never moved, which is
@@ -49,15 +56,38 @@ if (routeList.length === 0) {
   process.exit(1);
 }
 
-/** Priority banding by route shape. No changefreq: Google ignores it and a false "daily" reads as noise. */
-function priority(route) {
-  if (route === '') return '1.0';
-  if (route.startsWith('compare/')) return '0.9';
-  if (route.startsWith('blueprints/') || route.startsWith('guides/')) return '0.8';
-  return '0.5';
+const BROWSER = path.join(ROOT, 'dist', 'CloudCostMatrix', 'browser');
+
+/** Does the HTML that shipped for this route ask to be excluded from search? */
+function isIndexable(route) {
+  const file = path.join(BROWSER, route ? path.join(route, 'index.html') : 'index.html');
+  if (!fs.existsSync(file)) {
+    console.warn(`⚠️  ${route || '/'} is listed as prerendered but has no index.html — excluded from the sitemap.`);
+    return false;
+  }
+  const tag = /<meta[^>]*\bname="robots"[^>]*>/i.exec(fs.readFileSync(file, 'utf8'))?.[0] ?? '';
+  return !/noindex/i.test(/\bcontent="([^"]*)"/i.exec(tag)?.[1] ?? '');
 }
 
-const entries = routeList
+const indexableRoutes = routeList.filter(isIndexable);
+
+if (indexableRoutes.length === 0) {
+  console.error('❌ Every prerendered route is noindex — refusing to write an empty sitemap.');
+  process.exit(1);
+}
+
+/** Priority banding by route shape. No changefreq: Google ignores it and a false "daily" reads as noise. */
+const HUB_ROUTES = new Set(['compare', 'providers', 'guides', 'blueprints']);
+
+function priority(route) {
+  if (route === '') return '1.0';
+  if (HUB_ROUTES.has(route)) return '0.9';
+  if (route.startsWith('compare/')) return '0.85';
+  if (route.startsWith('providers/') || route.startsWith('guides/') || route.startsWith('blueprints/')) return '0.8';
+  return '0.3';
+}
+
+const entries = indexableRoutes
   .map((route) => {
     const loc = route ? `${SITE}/${route}` : `${SITE}/`;
     return [
@@ -77,4 +107,9 @@ for (const out of OUTS) {
   fs.writeFileSync(out, xml);
 }
 
-console.log(`✅ sitemap.xml generated — ${routeList.length} prerendered routes, lastmod ${lastmod}.`);
+const skipped = routeList.length - indexableRoutes.length;
+console.log(
+  `✅ sitemap.xml generated — ${indexableRoutes.length} indexable routes` +
+    (skipped > 0 ? ` (${skipped} prerendered but noindex, excluded)` : '') +
+    `, lastmod ${lastmod}.`
+);

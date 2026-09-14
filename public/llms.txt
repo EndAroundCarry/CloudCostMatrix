@@ -1,0 +1,42 @@
+# CloudCostMatrix
+
+> Independent multi-cloud cost calculator. Prices compute, object storage, managed databases, networking/egress and
+> managed Kubernetes across ten providers — AWS, Microsoft Azure, Google Cloud, Oracle Cloud Infrastructure, IBM Cloud,
+> DigitalOcean, Alibaba Cloud, Linode (Akamai), OVHcloud and Vultr — from each provider's published list rates, using
+> one cost engine so the numbers are comparable side by side. No signup, no runtime API calls: the pricing catalog is
+> compiled into the site at build time and refreshed on a schedule from provider pricing APIs.
+
+Every figure is directional list pricing for architecture planning, not a quote. Per-provider provenance (what is
+live-synced, what is benchmarked, and the caveats behind each) is documented at /methodology.
+
+## Entry points
+
+- [Home / live estimator](https://cloudcostmatrix.com/): configure an architecture and compare all ten providers.
+- [Provider pricing directory](https://cloudcostmatrix.com/providers): every provider, with entry pricing and rankings.
+- [Comparisons](https://cloudcostmatrix.com/compare): all 45 provider pairs, each with a computed verdict.
+- [Cost guides](https://cloudcostmatrix.com/guides): rankings by egress, entry compute, object storage, managed
+  PostgreSQL, managed Kubernetes, and EU data residency.
+- [Architecture blueprints](https://cloudcostmatrix.com/blueprints): four reference architectures priced across all
+  providers.
+- [Methodology](https://cloudcostmatrix.com/methodology): how costs are calculated and verified.
+- [Pricing data freshness](https://cloudcostmatrix.com/methodology): live-sync status per provider and category.
+
+## Individual provider pages
+
+- [AWS pricing](https://cloudcostmatrix.com/providers/aws)
+- [Azure pricing](https://cloudcostmatrix.com/providers/azure)
+- [Google Cloud pricing](https://cloudcostmatrix.com/providers/gcp)
+- [Oracle Cloud pricing](https://cloudcostmatrix.com/providers/oracle)
+- [IBM Cloud pricing](https://cloudcostmatrix.com/providers/ibm)
+- [DigitalOcean pricing](https://cloudcostmatrix.com/providers/digitalocean)
+- [Alibaba Cloud pricing](https://cloudcostmatrix.com/providers/alibaba)
+- [Linode pricing](https://cloudcostmatrix.com/providers/linode)
+- [OVHcloud pricing](https://cloudcostmatrix.com/providers/ovhcloud)
+- [Vultr pricing](https://cloudcostmatrix.com/providers/vultr)
+
+## Notes for automated readers
+
+- All pages listed above are statically prerendered; the sitemap at https://cloudcostmatrix.com/sitemap.xml is the
+  authoritative list of indexable URLs.
+- Shareable architecture URLs use an `?c=` query parameter and are deliberately excluded from the sitemap.
+- Prices change when the sync pipeline runs; pages carry their own freshness label and source URL.

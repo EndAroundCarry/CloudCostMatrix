@@ -28,20 +28,35 @@ Every provider row in the app shows its own **Live / FX-converted / Verified / E
 ## Architecture
 
 - **Angular 21**, standalone components, signals, zoneless-style state (`src/app/state/estimator.store.ts`).
-- **Prerendered static output** (`outputMode: 'static'` + `@angular/ssr`) — every curated route ships as real HTML for crawlers; see `src/app/app.routes.server.ts`.
+- **Prerendered static output** (`outputMode: 'static'` + `@angular/ssr`) — every route ships as real HTML for crawlers; see `src/app/app.routes.server.ts`.
 - **Firebase** (Auth + Firestore) for guest-first, cross-device saved architectures; swapped for no-op implementations during prerendering (`src/app/infrastructure/noop/`) so Firebase never executes server-side.
 - **Cost engine** (`src/app/core/engine/cost-calculator.engine.ts`) is fully data-driven off the provider catalogs — no per-provider branching in the math.
+
+## Discoverability (SEO)
+
+The whole pair space is prerendered, but only one URL per pair is indexable — the curated page if there is one,
+otherwise the canonical forward slug (`indexableSlugForPair` in `src/app/pages/programmatic/comparison-pages.data.ts`).
+Every other ordering ships `noindex` + a canonical to that URL, and `scripts/generate-sitemap.mjs` reads the robots meta
+out of the HTML that actually shipped, so the sitemap can never disagree with the deployed pages.
+
+- 76 indexable URLs: provider pages (`/providers/:slug`), all 45 comparisons, guides, blueprints, and hubs.
+- `scripts/verify-seo.mjs` asserts per-page uniqueness and correctness (title, description, canonical, OG/Twitter,
+  one `<h1>`, JSON-LD, sitemap ↔ HTML coverage) and runs before every deploy via `npm run verify:all`.
+- `scripts/verify-jsonld.mjs` separately validates every structured-data block and bans fabricated review markup.
+- `scripts/ping-indexnow.mjs` submits the sitemap to IndexNow after a deploy; `public/llms.txt` covers AI crawlers.
+- Remaining manual steps (Search Console + Bing verification) are tracked in `seo-setup.md`.
 
 ## Development
 
 ```bash
 npm install
 npm start              # dev server at http://localhost:4200
-npm run build           # production build, including prerendering
+npm run build           # production build, including prerendering + sitemap
 npm test                 # Angular/vitest unit suite
-npm run test:scripts     # fixture-based tests for the price-sync fetchers
+npm run test:scripts     # fixture-based tests for the price-sync fetchers and SEO scripts
 npm run sync-prices       # refresh live-pricing-cache.json from live provider APIs
-npm run verify:prerender  # smoke-test the prerendered output after a build
+npm run verify:all        # prerender + structured data + per-page SEO checks (runs in CI before deploy)
+npm run ping:indexnow     # submit the sitemap to IndexNow (--dry-run to preview)
 ```
 
 ## Deploying
@@ -53,4 +68,5 @@ npm run build
 firebase deploy --only hosting
 ```
 
-`firebase.json` serves prerendered static files where they exist and falls back to the client-rendered shell (`index.csr.html`) for any URL that wasn't prerendered (e.g. an uncurated `/compare/:a-vs-:b` pair, which still resolves correctly client-side).
+`firebase.json` serves the prerendered files directly: every valid URL exists as real HTML, so there is no SPA fallback
+rewrite and an unknown URL returns a genuine 404 (`public/404.html`) instead of a 200 that renders an empty shell.

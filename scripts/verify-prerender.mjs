@@ -9,7 +9,7 @@ import path from 'node:path';
 const DIST_BROWSER = path.join(process.cwd(), 'dist', 'CloudCostMatrix', 'browser');
 const ROUTES_JSON = path.join(process.cwd(), 'dist', 'CloudCostMatrix', 'prerendered-routes.json');
 
-const MIN_EXPECTED_ROUTES = 23; // home + methodology + disclosure + privacy + 12 curated compares + 4 blueprints + 3 guides
+const MIN_EXPECTED_ROUTES = 115; // home + 3 legal + 4 hubs + 15+8 curated compares + 90 pair orderings (minus overlap) + 10 providers + 4 blueprints + 6 guides
 
 let failures = 0;
 function check(label, condition) {
@@ -45,6 +45,27 @@ if (fs.existsSync(compare)) {
   const html = fs.readFileSync(compare, 'utf8');
   check('carries the correct self-canonical', html.includes('href="https://cloudcostmatrix.com/compare/aws-vs-azure"'));
   check('carries real page content', html.includes('AWS vs Azure'));
+}
+
+// The pair space is now fully prerendered — a pair with no curated page is a
+// real indexable page, not just a client-side render behind a shared shell.
+const generatedPair = path.join(DIST_BROWSER, 'compare', 'gcp-vs-ibm', 'index.html');
+check('a non-curated pair (gcp-vs-ibm) is prerendered', fs.existsSync(generatedPair));
+if (fs.existsSync(generatedPair)) {
+  const html = fs.readFileSync(generatedPair, 'utf8');
+  check('  ...and ships an indexable robots meta', /name="robots"[^>]*content="index/i.test(html));
+  check('  ...with a self-canonical', html.includes('href="https://cloudcostmatrix.com/compare/gcp-vs-ibm"'));
+  check('  ...and catalog-computed copy', html.includes('GCP') && html.includes('/mo'));
+}
+
+// The reversed ordering has to resolve (the SPA fallback is gone) while
+// consolidating any link equity into the forward URL instead of competing.
+const reversedPair = path.join(DIST_BROWSER, 'compare', 'ibm-vs-gcp', 'index.html');
+check('the reversed ordering (ibm-vs-gcp) is prerendered', fs.existsSync(reversedPair));
+if (fs.existsSync(reversedPair)) {
+  const html = fs.readFileSync(reversedPair, 'utf8');
+  check('  ...but is noindex', /name="robots"[^>]*content="noindex/i.test(html));
+  check('  ...and canonicalizes forward', html.includes('href="https://cloudcostmatrix.com/compare/gcp-vs-ibm"'));
 }
 
 console.log('');

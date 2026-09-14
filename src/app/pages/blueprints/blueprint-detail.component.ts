@@ -206,15 +206,15 @@ export class BlueprintDetailComponent implements OnInit, OnDestroy {
     const canonicalUrl = `https://cloudcostmatrix.com/blueprints/${bp.slug}`;
 
     this.seoService.updateTags({
-      title: `${bp.name} — Multi-Cloud Architecture Cost Blueprint (10 Providers)`,
-      description: `${bp.tagline} Compare estimated TCO across AWS, Azure, GCP, and 7 more providers. Detailed infrastructure sizing and cost breakdown.`,
+      title: `${bp.name} Cloud Cost Blueprint (2026)`,
+      description: `${bp.name} architecture costed across all 10 providers — monthly TCO, per-category breakdown and the cheapest option, from published list rates.`,
       keywords: [bp.name, 'cloud architecture blueprint', 'AWS vs Azure vs GCP cost', 'multi-cloud cost comparison', bp.recommendedFor, 'TCO estimator 2026'],
       canonicalUrl,
       robotsMeta: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
       structuredDataJson: [
         SchemaGenerator.generateBreadcrumbSchema([
           { name: 'Home', url: 'https://cloudcostmatrix.com/' },
-          { name: 'Blueprints', url: 'https://cloudcostmatrix.com/' },
+          { name: 'Blueprints', url: 'https://cloudcostmatrix.com/blueprints' },
           { name: bp.name, url: canonicalUrl }
         ]),
         SchemaGenerator.generateWebPageSchema({

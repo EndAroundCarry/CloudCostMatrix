@@ -105,6 +105,15 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || steps.prices.outputs.changed == 'true') }}
         run: npm run build
 
+      # Gate the deploy on what actually shipped. These scripts fail loudly on
+      # the failures that are invisible in a browser but expensive in search:
+      # empty prerendered routes, missing/duplicate titles, a canonical pointing
+      # at another page, malformed or policy-violating structured data, and
+      # sitemap entries that do not agree with the deployed HTML.
+      - name: Verify prerender, structured data and SEO tags
+        if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || steps.prices.outputs.changed == 'true') }}
+        run: npm run verify:all
+
       - name: Deploy to Firebase Hosting
         if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || steps.prices.outputs.changed == 'true') }}
         env:
@@ -113,6 +122,16 @@ jobs:
           # in the step's log.
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: npx --yes firebase-tools@15 deploy --only hosting
+
+      # Search engines that accept IndexNow (Bing, Yandex, Seznam, Naver) get told
+      # about the new URLs instead of waiting for the next crawl. Runs after the
+      # deploy, because the key file it proves ownership with has to be live
+      # already. Non-fatal by design: a rejected ping must not fail a deploy that
+      # already succeeded.
+      - name: Submit sitemap to IndexNow
+        if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || steps.prices.outputs.changed == 'true') }}
+        continue-on-error: true
+        run: node scripts/ping-indexnow.mjs
 
       # Local equivalent, if you ever need to ship from your machine:
       #   npm run build && firebase deploy --only hosting

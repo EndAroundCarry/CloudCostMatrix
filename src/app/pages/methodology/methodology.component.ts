@@ -145,7 +145,7 @@ export class MethodologyComponent implements OnInit {
     const canonicalUrl = 'https://cloudcostmatrix.com/methodology';
     this.seoService.updateTags({
       title: 'Methodology — How CloudCostMatrix Calculates Cloud Pricing',
-      description: 'How CloudCostMatrix computes cloud cost estimates: nearest-shape matching, regional multipliers, derived reserved/spot rates, and per-provider pricing freshness (Live/Verified/Estimate) for all 10 providers.',
+      description: 'How CloudCostMatrix computes estimates: nearest-shape matching, regional multipliers, derived reserved and spot rates, and per-provider pricing freshness.',
       keywords: ['cloud cost calculator methodology', 'pricing accuracy', 'cloud TCO calculation method'],
       canonicalUrl,
       robotsMeta: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',

@@ -9,7 +9,11 @@
     "test": "ng test",
     "test:scripts": "vitest run scripts",
     "verify:prerender": "node scripts/verify-prerender.mjs",
+    "verify:jsonld": "node scripts/verify-jsonld.mjs",
+    "verify:seo": "node scripts/verify-seo.mjs",
+    "verify:all": "npm run verify:prerender && npm run verify:jsonld && npm run verify:seo",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
+    "ping:indexnow": "node scripts/ping-indexnow.mjs",
     "generate:icons": "node scripts/generate-icons.mjs",
     "sync-prices": "node scripts/sync-prices.mjs"
   },

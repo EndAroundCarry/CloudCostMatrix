@@ -29,11 +29,13 @@ const BANNED_PROPERTIES = ['aggregateRating', 'review', 'reviewCount', 'ratingVa
 /** Minimum viable fields per @type we actually emit. */
 const REQUIRED_BY_TYPE = {
   WebApplication: ['name', 'url', 'applicationCategory', 'offers'],
+  WebSite: ['name', 'url', 'publisher'],
   Organization: ['name', 'url', 'logo'],
   FAQPage: ['mainEntity'],
   BreadcrumbList: ['itemListElement'],
   WebPage: ['name', 'url'],
-  HowTo: ['name', 'step']
+  HowTo: ['name', 'step'],
+  ItemList: ['itemListElement']
 };
 
 function walk(dir) {

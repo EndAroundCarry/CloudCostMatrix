@@ -130,7 +130,7 @@ export class PrivacyComponent implements OnInit {
     const canonicalUrl = 'https://cloudcostmatrix.com/privacy';
     this.seoService.updateTags({
       title: 'Privacy — CloudCostMatrix',
-      description: 'CloudCostMatrix privacy policy: the estimator runs locally in your browser, analytics are IP-anonymized with Google Signals disabled, and no cost configuration is ever sent as an event.',
+      description: 'Privacy policy: the estimator runs locally in your browser, analytics are IP-anonymized with Google Signals off, and no configuration is ever sent as an event.',
       canonicalUrl,
       robotsMeta: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
       structuredDataJson: SchemaGenerator.generateBreadcrumbSchema([

@@ -1,9 +1,10 @@
 /**
- * Generates the app/touch icons referenced by index.html and manifest.webmanifest.
+ * Generates the browser, app and touch icons referenced by index.html and
+ * manifest.webmanifest.
  *
  * These are deliberately reproducible rather than hand-committed artwork: the
  * brand mark is a 2x2 grid of provider-coloured tiles ("matrix"), drawn here as
- * raw RGBA and encoded to PNG with nothing but node:zlib. Run with:
+ * raw RGBA and encoded to PNG and ICO with nothing but node:zlib. Run with:
  *
  *   npm run generate:icons
  *
@@ -79,6 +80,68 @@ function encodePng(width, height, rgba) {
   ]);
 }
 
+// ---- Minimal ICO encoder -------------------------------------------------
+// Every resolution in an .ico is a BITMAPINFOHEADER followed by bottom-up BGRA
+// pixels and a 1bpp AND mask. The brand mark is fully opaque, so the mask is
+// left zeroed rather than keyed off alpha.
+
+function encodeDib(size, rgba) {
+  const maskRowBytes = Math.ceil(size / 32) * 4; // 1bpp, padded to 4 bytes
+
+  const header = Buffer.alloc(40);
+  header.writeUInt32LE(40, 0); // biSize
+  header.writeInt32LE(size, 4); // biWidth
+  header.writeInt32LE(size * 2, 8); // biHeight — doubled to cover the AND mask
+  header.writeUInt16LE(1, 12); // biPlanes
+  header.writeUInt16LE(32, 14); // biBitCount
+  header.writeUInt32LE(0, 16); // biCompression: BI_RGB
+  header.writeUInt32LE(size * size * 4 + maskRowBytes * size, 20); // biSizeImage
+
+  const pixels = Buffer.alloc(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    const sourceRow = (size - 1 - y) * size * 4; // DIB scanlines run bottom-up
+    for (let x = 0; x < size; x++) {
+      const from = sourceRow + x * 4;
+      const to = (y * size + x) * 4;
+      pixels[to] = rgba[from + 2]; // B
+      pixels[to + 1] = rgba[from + 1]; // G
+      pixels[to + 2] = rgba[from]; // R
+      pixels[to + 3] = rgba[from + 3]; // A
+    }
+  }
+
+  return Buffer.concat([header, pixels, Buffer.alloc(maskRowBytes * size)]);
+}
+
+function encodeIco(images) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0); // reserved
+  header.writeUInt16LE(1, 2); // type: icon
+  header.writeUInt16LE(images.length, 4); // image count
+
+  const directory = [];
+  const payloads = [];
+  let offset = header.length + images.length * 16;
+
+  for (const { size, rgba } of images) {
+    const dib = encodeDib(size, rgba);
+
+    const entry = Buffer.alloc(16);
+    entry[0] = size >= 256 ? 0 : size; // a width/height byte of 0 means 256
+    entry[1] = size >= 256 ? 0 : size;
+    entry.writeUInt16LE(1, 4); // planes
+    entry.writeUInt16LE(32, 6); // bit count
+    entry.writeUInt32LE(dib.length, 8); // bytes in this image
+    entry.writeUInt32LE(offset, 12); // offset from start of file
+
+    offset += dib.length;
+    directory.push(entry);
+    payloads.push(dib);
+  }
+
+  return Buffer.concat([header, ...directory, ...payloads]);
+}
+
 // ---- Drawing -------------------------------------------------------------
 
 function drawIcon(size, paddingRatio) {
@@ -105,7 +168,7 @@ function drawIcon(size, paddingRatio) {
     for (let y = cy; y < cy + cell; y++) for (let x = cx; x < cx + cell; x++) put(x, y, colour);
   }
 
-  return encodePng(size, size, rgba);
+  return rgba;
 }
 
 const outputs = [
@@ -119,8 +182,19 @@ const outputs = [
 
 for (const [name, size, padding] of outputs) {
   const file = path.join(PUBLIC_DIR, name);
-  fs.writeFileSync(file, drawIcon(size, padding));
+  fs.writeFileSync(file, encodePng(size, size, drawIcon(size, padding)));
   console.log(`  ✅ ${name} (${size}x${size})`);
 }
+
+// The tab icon ships every density a browser may ask for: 16 for the tab, 32
+// for bookmarks and touch bars on high-DPI screens, 48 for Windows shortcuts.
+// Padding is tighter than the PNG icons so the matrix still reads at 16px.
+const FAVICON_SIZES = [16, 32, 48];
+const FAVICON_PADDING = 0.14;
+fs.writeFileSync(
+  path.join(PUBLIC_DIR, 'favicon.ico'),
+  encodeIco(FAVICON_SIZES.map((size) => ({ size, rgba: drawIcon(size, FAVICON_PADDING) })))
+);
+console.log(`  ✅ favicon.ico (${FAVICON_SIZES.join(', ')})`);
 
 console.log('Done.');

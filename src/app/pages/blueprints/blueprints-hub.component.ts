@@ -131,7 +131,7 @@ export class BlueprintsHubComponent implements OnInit {
       'Four reference cloud architectures — SaaS MVP, high-traffic e-commerce, enterprise Kubernetes and AI/ML inference — priced across all ten providers by the live engine.';
 
     this.seoService.updateTags({
-      title: 'Cloud Architecture Blueprints (2026) — Costed',
+      title: 'Cloud Architecture Blueprints — Costed',
       description,
       keywords: [
         'cloud architecture cost',

@@ -166,7 +166,7 @@ export class CompareHubComponent implements OnInit {
       'All 45 cloud provider pairs priced by one engine: AWS vs Azure, GCP vs Oracle, DigitalOcean vs Vultr and 42 more — verdicts, category totals and capability matrices.';
 
     this.seoService.updateTags({
-      title: 'Cloud Cost Comparisons (2026) — All 45 Provider Pairs',
+      title: 'Cloud Cost Comparisons — 45 Provider Pairs',
       description,
       keywords: [
         'cloud cost comparison',

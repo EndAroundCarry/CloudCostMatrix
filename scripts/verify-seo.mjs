@@ -18,7 +18,7 @@ const SITE = 'https://cloudcostmatrix.com';
 
 const DESCRIPTION_MIN = 50;
 const DESCRIPTION_MAX = 170;
-const TITLE_MAX = 80; // SeoService appends ' | CloudCostMatrix' (17) to most titles.
+const TITLE_MAX = 60; // SeoService appends ' | CloudCostMatrix' (18) to most titles.
 
 let failures = 0;
 let pagesChecked = 0;
@@ -55,6 +55,19 @@ const linkHref = (html, rel) => {
 
 const count = (html, pattern) => (html.match(pattern) ?? []).length;
 
+/**
+ * Lengths are measured on decoded text — `&amp;` is one character to a search
+ * engine, not five, so measuring the raw source would overstate any tag that
+ * legitimately contains an ampersand.
+ */
+const unescapeHtml = (value) =>
+  value
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
 if (!fs.existsSync(BROWSER)) {
   console.error(`❌ ${BROWSER} not found — run \`ng build\` first.`);
   process.exit(1);
@@ -81,7 +94,9 @@ for (const file of walk(BROWSER)) {
   if (isIndexable) indexable.add(url);
 
   // Title — exactly one, unique, inside the length search engines render.
-  const titleMatches = [...html.matchAll(/<title[^>]*>([\s\S]*?)<\/title>/gi)].map((m) => m[1].trim());
+  const titleMatches = [...html.matchAll(/<title[^>]*>([\s\S]*?)<\/title>/gi)].map((m) =>
+    unescapeHtml(m[1].trim())
+  );
   if (titleMatches.length !== 1) {
     fail(page, `expected exactly one <title>, found ${titleMatches.length}`);
   } else {
@@ -94,7 +109,7 @@ for (const file of walk(BROWSER)) {
   }
 
   // Description — exactly one, unique, substantive, not truncated by the SERP.
-  const description = metaContent(html, 'description');
+  const description = unescapeHtml(metaContent(html, 'description') ?? '');
   if (!description) {
     fail(page, 'missing meta description');
   } else {

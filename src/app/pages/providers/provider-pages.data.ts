@@ -64,7 +64,7 @@ export function providerFromSlug(slug: string): CloudProvider | null {
 
 const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
   [CloudProvider.AWS]: {
-    title: 'AWS Pricing & Cost Calculator (2026)',
+    title: 'AWS Pricing & Cost Calculator',
     metaDescription:
       'AWS list pricing for EC2, S3, RDS, EKS and internet egress — with computed totals for four reference workloads and a side-by-side against nine other clouds.',
     keywords: ['AWS pricing calculator', 'EC2 pricing', 'S3 pricing 2026', 'EKS cost', 'AWS cost estimator'],
@@ -89,7 +89,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.AZURE]: {
-    title: 'Azure Pricing & Cost Calculator (2026)',
+    title: 'Azure Pricing & Cost Calculator',
     metaDescription:
       'Microsoft Azure list pricing for Virtual Machines, Blob Storage, Azure SQL, AKS and egress — computed workload totals plus a comparison against nine other clouds.',
     keywords: ['Azure pricing calculator', 'Azure VM pricing', 'Azure Blob Storage pricing', 'AKS cost', 'Azure cost estimator'],
@@ -114,7 +114,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.GCP]: {
-    title: 'Google Cloud Pricing & Calculator (2026)',
+    title: 'Google Cloud Pricing & Calculator',
     metaDescription:
       'Google Cloud list pricing for Compute Engine, Cloud Storage, Cloud SQL, GKE and egress — computed workload totals and a comparison against nine other clouds.',
     keywords: ['Google Cloud pricing', 'GCP pricing calculator', 'Compute Engine pricing', 'GKE cost', 'Cloud Storage pricing'],
@@ -139,7 +139,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.ORACLE]: {
-    title: 'Oracle Cloud Pricing & Calculator (2026)',
+    title: 'Oracle Cloud Pricing & Calculator',
     metaDescription:
       'Oracle Cloud Infrastructure list pricing for OCI Compute, Object Storage, databases and egress — including the standing 10 TB/month free transfer allowance.',
     keywords: ['Oracle Cloud pricing', 'OCI pricing calculator', 'Oracle free egress', 'OCI compute cost', 'Oracle Cloud cost estimator'],
@@ -164,7 +164,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.IBM]: {
-    title: 'IBM Cloud Pricing & Calculator (2026)',
+    title: 'IBM Cloud Pricing & Calculator',
     metaDescription:
       'IBM Cloud list pricing for Virtual Servers, Object Storage, Kubernetes and egress — computed workload totals plus a comparison against nine other clouds.',
     keywords: ['IBM Cloud pricing', 'IBM Cloud Kubernetes pricing', 'IBM Cloud cost estimator', 'IBM Virtual Server pricing'],
@@ -189,7 +189,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.DIGITALOCEAN]: {
-    title: 'DigitalOcean Pricing & Calculator (2026)',
+    title: 'DigitalOcean Pricing & Calculator',
     metaDescription:
       'DigitalOcean Droplet, Spaces, Managed Database and DOKS list pricing — flat rates with no commitment tiers, computed against nine other clouds.',
     keywords: ['DigitalOcean pricing', 'Droplet pricing', 'DigitalOcean Spaces cost', 'DOKS pricing', 'DigitalOcean cost calculator'],
@@ -214,7 +214,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.ALIBABA]: {
-    title: 'Alibaba Cloud Pricing & Calculator (2026)',
+    title: 'Alibaba Cloud Pricing & Calculator',
     metaDescription:
       'Alibaba Cloud ECS, OSS and ApsaraDB pricing with the deepest reserved-instance discounts in this comparison — computed against nine other providers.',
     keywords: ['Alibaba Cloud pricing', 'Alibaba ECS pricing', 'Alibaba Cloud cost calculator', 'ApsaraDB pricing'],
@@ -239,7 +239,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.LINODE]: {
-    title: 'Linode Pricing & Cost Calculator (2026)',
+    title: 'Linode Pricing & Cost Calculator',
     metaDescription:
       'Linode (Akamai) instance, Object Storage and Managed Database pricing — pooled bandwidth with the lowest overage rate in the catalog, computed against nine clouds.',
     keywords: ['Linode pricing', 'Akamai Linode cost calculator', 'Linode instance pricing', 'Linode Kubernetes pricing'],
@@ -264,7 +264,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.OVHCLOUD]: {
-    title: 'OVHcloud Pricing & Calculator (2026)',
+    title: 'OVHcloud Pricing & Calculator',
     metaDescription:
       'OVHcloud Public Cloud pricing with unlimited free egress on every plan — EU-sovereign infrastructure, EUR list rates converted to USD at the ECB reference rate.',
     keywords: ['OVHcloud pricing', 'OVHcloud Public Cloud cost', 'EU cloud provider pricing', 'unlimited bandwidth cloud hosting'],
@@ -289,7 +289,7 @@ const PROVIDER_PAGE_COPY: Record<CloudProvider, ProviderPageCopy> = {
     ]
   },
   [CloudProvider.VULTR]: {
-    title: 'Vultr Pricing & Cost Calculator (2026)',
+    title: 'Vultr Pricing & Cost Calculator',
     metaDescription:
       'Vultr Cloud Compute, Object Storage and Managed Database pricing across 33 regions — flat hourly billing with free Kubernetes control planes, computed live.',
     keywords: ['Vultr pricing', 'Vultr cost calculator', 'Vultr Cloud Compute pricing', 'VKE pricing'],

@@ -103,7 +103,7 @@ export class GuidesHubComponent implements OnInit {
       'Ranked cloud cost guides: cheapest egress, cheapest cloud for startups, EU data residency, object storage, managed PostgreSQL and managed Kubernetes — ten providers.';
 
     this.seoService.updateTags({
-      title: 'Cloud Cost Guides (2026) — 10 Providers Ranked',
+      title: 'Cloud Cost Guides — 10 Providers Ranked',
       description,
       keywords: [
         'cloud cost guides',

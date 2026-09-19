@@ -9,6 +9,16 @@ import { Title, Meta } from '@angular/platform-browser';
 const DEFAULT_ROBOTS_META =
   'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
 
+/**
+ * Branding appended to any title that doesn't already name the site. It spends
+ * 18 characters of the SERP budget, so page titles are authored to leave room
+ * for it — import this rather than hard-coding the length.
+ */
+export const BRAND_SUFFIX = ' | CloudCostMatrix';
+
+/** Roughly what Google renders before it truncates a title. */
+export const MAX_SERP_TITLE_LENGTH = 60;
+
 export interface SeoTagsConfig {
   title: string;
   description: string;
@@ -32,7 +42,7 @@ export class SeoService {
     // Title — avoid double branding if title already contains CloudCostMatrix
     const fullTitle = config.title.includes('CloudCostMatrix')
       ? config.title
-      : `${config.title} | CloudCostMatrix`;
+      : `${config.title}${BRAND_SUFFIX}`;
     this.titleService.setTitle(fullTitle);
 
     // Core Meta

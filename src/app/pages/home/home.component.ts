@@ -218,7 +218,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.seoService.updateTags({
-      title: 'Cloud Cost Calculator — AWS vs Azure vs GCP (2026)',
+      title: 'Cloud Cost Calculator: AWS vs Azure vs GCP',
       description: 'Compare cloud pricing across AWS, Azure, Google Cloud, Oracle, IBM, DigitalOcean and 4 more — compute, storage, database, Kubernetes and egress, from list rates.',
       keywords: [
         'cloud cost calculator',

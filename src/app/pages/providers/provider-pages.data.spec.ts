@@ -41,8 +41,8 @@ describe('provider-pages.data', () => {
     for (const provider of ALL_PROVIDERS) {
       const copy = providerPageCopy(provider);
 
-      // SeoService appends ' | CloudCostMatrix' (17 chars) to the title.
-      expect(copy.title.length, copy.title).toBeLessThanOrEqual(45);
+      // SeoService appends ' | CloudCostMatrix' (18 chars) to the title.
+      expect(copy.title.length, copy.title).toBeLessThanOrEqual(42);
       expect(copy.metaDescription.length, copy.metaDescription).toBeGreaterThanOrEqual(50);
       expect(copy.metaDescription.length, copy.metaDescription).toBeLessThanOrEqual(165);
 

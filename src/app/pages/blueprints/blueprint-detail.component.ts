@@ -206,7 +206,7 @@ export class BlueprintDetailComponent implements OnInit, OnDestroy {
     const canonicalUrl = `https://cloudcostmatrix.com/blueprints/${bp.slug}`;
 
     this.seoService.updateTags({
-      title: `${bp.name} Cloud Cost Blueprint (2026)`,
+      title: `${bp.name} Blueprint`,
       description: `${bp.name} architecture costed across all 10 providers — monthly TCO, per-category breakdown and the cheapest option, from published list rates.`,
       keywords: [bp.name, 'cloud architecture blueprint', 'AWS vs Azure vs GCP cost', 'multi-cloud cost comparison', bp.recommendedFor, 'TCO estimator 2026'],
       canonicalUrl,

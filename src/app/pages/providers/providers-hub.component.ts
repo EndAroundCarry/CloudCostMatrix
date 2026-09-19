@@ -145,7 +145,7 @@ export class ProvidersHubComponent implements OnInit {
   ngOnInit(): void {
     const canonicalUrl = `${SITE}/providers`;
     this.seoService.updateTags({
-      title: 'Cloud Provider Pricing Directory (2026)',
+      title: 'Cloud Provider Pricing Directory',
       description:
         'Cloud provider directory: AWS, Azure, Google Cloud, Oracle, IBM, DigitalOcean, Alibaba, Linode, OVHcloud and Vultr — with entry pricing and rankings.',
       keywords: [

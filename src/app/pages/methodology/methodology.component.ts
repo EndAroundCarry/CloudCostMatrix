@@ -144,7 +144,7 @@ export class MethodologyComponent implements OnInit {
   ngOnInit(): void {
     const canonicalUrl = 'https://cloudcostmatrix.com/methodology';
     this.seoService.updateTags({
-      title: 'Methodology — How CloudCostMatrix Calculates Cloud Pricing',
+      title: 'Methodology — How CloudCostMatrix Calculates Pricing',
       description: 'How CloudCostMatrix computes estimates: nearest-shape matching, regional multipliers, derived reserved and spot rates, and per-provider pricing freshness.',
       keywords: ['cloud cost calculator methodology', 'pricing accuracy', 'cloud TCO calculation method'],
       canonicalUrl,

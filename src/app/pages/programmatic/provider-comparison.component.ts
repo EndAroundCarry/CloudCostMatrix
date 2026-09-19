@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Subscription } from 'rxjs';
-import { SeoService } from '../../core/services/seo.service';
+import { SeoService, BRAND_SUFFIX, MAX_SERP_TITLE_LENGTH } from '../../core/services/seo.service';
 import { SchemaGenerator } from '../../core/seo/schema-generator';
 import { EstimatorStore } from '../../state/estimator.store';
 import { CloudProvider, PROVIDER_METAS } from '../../core/models/cloud-provider.enum';
@@ -34,6 +34,18 @@ import { PRICING_LAST_SYNCED_AT } from '../../core/engine/catalog/pricing-catalo
 
 type FeatureRow = DerivedFeatureRow | EditorialFeatureRow;
 
+/**
+ * `Cost Comparison` is the query-bearing tail every pair page wants, but the
+ * brand suffix SeoService appends spends 18 characters of the ~60 a SERP
+ * renders. The longest pair names (`EC2 vs Azure VM vs Compute Engine`) drop
+ * the tail rather than push the title past the limit.
+ */
+function comparisonTitle(slugTitle: string): string {
+  const tail = ' Cost Comparison';
+  const fits = slugTitle.length + tail.length + BRAND_SUFFIX.length <= MAX_SERP_TITLE_LENGTH;
+  return fits ? `${slugTitle}${tail}` : slugTitle;
+}
+
 @Component({
   selector: 'app-provider-comparison',
   standalone: true,
@@ -53,7 +65,7 @@ type FeatureRow = DerivedFeatureRow | EditorialFeatureRow;
     <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
 
       <!-- Sticky Comparison Switcher Bar -->
-      <nav aria-label="Comparison Selection Tabs" class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 scrollbar-none">
+      <nav aria-label="Comparison Selection Tabs" class="flex flex-nowrap lg:flex-wrap items-center gap-2 overflow-x-auto lg:overflow-x-visible pb-2 border-b border-slate-800">
         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap mr-2">Compare:</span>
         @for (tab of comparisonTabs; track tab.slug) {
           <a
@@ -483,7 +495,7 @@ export class ProviderComparisonComponent implements OnInit, OnDestroy {
       : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
 
     this.seoService.updateTags({
-      title: `${page.slugTitle} Cost Comparison (2026)`,
+      title: comparisonTitle(page.slugTitle),
       description: page.metaDescription,
       keywords: page.keywords,
       canonicalUrl,

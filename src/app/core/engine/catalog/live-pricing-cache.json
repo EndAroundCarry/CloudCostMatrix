@@ -1,19 +1,19 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-10-07T21:06:58.671Z",
+    "lastSyncedAt": "2026-10-08T11:13:28.834Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-10-07T21:06:58.671Z",
-      "AZURE": "live@2026-10-07T21:06:58.671Z",
-      "GCP": "live@2026-10-07T21:06:58.671Z",
-      "ORACLE": "live@2026-10-07T21:06:58.671Z",
-      "IBM": "live@2026-10-07T21:06:58.671Z",
-      "DIGITALOCEAN": "live@2026-10-07T21:06:58.671Z",
+      "AWS": "live@2026-10-08T11:13:28.834Z",
+      "AZURE": "live@2026-10-08T11:13:28.834Z",
+      "GCP": "live@2026-10-08T11:13:28.834Z",
+      "ORACLE": "live@2026-10-08T11:13:28.834Z",
+      "IBM": "live@2026-10-08T11:13:28.834Z",
+      "DIGITALOCEAN": "live@2026-10-08T11:13:28.834Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-10-07T21:06:58.671Z",
-      "OVHCLOUD": "fx-converted@2026-10-07T21:06:58.671Z",
-      "VULTR": "live@2026-10-07T21:06:58.671Z"
+      "LINODE": "live@2026-10-08T11:13:28.834Z",
+      "OVHCLOUD": "fx-converted@2026-10-08T11:13:28.834Z",
+      "VULTR": "live@2026-10-08T11:13:28.834Z"
     },
     "fx": {
       "OVHCLOUD": {

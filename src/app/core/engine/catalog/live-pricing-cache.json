@@ -1,26 +1,26 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-10-09T11:12:23.794Z",
+    "lastSyncedAt": "2026-10-09T20:41:05.084Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-10-09T11:12:23.794Z",
-      "AZURE": "live@2026-10-09T11:12:23.794Z",
-      "GCP": "live@2026-10-08T21:10:45.356Z",
-      "ORACLE": "live@2026-10-09T11:12:23.794Z",
-      "IBM": "live@2026-10-09T11:12:23.794Z",
-      "DIGITALOCEAN": "live@2026-10-09T11:12:23.794Z",
+      "AWS": "live@2026-10-09T20:41:05.084Z",
+      "AZURE": "live@2026-10-09T20:41:05.084Z",
+      "GCP": "live@2026-10-09T20:41:05.084Z",
+      "ORACLE": "live@2026-10-09T20:41:05.084Z",
+      "IBM": "live@2026-10-09T20:41:05.084Z",
+      "DIGITALOCEAN": "live@2026-10-09T20:41:05.084Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-10-09T11:12:23.794Z",
-      "OVHCLOUD": "fx-converted@2026-10-09T11:12:23.794Z",
-      "VULTR": "live@2026-10-09T11:12:23.794Z"
+      "LINODE": "live@2026-10-09T20:41:05.084Z",
+      "OVHCLOUD": "fx-converted@2026-10-09T20:41:05.084Z",
+      "VULTR": "live@2026-10-09T20:41:05.084Z"
     },
     "fx": {
       "OVHCLOUD": {
         "base": "EUR",
         "quote": "USD",
-        "rate": 1.1186,
-        "date": "2026-10-08",
+        "rate": 1.1206,
+        "date": "2026-10-09",
         "source": "https://api.frankfurter.app/latest?from=EUR&to=USD"
       }
     }
@@ -732,10 +732,10 @@
           "name": "b3-8",
           "vCpu": 2,
           "ramGb": 4,
-          "hourlyOnDemandLinux": 0.0573,
+          "hourlyOnDemandLinux": 0.0574,
           "hourly1YrReservedLinux": 0.043,
-          "hourly3YrReservedLinux": 0.0372,
-          "hourlySpotLinux": 0.0372,
+          "hourly3YrReservedLinux": 0.0373,
+          "hourlySpotLinux": 0.0373,
           "windowsHourlySurcharge": 0.0081
         },
         {
@@ -743,10 +743,10 @@
           "name": "b3-16",
           "vCpu": 2,
           "ramGb": 8,
-          "hourlyOnDemandLinux": 0.1144,
-          "hourly1YrReservedLinux": 0.0858,
-          "hourly3YrReservedLinux": 0.0744,
-          "hourlySpotLinux": 0.0744,
+          "hourlyOnDemandLinux": 0.1146,
+          "hourly1YrReservedLinux": 0.0859,
+          "hourly3YrReservedLinux": 0.0745,
+          "hourlySpotLinux": 0.0745,
           "windowsHourlySurcharge": 0.0115
         },
         {
@@ -754,10 +754,10 @@
           "name": "b3-32",
           "vCpu": 4,
           "ramGb": 16,
-          "hourlyOnDemandLinux": 0.2289,
-          "hourly1YrReservedLinux": 0.1717,
-          "hourly3YrReservedLinux": 0.1488,
-          "hourlySpotLinux": 0.1488,
+          "hourlyOnDemandLinux": 0.2293,
+          "hourly1YrReservedLinux": 0.172,
+          "hourly3YrReservedLinux": 0.149,
+          "hourlySpotLinux": 0.149,
           "windowsHourlySurcharge": 0.0323
         },
         {
@@ -765,10 +765,10 @@
           "name": "b3-64",
           "vCpu": 8,
           "ramGb": 32,
-          "hourlyOnDemandLinux": 0.4577,
-          "hourly1YrReservedLinux": 0.3433,
-          "hourly3YrReservedLinux": 0.2975,
-          "hourlySpotLinux": 0.2975,
+          "hourlyOnDemandLinux": 0.4585,
+          "hourly1YrReservedLinux": 0.3439,
+          "hourly3YrReservedLinux": 0.298,
+          "hourlySpotLinux": 0.298,
           "windowsHourlySurcharge": 0.0922
         },
         {
@@ -776,10 +776,10 @@
           "name": "c3-32",
           "vCpu": 16,
           "ramGb": 32,
-          "hourlyOnDemandLinux": 0.4083,
-          "hourly1YrReservedLinux": 0.3062,
-          "hourly3YrReservedLinux": 0.2654,
-          "hourlySpotLinux": 0.2654,
+          "hourlyOnDemandLinux": 0.409,
+          "hourly1YrReservedLinux": 0.3067,
+          "hourly3YrReservedLinux": 0.2658,
+          "hourlySpotLinux": 0.2658,
           "windowsHourlySurcharge": 0.1632
         },
         {
@@ -787,10 +787,10 @@
           "name": "r3-128",
           "vCpu": 16,
           "ramGb": 128,
-          "hourlyOnDemandLinux": 0.5929,
-          "hourly1YrReservedLinux": 0.4447,
-          "hourly3YrReservedLinux": 0.3854,
-          "hourlySpotLinux": 0.3854,
+          "hourlyOnDemandLinux": 0.5939,
+          "hourly1YrReservedLinux": 0.4454,
+          "hourly3YrReservedLinux": 0.386,
+          "hourlySpotLinux": 0.386,
           "windowsHourlySurcharge": 0.2419
         },
         {
@@ -798,23 +798,23 @@
           "name": "r3-256",
           "vCpu": 32,
           "ramGb": 128,
-          "hourlyOnDemandLinux": 1.1846,
-          "hourly1YrReservedLinux": 0.8885,
-          "hourly3YrReservedLinux": 0.77,
-          "hourlySpotLinux": 0.77,
+          "hourlyOnDemandLinux": 1.1867,
+          "hourly1YrReservedLinux": 0.89,
+          "hourly3YrReservedLinux": 0.7714,
+          "hourlySpotLinux": 0.7714,
           "windowsHourlySurcharge": 0.3687
         }
       ],
       "storage": {
         "HOT": {
           "tier": "HOT",
-          "costPerGbMonth": 0.00783,
+          "costPerGbMonth": 0.007844,
           "costPer10kReads": 0.004,
           "costPer10kWrites": 0.05
         },
         "ARCHIVE": {
           "tier": "ARCHIVE",
-          "costPerGbMonth": 0.002685,
+          "costPerGbMonth": 0.002689,
           "costPer10kReads": 0.5,
           "costPer10kWrites": 0.3
         }

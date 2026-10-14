@@ -1,26 +1,26 @@
 {
   "meta": {
     "mode": "live",
-    "lastSyncedAt": "2026-10-14T09:23:09.938Z",
+    "lastSyncedAt": "2026-10-14T20:03:45.572Z",
     "syncedBy": "scripts/sync-prices.mjs",
     "sources": {
-      "AWS": "live@2026-10-14T09:23:09.938Z",
-      "AZURE": "live@2026-10-14T09:23:09.938Z",
-      "GCP": "live@2026-10-14T09:23:09.938Z",
-      "ORACLE": "live@2026-10-14T09:23:09.938Z",
-      "IBM": "live@2026-10-14T09:23:09.938Z",
-      "DIGITALOCEAN": "live@2026-10-14T09:23:09.938Z",
+      "AWS": "live@2026-10-14T20:03:45.572Z",
+      "AZURE": "live@2026-10-14T20:03:45.572Z",
+      "GCP": "live@2026-10-14T20:03:45.572Z",
+      "ORACLE": "live@2026-10-14T20:03:45.572Z",
+      "IBM": "live@2026-10-14T20:03:45.572Z",
+      "DIGITALOCEAN": "live@2026-10-14T20:03:45.572Z",
       "ALIBABA": "seed",
-      "LINODE": "live@2026-10-14T09:23:09.938Z",
-      "OVHCLOUD": "fx-converted@2026-10-14T09:23:09.938Z",
-      "VULTR": "live@2026-10-14T09:23:09.938Z"
+      "LINODE": "live@2026-10-14T20:03:45.572Z",
+      "OVHCLOUD": "fx-converted@2026-10-14T20:03:45.572Z",
+      "VULTR": "live@2026-10-14T20:03:45.572Z"
     },
     "fx": {
       "OVHCLOUD": {
         "base": "EUR",
         "quote": "USD",
-        "rate": 1.1188,
-        "date": "2026-10-13",
+        "rate": 1.1195,
+        "date": "2026-10-14",
         "source": "https://api.frankfurter.app/latest?from=EUR&to=USD"
       }
     }
@@ -754,10 +754,10 @@
           "name": "b3-32",
           "vCpu": 4,
           "ramGb": 16,
-          "hourlyOnDemandLinux": 0.2289,
-          "hourly1YrReservedLinux": 0.1717,
-          "hourly3YrReservedLinux": 0.1488,
-          "hourlySpotLinux": 0.1488,
+          "hourlyOnDemandLinux": 0.229,
+          "hourly1YrReservedLinux": 0.1718,
+          "hourly3YrReservedLinux": 0.1489,
+          "hourlySpotLinux": 0.1489,
           "windowsHourlySurcharge": 0.0323
         },
         {
@@ -765,10 +765,10 @@
           "name": "b3-64",
           "vCpu": 8,
           "ramGb": 32,
-          "hourlyOnDemandLinux": 0.4578,
-          "hourly1YrReservedLinux": 0.3433,
-          "hourly3YrReservedLinux": 0.2976,
-          "hourlySpotLinux": 0.2976,
+          "hourlyOnDemandLinux": 0.4581,
+          "hourly1YrReservedLinux": 0.3436,
+          "hourly3YrReservedLinux": 0.2978,
+          "hourlySpotLinux": 0.2978,
           "windowsHourlySurcharge": 0.0922
         },
         {
@@ -776,10 +776,10 @@
           "name": "c3-32",
           "vCpu": 16,
           "ramGb": 32,
-          "hourlyOnDemandLinux": 0.4084,
-          "hourly1YrReservedLinux": 0.3063,
-          "hourly3YrReservedLinux": 0.2655,
-          "hourlySpotLinux": 0.2655,
+          "hourlyOnDemandLinux": 0.4086,
+          "hourly1YrReservedLinux": 0.3065,
+          "hourly3YrReservedLinux": 0.2656,
+          "hourlySpotLinux": 0.2656,
           "windowsHourlySurcharge": 0.1632
         },
         {
@@ -787,10 +787,10 @@
           "name": "r3-128",
           "vCpu": 16,
           "ramGb": 128,
-          "hourlyOnDemandLinux": 0.593,
-          "hourly1YrReservedLinux": 0.4447,
-          "hourly3YrReservedLinux": 0.3855,
-          "hourlySpotLinux": 0.3855,
+          "hourlyOnDemandLinux": 0.5933,
+          "hourly1YrReservedLinux": 0.445,
+          "hourly3YrReservedLinux": 0.3856,
+          "hourlySpotLinux": 0.3856,
           "windowsHourlySurcharge": 0.2419
         },
         {
@@ -798,23 +798,23 @@
           "name": "r3-256",
           "vCpu": 32,
           "ramGb": 128,
-          "hourlyOnDemandLinux": 1.1848,
-          "hourly1YrReservedLinux": 0.8886,
-          "hourly3YrReservedLinux": 0.7701,
-          "hourlySpotLinux": 0.7701,
+          "hourlyOnDemandLinux": 1.1856,
+          "hourly1YrReservedLinux": 0.8892,
+          "hourly3YrReservedLinux": 0.7706,
+          "hourlySpotLinux": 0.7706,
           "windowsHourlySurcharge": 0.3687
         }
       ],
       "storage": {
         "HOT": {
           "tier": "HOT",
-          "costPerGbMonth": 0.007832,
+          "costPerGbMonth": 0.007836,
           "costPer10kReads": 0.004,
           "costPer10kWrites": 0.05
         },
         "ARCHIVE": {
           "tier": "ARCHIVE",
-          "costPerGbMonth": 0.002685,
+          "costPerGbMonth": 0.002687,
           "costPer10kReads": 0.5,
           "costPer10kWrites": 0.3
         }
